@@ -1,0 +1,132 @@
+﻿
+@{
+    ViewBag.Title = "FeedbackConfirmationEmailTemplate";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Thank You for Your Feedback</title>
+    <!-- NOTE: Inline CSS is essential for email compatibility -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            color: #333333;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background-color: #00698f; /* Your primary brand blue */
+            color: #ffffff;
+            padding: 20px;
+            border-radius: 6px 6px 0 0;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .content {
+            padding: 20px 0;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+            .data-table th, .data-table td {
+                padding: 10px;
+                border-bottom: 1px solid #eeeeee;
+                text-align: left;
+            }
+
+            .data-table th {
+                background-color: #f9f9f9;
+                width: 40%;
+                font-weight: bold;
+            }
+
+        .footer {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #dddddd;
+            color: #777777;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .highlight {
+            color: #00698f;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" style="border-radius: 8px;">
+        <div class="header" style="border-radius: 8px 8px 0 0;">
+            Feedback Submission Confirmed
+        </div>
+
+        <div class="content">
+            <p>Dear @Model.CustomerName,</p>
+            <p>We sincerely thank you for taking the time to provide us with your valuable feedback. Your suggestions are highly appreciated and serve as an important resource for our continuous improvement. We trust that your experience working with us was positive.</p>
+            <p>We look forward to the opportunity of serving your future electrical needs.</p>
+            <p>We invite you to explore our website at www.cmkl.co.in for a comprehensive overview of the products and services we offer.</p>
+
+            <p style="text-align: center; margin: 30px 0;">
+                <span style="font-size: 20px; color: green; font-weight: bold;">
+                    ✅ Submission Successful
+                </span>
+            </p>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th colspan="2" style="background-color: #eaf6ff; color: #00698f;">Submitted Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th>Work Order / Ticket No.</th>
+                        <td>@Model.PONumber</td>
+                    </tr>
+                    <tr>
+                        <th>Customer Email</th>
+                        <td>@Model.Email</td>
+                    </tr>
+                    <tr>
+                        <th>Date Submitted</th>
+                        <td>@DateTime.Now.ToString("dd-MM-yyyy HH:mm")</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p><b>For Technical Queries Call</b></p>
+            <p>Rakesh Kumar - 9316369057</p>
+            <p><b>For Service And Commissioning Queries Call </b></p>
+            <p>Sarvesh Yadav - 9316369146</p>            
+        </div>
+
+        <div class="footer">
+            <p>This is an auto-generated notification. Please **do not reply** to this email.</p>
+            <p>&copy; @DateTime.Now.Year  - CMKL. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
+

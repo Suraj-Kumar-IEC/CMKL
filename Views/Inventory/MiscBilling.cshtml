@@ -1,0 +1,382 @@
+﻿@{
+    ViewBag.Title = "Miscellaneous Sale Billing";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+<style>
+    :root {
+        --brand-blue: #00698f;
+        --brand-dark: #1e293b;
+        --glass-bg: rgba(255, 255, 255, 0.95);
+    }
+
+    body {
+        background-color: #f1f5f9;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .glass-panel {
+        background: var(--glass-bg);
+        border-radius: 15px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        padding: 25px;
+        margin-bottom: 20px;
+        backdrop-filter: blur(10px);
+    }
+
+    .section-title {
+        background: linear-gradient(90deg, var(--brand-blue), #004d69);
+        color: white !important;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 14px;
+        text-transform: uppercase;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 12px rgba(0, 105, 143, 0.2);
+    }
+
+    .pro-label {
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #475569 !important;
+        margin-bottom: 8px;
+        display: block;
+        letter-spacing: 0.5px;
+    }
+
+    .form-control, .form-select {
+        height: 42px !important;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .summary-box {
+        background: var(--brand-dark);
+        color: white;
+        border-radius: 15px;
+        padding: 25px;
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+    }
+
+    .summary-box::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    #btn-generate {
+        position: relative;
+        z-index: 10;
+        cursor: pointer !important;
+        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+        border: none;
+    }
+
+    .new-row-anim {
+        animation: fadeInDown 0.5s;
+    }
+
+    .stock-badge {
+        font-size: 10px;
+        padding: 4px 8px;
+        margin-top: 5px;
+        display: none;
+    }
+</style>
+
+<div class="container-fluid py-4 px-lg-5 animate__animated animate__fadeIn">
+    <div class="glass-panel">
+        <div class="section-title"><i class="fa fa-file-invoice me-2"></i> Sale Invoice Header</div>
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="pro-label">Customer Name</label>
+                <input type="text" id="cust-name" class="form-control" placeholder="Enter Customer Name" />
+            </div>
+            <div class="col-md-3">
+                <label class="pro-label">Full Address</label>
+                <input type="text" id="cust-address" class="form-control" />
+            </div>
+            <div class="col-md-2">
+                <label class="pro-label">GST Number</label>
+                <input type="text" id="cust-gst" class="form-control" placeholder="Optional" />
+            </div>
+            <div class="col-md-2">
+                <label class="pro-label">Tax Type</label>
+                <select id="tax-type" class="form-select fw-bold border-primary shadow-sm" onchange="calcSummary()">
+                    <option value="CGST/SGST">Local (CGST/SGST)</option>
+                    <option value="IGST">Inter-State (IGST)</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="pro-label">Invoice Number</label>
+                <input type="text" id="bill" class="form-control" value="IEPL/" />
+            </div>
+            <div class="col-md-2">
+                <label class="pro-label">Invoice Date</label>
+                <input type="date" id="inv-date" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-panel animate__animated animate__fadeInUp">
+        <div class="section-title" style="background:#334155;"><i class="fa fa-plus-circle me-2"></i> Item Selection</div>
+        <div class="row g-3 align-items-end">
+            <div class="col-md-2">
+                <label class="pro-label">Item Code (Tab)</label>
+                <input type="text" id="item-code" class="form-control bg-light fw-bold" placeholder="Code..." />
+                <span id="stock-info" class="badge rounded-pill bg-info text-dark stock-badge"></span>
+            </div>
+            <div class="col-md-3">
+                <label class="pro-label">Description</label>
+                <input type="text" id="item-desc" class="form-control" />
+            </div>
+            <div class="col-md-2">
+                <label class="pro-label">Tax Category</label>
+                <select id="item-tax" class="form-select shadow-none"></select>
+            </div>
+            <div class="col-md-2">
+                <label class="pro-label">Rate</label>
+                <input type="number" id="item-rate" class="form-control fw-bold text-primary" />
+            </div>
+            <div class="col-md-1">
+                <label class="pro-label">Qty</label>
+                <input type="number" id="item-qty" class="form-control" value="1" />
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-primary w-100 fw-bold" style="height:42px !important" onclick="addRow()">
+                    <i class="fa fa-cart-plus me-1"></i> ADD ITEM
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive mt-4">
+            <table class="table" id="sale-table">
+                <thead>
+                    <tr>
+                        <th width="15%">Code</th>
+                        <th>Description</th>
+                        <th class="text-end">Rate</th>
+                        <th class="text-end">Qty</th>
+                        <th class="text-end">Tax Amt</th>
+                        <th class="text-end">Total</th>
+                        <th class="text-center" width="100px">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="sale-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="row justify-content-end mt-3 animate__animated animate__fadeInUp">
+        <div class="col-md-4">
+            <div class="summary-box shadow-lg">
+                <div class="d-flex justify-content-between mb-2 opacity-75 small">
+                    <span>Subtotal (Basic)</span>
+                    <span id="lblBasic">0.00</span>
+                </div>
+
+                <div id="div-local-tax">
+                    <div class="d-flex justify-content-between mb-1 text-info small">
+                        <span>CGST / SGST</span>
+                        <span id="lblSplitGST">0.00 / 0.00</span>
+                    </div>
+                </div>
+
+                <div id="div-inter-tax" style="display:none;">
+                    <div class="d-flex justify-content-between mb-2 text-warning small">
+                        <span>IGST Amount</span>
+                        <span id="lblIGST">0.00</span>
+                    </div>
+                </div>
+
+                <div class="row g-2 mb-3 mt-2 pt-2 border-top border-secondary">
+                    <div class="col-7 small pt-2 text-white-50">TCS Collection (%)</div>
+                    <div class="col-5">
+                        <input type="number" id="tcs-perc" class="form-control form-control-sm bg-dark text-white border-secondary" step="0.01" value="0.00" oninput="calcSummary()" />
+                    </div>
+                    <div class="col-12 d-flex justify-content-between text-warning small">
+                        <span>TCS Amount (+)</span>
+                        <span id="lblTCS">0.00</span>
+                    </div>
+                </div>
+
+                <div class="border-top border-secondary pt-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fs-6 opacity-75">Net Payable</span>
+                        <span class="fs-2 fw-800" id="lblNet">0.00</span>
+                    </div>
+                </div>
+                <button id="btn-generate" class="btn btn-success w-100 py-3 fw-bold fs-5 shadow" onclick="saveInvoice()">
+                    <i class="fa fa-check-circle me-2"></i> GENERATE INVOICE
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+
+<script>
+    $(document).ready(function () {
+        loadTaxes();
+        
+        $('#item-code').on('keydown', function (e) {
+            if (e.which == 9 || e.which == 13) {
+                let code = $(this).val();
+                if (code) {
+                    $.getJSON('/Purchase/getItemDetails', { itemCode: code }, function (d) {
+                        if (d.success) {
+                            $('#item-desc').val(d.itemname);
+                            $('#item-rate').val(d.Basic);
+                            $('#item-code').data('avail-stock', d.stock || 0);
+                            $('#stock-info').text('Stock: ' + (d.stock || 0)).fadeIn();
+                            $('#item-rate').focus();
+                        }
+                    });
+                }
+            }
+        });
+    });
+
+    function loadTaxes() {
+        $.getJSON('@Url.Action("GetTaxes", "Purchase")', d => {
+            $('#item-tax').empty().append('<option value="">-- Tax --</option>');
+            $.each(d, (i, it) => { 
+                $('#item-tax').append(`<option value="${it.value}" data-percent="${it.percent}">${it.text}</option>`); 
+            });
+        });
+    }
+
+    function addRow() {
+        let code = $('#item-code').val() || 'NA';
+        let desc = $('#item-desc').val();
+        let rate = parseFloat($('#item-rate').val()) || 0;
+        let qty = parseFloat($('#item-qty').val()) || 0;
+        let avail = parseFloat($('#item-code').data('avail-stock')) || 0;
+
+        let added = 0;
+        $('#sale-body tr').each(function() {
+            if($(this).find('td:eq(0)').text().trim() === code)
+                added += parseFloat($(this).find('td:eq(3)').text()) || 0;
+        });
+
+        if (code !== 'NA' && (qty + added) > avail) {
+            toastr.error("Insufficient Stock! Avail: " + avail); return;
+        }
+
+        let taxOpt = $('#item-tax option:selected');
+        let taxPerc = parseFloat(taxOpt.data('percent')) || 0;
+        let taxId = taxOpt.val();
+
+        if(!desc || rate <= 0 || !taxId) { toastr.error("Missing Item Details"); return; }
+
+        let basic = rate * qty;
+        let taxAmt = basic * (taxPerc / 100);
+        let total = basic + taxAmt;
+
+        $('#sale-body').prepend(`<tr class="new-row-anim">
+            <td><span class="badge bg-secondary">${code}</span></td>
+            <td class="fw-bold">${desc}</td>
+            <td class="text-end">${rate.toFixed(2)}</td>
+            <td class="text-end">${qty}</td>
+            <td class="text-end tax-val" data-tid="${taxId}">${taxAmt.toFixed(2)}</td>
+            <td class="text-end total-val fw-bold text-primary" data-basic="${basic}">${total.toFixed(2)}</td>
+            <td class="text-center">
+                <button class="btn btn-sm btn-outline-danger" style="display:inline-block !important; visibility:visible !important;" onclick="$(this).closest('tr').remove(); calcSummary();">
+                    <i class="fa fa-trash"></i>
+                </button>
+            </td>
+        </tr>`);
+        calcSummary();
+        $('#item-code, #item-desc, #item-rate').val('');
+        $('#stock-info').hide();
+        $('#item-code').focus();
+    }
+
+    function calcSummary() {
+        let b = 0, t = 0;
+        $('.total-val').each(function() { b += parseFloat($(this).data('basic')); });
+        $('.tax-val').each(function() { t += parseFloat($(this).text()); });
+
+        let type = $('#tax-type').val();
+        if (type === "CGST/SGST") {
+            $('#div-local-tax').show(); $('#div-inter-tax').hide();
+            $('#lblSplitGST').text((t / 2).toFixed(2) + " / " + (t / 2).toFixed(2));
+        } else {
+            $('#div-local-tax').hide(); $('#div-inter-tax').show();
+            $('#lblIGST').text(t.toFixed(2));
+        }
+
+        let tcsPerc = parseFloat($('#tcs-perc').val()) || 0;
+        let totalWithGst = b + t;
+        let tcsAmt = totalWithGst * (tcsPerc / 100);
+
+        $('#lblBasic').text(b.toFixed(2));
+        $('#lblTCS').text(tcsAmt.toFixed(2));
+        $('#lblNet').text((totalWithGst + tcsAmt).toFixed(2));
+    }
+
+    function saveInvoice() {
+        let items = [];
+        if ($('#sale-body tr').length === 0) { toastr.error("Add items first"); return; }
+
+        $('#sale-body tr').each(function() {
+            let row = $(this).find('td');
+            items.push({
+                ItemCode: row.eq(0).text().trim(),
+                Description: row.eq(1).text().trim(),
+                Rate: parseFloat(row.eq(2).text()),
+                Qty: parseFloat(row.eq(3).text()),
+                TaxAmount: parseFloat(row.eq(4).text()),
+                TaxID: row.eq(4).data('tid'),
+                LineTotal: parseFloat(row.eq(5).text())
+            });
+        });
+
+        let model = {
+            CustomerName: $('#cust-name').val(),
+            CustomerAddress: $('#cust-address').val(),
+            GSTNo: $('#cust-gst').val(),
+            InvoiceDate: $('#inv-date').val(),
+            TaxType: $('#tax-type').val(),
+            bill: $('#bill').val(),
+            TotalBasic: parseFloat($('#lblBasic').text()),
+            TotalTax: (parseFloat($('.tax-val').map((i,e)=>$(e).text()).get().reduce((a,b)=>a+parseFloat(b),0)) || 0),
+            TCS_Percent: parseFloat($('#tcs-perc').val()) || 0,
+            TCS_Amount: parseFloat($('#lblTCS').text()) || 0,
+            NetAmount: parseFloat($('#lblNet').text()),
+            Items: items
+        };
+
+        if (!model.CustomerName || model.bill === "IEPL/") { toastr.warning("Enter Customer & Invoice No"); return; }
+
+        $('#btn-generate').prop('disabled', true).text('SAVING...');
+
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("SaveMiscSale", "Inventory")',
+            data: JSON.stringify({ jsonData: JSON.stringify(model) }),
+            contentType: 'application/json',
+            success: function(res) {
+                if(res.success) { alert("Invoice Saved: " + res.invoiceNo); location.reload(); }
+                else { toastr.error(res.message); $('#btn-generate').prop('disabled', false).text('GENERATE INVOICE'); }
+            }
+        });
+    }
+</script>

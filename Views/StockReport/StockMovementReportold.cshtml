@@ -1,0 +1,331 @@
+﻿
+@{
+    ViewBag.Title = "StockMovementReport";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if the current context is inside a Bootstrap modal
+            const isInModal = !!(document.querySelector('.modal.show'));
+
+            if (isInModal) {
+                // If inside a modal, wait for a short delay
+                setTimeout(() => {
+                    handleInvalidUser();
+                }, 500); // Adjust the delay as needed
+            } else {
+                // If not in a modal, proceed immediately
+                handleInvalidUser();
+            }
+
+            function handleInvalidUser() {
+                toastr.error("Invalid User");
+
+                setTimeout(function () {
+                    window.location.href = "@Url.Action("Index", "Login")";
+                }, 2000); // Redirect after 2 seconds
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<div class="container-fluid">
+    <h3 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">Stock Movement Report</h3>
+    <div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8"> <!-- Adjusted column width for better centering and spacing -->
+            <form class="p-3 border rounded shadow-sm bg-light"> <!-- Added padding, border, shadow, and background -->
+                <div class="row g-3"> <!-- Added gap between columns (g-3) -->
+                    <!-- Item Group -->
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="IGroup" class="form-label">Item Group</label>
+                            <select class="form-control form-control-sm" id="IGroup">
+                                <option value="">Select Group</option> <!-- Recommended to have a placeholder option -->
+                                <!-- Options will be populated by AJAX -->
+                            </select>
+                        </div>
+                    </div>
+                    <!-- From Date -->
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="fromDate" class="form-label">From Date:</label>
+                            <input type="date" id="fromDate" name="fromDate" class="form-control form-control-sm" />
+                        </div>
+                    </div>
+                    <!-- To Date -->
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="toDate" class="form-label">To Date:</label>
+                            <input type="date" id="toDate" name="toDate" class="form-control form-control-sm" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Buttons Row -->
+                <div class="row mt-4"> <!-- Added margin-top for spacing -->
+                    <div class="col-12 d-flex flex-wrap justify-content-center align-items-center gap-2"> <!-- Flexbox for button alignment -->
+                        <button type="button" id="generateReport" class="btn btn-primary btn-sm flex-grow-1 flex-md-grow-0">
+                            Generate Report
+                        </button>
+                        <button type="button" class="btn btn-success btn-sm flex-grow-1 flex-md-grow-0" onclick="exportToExcel()" style="visibility:hidden">
+                            Export to Excel
+                        </button>
+                        @if (Session["U_Role"] != null && Session["U_Role"].ToString() == "SUPERADMIN")
+                        {
+                            <button type="button" id="stockadjustmentclick" class="btn btn-danger btn-sm flex-grow-1 flex-md-grow-0">
+                                Adjust Stock
+                            </button>
+                        }
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+    <!-- Modal -->
+    <div class="modal fade" id="stockAdjustmentModal" tabindex="-1" role="dialog" aria-labelledby="stockAdjustmentModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="stockAdjustmentModalLabel">Adjust Stock</h5>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to adjust the stock?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="stockadjustment" class="btn btn-danger">Adjust Stock</button>
+                    <button type="button" id="closemodal" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br />
+    <div id="table-responsive">
+        <table id="stockMovementTable" class="table table-sm table-bordered">
+            <thead class="thead-dark sticky-header">
+                <tr>
+                    <th>ItemID</th>
+                    <th>Item Code</th>
+                    <th>Item Name</th>
+                    <th>Opening Stock</th>
+                    <th>Indented QTY</th>
+                    <th>PO QTY</th>
+                    <th>Actual Recieved (Incoming)</th>
+                    <th>Incoming Approved</th>
+                    <th>Incoming Rejected</th>
+                    <th>Manual Issue</th>
+                    <th>Manual Return</th>
+                    <th>BOM Issue</th>
+                    <th>Line Rejection</th>
+                    <th>Sale Qty</th>
+                    <th>Closing STK WIP</th>
+                    <th>Closing STK (Stores)</th>
+                    <th>Present Stock(APS)</th>
+                    <th>Basic Price</th>
+                    <th>Total Basic(Closing)</th>
+                </tr>
+            </thead>
+            <tbody id="reportBody">
+            </tbody>
+            <tfoot></tfoot>
+        </table>
+
+    </div>
+</div>
+<style>
+    .sticky-header {
+        position: sticky;
+        top: 0;
+        background-color: #f0f0f0;
+        z-index: 1;
+    }
+
+    .table-responsive {
+        overflow-y: auto;
+        height: 800px; /* adjust the height to your needs */
+    }
+</style>
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+    $(document).ready(function () {        
+        $.ajax({
+            type: 'GET',
+            url: '/BOM/Getgroup',
+            success: function (data) {
+                const iGroupSelect = $('#IGroup'); // Get the select element
+                iGroupSelect.empty(); // CORRECTED: Use .empty() method to clear existing options
+
+                // Add the "All" option as the first item
+                iGroupSelect.append('<option value="0">All</option>'); // CORRECTED: Append as an option element
+                debugger;
+                // Initialize options string
+                let options = '';
+
+                // Iterate over the received data and build options
+                $.each(data, function (index, item) {
+                    // Assuming data items have 'Value' and 'Text' properties
+                    options += '<option value="' + item.Value + '">' + item.Text + '</option>';
+                });
+
+                // Append all generated options to the select element
+                iGroupSelect.append(options);
+            }
+        })
+    })
+</script>
+<script>
+    $(document).ready(function () {
+       
+        $('#generateReport').click(function () {
+            var fromDate = $('#fromDate').val();
+            var toDate = $('#toDate').val();
+            var Groupid = $('#IGroup option:selected').val();
+            $('#wait-sign').show();
+            $.ajax({
+                type: 'GET',
+                url: '@Url.Action("GetStockMovementReport")',
+                data: { fromDate: fromDate, toDate: toDate, Groupid: Groupid },
+                success: function (data) {
+                    $('#reportBody').empty();
+                    var totalBasicSum = 0;
+                    let totalOpeningStock = 0;
+                    let totalClosingStock = 0;
+                    let issuetotal = 0;
+                    let Qualityintotal = 0;
+                    let bomissue = 0;
+                    $.each(data, function (index, item) {
+                        var totalBasic = (item.WIPQuantity + item.ClosingStock) * item.BasicPrice;
+                        totalBasicSum += totalBasic;
+                        totalOpeningStock += item.OpeningStock1;
+                        totalClosingStock += item.ClosingStock;
+                        issuetotal += item.IssueQuantity;
+                        Qualityintotal += item.QualityIn;
+                        bomissue += item.BOMIssueQuantity;
+
+                        $('#reportBody').append('<tr>' +
+                            '<td>' + item.ItemId + '</td>' +
+                            '<td>' + item.ItemCode + '</td>' +
+                            '<td>' + item.ItemName + '</td>' +
+                            '<td>' + item.OpeningStock1 + '</td>' + 
+                            '<td>' + item.IndentedQuantity + '</td>' +   
+                            '<td>' + item.PoQuantity + '</td>' +
+                            '<td>' + item.StockIn + '</td>' +  // Use item.StockIn here
+                            '<td>' + item.QualityIn + '</td>' +
+                            '<td>' + item.QualityRejected + '</td>' +
+                            '<td>' + item.IssueQuantity + '</td>' +
+                            '<td>' + item.ReturnQuantity + '</td>' +
+                            '<td>' + item.BOMIssueQuantity + '</td>' +
+                            '<td>' + item.RejectionQuantity + '</td>' +
+                            '<td>' + item.SaleQuantity + '</td>' +
+                            '<td>' + item.WIPQuantity + '</td>' +
+                            '<td>' + item.ClosingStock + '</td>' +
+                            '<td>' + item.StockAsOnToday + '</td>' +
+                            '<td>' + item.BasicPrice + '</td>' +
+                            '<td>' + parseFloat(totalBasic).toFixed(2) + '</td>' +
+                            '</tr>');
+                    });
+                    $('#stockMovementTable tfoot').empty();
+                    $('#stockMovementTable tfoot').append('<tr>' +
+                        '<td colspan="3" style="text-align:right; font-weight:bold;">T Opening:</td>' +
+                        '<td>' + totalOpeningStock.toFixed(3) + '</td>' +
+                        '<td colspan="3" style="text-align:right; font-weight:bold;">T Reciept:</td>' +
+                        '<td>' + Qualityintotal.toFixed(3) + '</td>' +
+                        '<td colspan="1" style="text-align:right; font-weight:bold;">T Issue:</td>' +
+                        '<td>' + issuetotal.toFixed(2) + '</td>' +
+                        '<td colspan="5" style="text-align:right; font-weight:bold;">T Closing:</td>' +
+                        '<td>' + totalClosingStock.toFixed(2) + '</td>' +
+                        '<td colspan="2" style="text-align:right; font-weight:bold;">Total:</td>' +
+                        '<td>' + totalBasicSum.toFixed(2) + '</td>' +
+                        '</tr>');
+                    $('#wait-sign').hide();
+                    toastr.success('Stock Movement Data Loaded..');
+                    var audio = new Audio('/Sound/Save.mp3');
+                    $('button[onclick="exportToExcel()"]').css('visibility', 'visible');
+                    audio.play();
+
+                },
+                error: function (xhr, status, error) {
+                    // Handle errors (optional)
+                    toastr.error("Error fetching report:", error);
+                    var audio = new Audio('/Sound/Error.mp3');
+                    audio.play();
+                    // Display an error message to the user, if needed
+                }
+            });
+        });
+        $('#stockadjustmentclick').click(function () {
+
+            $('#stockAdjustmentModal').modal('show');
+        });
+        $('#closemodal').click(function () {
+
+            $('#stockAdjustmentModal').modal('hide');
+        });
+
+        $('#stockadjustment').click(function () {
+            $('#stockAdjustmentModal').modal('hide');
+
+            var batchSize = 500; // Adjust this number as needed
+            var totalRecords = $('#stockMovementTable tbody tr').length;
+
+            for (var i = 0; i < totalRecords; i += batchSize) {
+                var stockData = [];
+
+                $('#stockMovementTable tbody tr').slice(i, i + batchSize).each(function () {
+                    var row = $(this);
+                    var itemId = parseInt(row.find('td:eq(0)').text(), 10);
+                    var closingStock = parseFloat(row.find('td:eq(15)').text());
+
+                    stockData.push({
+                        ItemId: itemId,
+                        ClosingStock: closingStock
+                    });
+                });
+                $('#wait-sign').show();
+
+                // Send the data to the controller
+                $.ajax({
+                    type: 'POST',
+                    url: '/Inventory/StockAdjustment',
+                    data: JSON.stringify(stockData),
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    success: function (response) {
+                        if (response.success) {
+                            toastr.success('Batch processed successfully!');
+                            $('#wait-sign').hide();
+                        } else {
+                            toastr.error('Error: ' + response.message);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error: ' + error);
+                    }
+                });
+            }
+        });
+    });
+    function exportToExcel() {
+        var table = document.getElementById("stockMovementTable");
+        var wb = XLSX.utils.table_to_book(table);
+        XLSX.writeFile(wb, 'StockMovement.xlsx');
+    }
+</script>
+<img id="wait-sign" src="~/images/wait.gif" class="wait-sign-image" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);" />
+
+
+<style>
+    .wait-sign-image {
+        width: 140px;
+        height: 140px;
+    }
+</style>

@@ -1,0 +1,155 @@
+﻿
+@{
+    ViewBag.Title = "ReverseEwap";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if the current context is inside a Bootstrap modal
+            const isInModal = !!(document.querySelector('.modal.show'));
+
+            if (isInModal) {
+                // If inside a modal, wait for a short delay
+                setTimeout(() => {
+                    handleInvalidUser();
+                }, 500); // Adjust the delay as needed
+            } else {
+                // If not in a modal, proceed immediately
+                handleInvalidUser();
+            }
+
+            function handleInvalidUser() {
+                toastr.error("Invalid User");
+
+                setTimeout(function () {
+                    window.location.href = "@Url.Action("Index", "Login")";
+                }, 2000); // Redirect after 2 seconds
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<h3 style="background-color: #00698f; color: #ffffff; padding: 5px 10px; border-radius: 5px; text-align: center;">Reverse Approved BOM (Not Yet Tested)</h3>
+<div class="container">
+    <div class="row">
+        <div class="col-md-4">
+            <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Select Voucher Number</label>
+            <select id="Voucherid" class="form-control form-control-sm">
+            </select>
+        </div>
+        <div class="col-md-4">
+            <div class="col-md-8">
+                <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">BOM Voucher Number</label>
+                <input type="text" id="vouchernumber" class="form-control form-control-sm" disabled />
+                <input type="text" id="id" style="display: none;" />
+            </div>
+            <div class="col-md-8">
+                <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Voucher Date</label>
+                <input type="text" id="Voucherdate" class="form-control form-control-sm" disabled />
+            </div>
+            <div class="col-md-8">
+                <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Created By</label>
+                <input type="text" id="CreatedBy" class="form-control form-control-sm" disabled />
+            </div>
+            <div class="col-md-8">
+                <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Approved By</label>
+                <input type="text" id="ApprovedBy" class="form-control form-control-sm" disabled />
+            </div>
+            <div class="col-md-8">
+                <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">FG Code</label>
+                <input type="text" id="FGCode" class="form-control form-control-sm" disabled />
+            </div>            
+        </div>
+        <div class="col-md-4 d-flex align-items-center">
+            <button type="button" style="background-color: #00698f;" id="updaterecord" class="btn btn-primary" disabled>Delete BOM</button>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script>
+    $(document).ready(function () {
+        refreshdropdown();
+        function refreshdropdown() {
+            $.ajax({
+                url: '/Production/GetApprovedBOM',
+                type: 'GET',
+                success: function (data) {
+                    $('#Voucherid').empty();
+                    // Add the "Select Voucher" option first
+                    $('#Voucherid').append("<option value=''>Select Voucher</option>");
+                    $.each(data.get, function (index, item) { // Iterate over voucherNumbers array
+                        $("#Voucherid").append("<option value='" + item.value + "'>" + item.text + "</option>");
+                    });
+
+                }
+            });
+        }
+        $('#Voucherid').change(function () {
+            var voucherid = $('#Voucherid').val();
+            $.ajax({
+                type: 'GET',
+                url: '/Production/GetBOMReversaldataApproved',
+                data: { voucherid: voucherid },
+                success: function (data) {
+                    var formattedDate = moment(data.head.Voucherdate).format('DD/MM/YYYY');
+                    $('#id').val(data.head.id);
+                    $('#vouchernumber').val(data.head.vouchernumber);
+                    $('#Voucherdate').val(formattedDate);
+                    $('#CreatedBy').val(data.head.CreatedBy);
+                    $('#ApprovedBy').val(data.head.ApprovedBy);
+                    $('#FGCode').val(data.head.FGCode);                    
+                    debugger;
+                    var ii = $('#id').val();
+                    if (ii === '') {
+                        $('#updaterecord').prop('disabled', true);
+                    }
+                    else {
+                        $('#updaterecord').prop('disabled', false);
+                    }
+                    toastr.success('Data Reterived');
+
+                }
+            });
+        });
+        $('#updaterecord').click(function () {
+            var id = $('#id').val();
+            $.ajax({
+                url: '/Production/ReverseBOMData',
+                type: 'POST',
+                data: { id: id },
+                success: function (data) {
+                    if (data.success) {
+                        $('#id').val('');
+                        $('#vouchernumber').val('');
+                        $('#testingdate').val('');
+                        $('#EngineSerial').val('');
+                        $('#model').val('');
+                        $('#alterantorserial').val('');
+                        $('#panelserial').val('');
+                        $('#KRM').val('');
+                        $('#BatteryRating').val('');
+                        $('#Batteryserial').val('');
+                        $('#BatteryQTY').val('');
+                        $('#FGCode').val('');
+                        refreshdropdown();
+                        toastr.success(data.msg); // Show success message from the server
+                        toastr.success('Stock Also Gets Reveresed to Stock Tables');
+                    } else {
+                        toastr.error(data.msg); // Show error message from the server
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("AJAX request failed:", status, error);
+                    toastr.error("An error occurred during the request.");
+                }
+            });
+        });
+    })
+</script>
+

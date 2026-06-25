@@ -1,0 +1,259 @@
+﻿
+@{
+    ViewBag.Title = "Maintenance Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@* Essential CSS includes *@
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+
+<style>
+    body {
+        background-color: #f0f2f5;
+        font-family: 'Segoe UI', Arial, sans-serif;
+        color: #34495e;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin-top: 30px;
+        margin-bottom: 30px;
+    }
+
+    .card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        overflow: hidden;
+        margin-bottom: 25px;
+    }
+
+    .card-header {
+        background-color: #0d47a1;
+        color: #ffffff;
+        padding: 20px 25px;
+        font-size: 1.8em;
+        font-weight: 600;
+        text-align: center;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+    }
+
+    .card-body {
+        padding: 25px;
+    }
+
+    .table-responsive {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+
+    .table thead th {
+        position: sticky;
+        top: 0;
+        background-color: #f5f5f5;
+        z-index: 1;
+    }
+
+    .table th, .table td {
+        vertical-align: middle;
+        font-size: 0.9em;
+    }
+
+    .table thead th, .table-striped tbody tr:nth-of-type(odd) {
+        background-color: #f8f9fa;
+    }
+
+    .status-badge {
+        padding: 0.3em 0.6em;
+        border-radius: 0.25rem;
+        font-weight: bold;
+    }
+
+        .status-badge.completed {
+            background-color: #28a745;
+            color: #fff;
+        }
+        /* Green */
+        .status-badge.pending {
+            background-color: #ffc107;
+            color: #343a40;
+        }
+    /* Yellow */
+    .btn-sm {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.8rem;
+    }
+
+    .spinner-border {
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+</style>
+
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            Maintenance Report
+        </div>
+        <div class="card-body">
+            <form id="reportFilterForm">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="StartDate">Start Date</label>
+                                            <input type="date" class="form-control" id="StartDate" name="StartDate" required="required" value="@Model.StartDate?.ToString("yyyy-MM-dd")">
+                                            <div class="invalid-feedback"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="EndDate">End Date</label>
+                                            <input type="date" class="form-control" id="EndDate" name="EndDate" required="required" value="@Model.EndDate?.ToString("yyyy-MM-dd")">
+                                            <div class="invalid-feedback"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="CompletionStatus">Completion Status</label>
+                                            <select class="form-control" id="CompletionStatus" name="CompletionStatus">
+                                                <option value="All" @(Model.CompletionStatus == "All" ? "selected" : "")>All</option>
+                                                <option value="Completed" @(Model.CompletionStatus == "Completed" ? "selected" : "")>Completed</option>
+                                                <option value="Pending" @(Model.CompletionStatus == "Pending" ? "selected" : "")>Pending</option>
+                                            </select>
+                                            <div class="invalid-feedback"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 d-flex align-items-end">
+                                        <button type="submit" id="generateReportBtn" class="btn btn-primary btn-block">Generate Report</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                            </div>
+
+                            <div class="card mt-4">
+                                <div class="card-header">
+                                    Report Results
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table id="reportResultsTable" class="table table-hover table-bordered table-striped mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Machine</th>
+                                                    <th>Subunit</th>
+                                                    <th>Equipment</th>
+                                                    <th>Frequency</th>
+                                                    <th>Due Date</th>
+                                                    <th>Completion Status</th>
+                                                    <th>Completion Date</th>
+                                                    <th>Remarks</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr><td colspan="8" class="text-center">Select filters and click "Generate Report" to view results.</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div id="noRecordsMessage" class="alert alert-info text-center m-3" style="display:none;">
+                                        No records found for the selected filters.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @section scripts {
+                            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+                            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+                            <script src="~/toastr/Js/toastr.js"></script>
+                            <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+
+                            <script>
+                                $(document).ready(function () {
+                                    // Set initial dates from ViewModel
+                                    if ($('#StartDate').val() === '') {
+                                        $('#StartDate').val('@Model.StartDate?.ToString("yyyy-MM-dd")');
+                                    }
+                                    if ($('#EndDate').val() === '') {
+                                        $('#EndDate').val('@Model.EndDate?.ToString("yyyy-MM-dd")');
+                                    }
+
+                                    // --- Form Submission Handler ---
+                                    $('#reportFilterForm').submit(function (e) {
+                                        e.preventDefault();
+                                        fetchReportData();
+                                    });
+
+                                    // --- Function to Fetch Report Data ---
+                                    function fetchReportData() {
+                                        var startDate = $('#StartDate').val();
+                                        var endDate = $('#EndDate').val();
+                                        var completionStatus = $('#CompletionStatus').val();
+
+                                        // Client-side validation
+                                        if (startDate === '' || endDate === '') {
+                                            toastr.error("Start Date and End Date are required.", "Validation Error");
+                                            return;
+                                        }
+                                        if (new Date(startDate) > new Date(endDate)) {
+                                            toastr.error("Start Date cannot be after End Date.", "Validation Error");
+                                            return;
+                                        }
+
+                                        // Show loading state
+                                        $('#reportResultsTable tbody').html('<tr><td colspan="8" class="text-center"><div class="spinner-border text-info" role="status"><span class="sr-only">Loading...</span></div> Loading report...</td></tr>');
+                                        $('#noRecordsMessage').hide();
+                                        $('#generateReportBtn').prop('disabled', true).text('Generating...');
+
+                                        $.ajax({
+                                            url: '@Url.Action("GetReportData", "MaintenanceReport")',
+                                            type: 'GET',
+                                            dataType: 'json',
+                                            data: { startDate: startDate, endDate: endDate, completionStatus: completionStatus },
+                                            success: function (response) {
+                                                var tableBody = $('#reportResultsTable tbody');
+                                                tableBody.empty();
+                                                $('#generateReportBtn').prop('disabled', false).text('Generate Report');
+
+                                                if (response.success && response.data && response.data.length > 0) {
+                                                    $.each(response.data, function (index, record) {
+                                                        // Format dates and determine status badge class
+                                                        var dueDateFormatted = record.DueDate ? moment(record.DueDate).format('DD/MM/YYYY') : 'N/A';
+                                                        var completionDateFormatted = record.CompletionDate ? moment(record.CompletionDate).format('DD/MM/YYYY HH:mm') : 'N/A';
+                                                        var statusText = record.IsCompleted ? 'Completed' : 'Pending';
+                                                        var statusBadgeClass = record.IsCompleted ? 'status-badge completed' : 'status-badge pending';
+
+                                                        var row = `
+                                                            <tr>
+                                                                <td>${record.MachineName}</td>
+                                                                <td>${record.SubunitName}</td>
+                                                                <td>${record.EquipmentName}</td>
+                                                                <td>${record.FrequencyName}</td>
+                                                                <td>${dueDateFormatted}</td>
+                                                                <td><span class="${statusBadgeClass}">${statusText}</span></td>
+                                                                <td>${completionDateFormatted}</td>
+                                                                <td>${record.CompletionRemarks || 'N/A'}</td>
+                                                            </tr>
+                                                        `;
+                                                        tableBody.append(row);
+                                                    });
+                                                    toastr.success(response.message, "Report Generated");
+                                                } else {
+                                                    $('#noRecordsMessage').text(response.message || 'No records found for the selected filters.').show();
+                                                    tableBody.append('<tr><td colspan="8" class="text-center">No records found.</td></tr>');
+                                                    toastr.info(response.message || "No records found.");
+                                                }
+                                            },
+                                            error: function (xhr, status, error) {
+                                                console.error("AJAX Error:", status, error, xhr.responseText);
+                                                toastr.error("An error occurred while generating the report.", "Error");
+                                                $('#reportResultsTable tbody').html('<tr><td colspan="8" class="text-center text-danger">Error loading report.</td></tr>');
+                                                $('#generateReportBtn').prop('disabled', false).text('Generate Report');
+                                            }
+                                        });
+                                    }
+                                });
+                            </script>
+                        }

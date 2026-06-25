@@ -1,0 +1,109 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Machine Breakdown Ticket</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #333333;
+        }
+
+        h3 {
+            background-color: #00698f;
+            color: #ffffff;
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #dddddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+        }
+
+        .logo {
+            max-width: 150px;
+            margin-bottom: 20px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            color: #777777;
+            font-size: 14px;
+            text-align: center;
+        }
+
+            .footer a {
+                color: #337ab7;
+            }
+
+        .highlight {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h3>Machine Breakdown Ticket</h3>
+        <table>
+            <tr class="highlight">
+                <th>Ticket ID:</th>
+                <td>@Model.Breakdowndata.TicketId</td>
+            </tr>
+            <tr>
+                <th>Machine Name:</th>
+                <td>@Model.Breakdowndata.MachineName</td>
+            </tr>
+            <tr>
+                <th>Subunit Name:</th>
+                <td>@Model.Breakdowndata.SubUnitName</td>
+            </tr>
+            <tr class="highlight">
+                <th>Problem Description:</th>
+                <td>@Model.Breakdowndata.ProblemDescription</td>
+            </tr>
+            <tr>
+                <th>Reported On:</th>
+                <td>@Model.Breakdowndata.ReportedDate.ToString("dd-MM-yyyy HH:mm")</td>
+            </tr>
+            <tr>
+                <th>Reported By:</th>
+                <td>@Model.Breakdowndata.ReportedBy</td>
+            </tr>
+        </table>
+        <div class="footer">
+            <p>This is an auto-generated email. Please do not reply.</p>
+            <p>All rights reserved.</p>
+            <p><a href="http://erp.iecelectric.co.in/">http://erp.iecelectric.co.in/</a></p>
+        </div>
+    </div>
+</body>
+</html>

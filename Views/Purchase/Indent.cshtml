@@ -1,0 +1,429 @@
+﻿
+@{
+    ViewBag.Title = "Indent";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@if (Session["U_Role"] == null)
+{
+    @* <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function () {
+                // Check if the current context is inside a Bootstrap modal
+                const isInModal = !!(document.querySelector('.modal.show'));
+
+                if (isInModal) {
+                    // If inside a modal, wait for a short delay
+                    setTimeout(() => {
+                        handleInvalidUser();
+                    }, 500); // Adjust the delay as needed
+                } else {
+                    // If not in a modal, proceed immediately
+                    handleInvalidUser();
+                }
+
+                function handleInvalidUser() {
+                    toastr.error("Invalid User");
+
+                    setTimeout(function () {
+                        window.location.href = "@Url.Action("Index", "Login")";
+                    }, 2000); // Redirect after 2 seconds
+                }
+            });
+        </script>
+
+        <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+    *@
+}
+
+<div>
+    <div>
+        <h3 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">Indent Voucher (IEPL)</h3>
+        <div class="row">
+            <div class="col-md-5">
+                <div class="row">
+                    <div class="col-md-5">
+                        <label for="itemCode" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Indent Number</label>
+                        <input type="text" id="vouchernumber" class="form-control" disabled />
+                    </div>
+                    @*<div class="col-md-5">
+                            <label for="VoucherDate" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Indent Date</label>
+                            <input type="date" id="voucherdate" class="form-control" />
+                        </div>
+                    *@
+                </div>
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="row justify-content-center">
+        <div class="col-md-3">
+            <div class="left-side">
+                <h4 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">Select Detail</h4>
+                <form>
+                    <div class="form-group">
+                        <label for="itemCode" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Item Code</label>
+                        <input type="text" id="itemCode" class="form-control" />
+                        <input type="text" id="itemid" class="form-control" style="display:none" />
+                    </div>
+                    <div class="form-group">
+                        <label for="itemDesc" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Item Description</label>
+                        <input type="text" id="itemDesc" class="form-control" disabled />
+                    </div>
+                    <div class="form-group">
+                        <label for="uom" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">UOM</label>
+                        <input type="text" id="uom" class="form-control" disabled />
+                    </div>
+                    <div class="form-group">
+                        <label for="basicPrice" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Basic Price</label>
+                        <input type="text" id="basicPrice" class="form-control" disabled />
+                    </div>
+                    <div class="form-group">
+                        <label for="stock" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Available Stock</label>
+                        <input type="text" id="stock" class="form-control" disabled />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="Lastquantity" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Last Order Quantity</label>
+                        <input type="text" id="LastOrderQuantity" class="form-control" disabled />
+                    </div>
+                    <div class="form-group">
+                        <label for="Lastquantity" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Last Order Date</label>
+                        <input type="text" id="LastOrderDate" class="form-control" disabled />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="previousSupplier" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Previous Supplier</label>
+                        <input type="text" id="PreviousSpplier" class="form-control" disabled />
+                        <input type="text" id="supplierid" class="form-control" style="display:none" />
+                    </div>
+                    <div class="form-group">
+                        <label for="Average" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Average Monthly Consuption</label>
+                        <input type="text" id="average" class="form-control" disabled />
+                    </div>
+                    <div class="form-group">
+                        <label for="quantityRequired" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Quantity Required</label>
+                        <input type="text" id="quantityRequired" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="userremarks" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Remarks</label>
+                        <input type="text" id="userremarks" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="expectedstkdate" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Expected Stock End Date</label>
+                        <input type="date" id="expectedstkdate" class="form-control" />
+                    </div>
+                    <button id="addButton" class="btn btn-primary" style="background-color:#00698f">Add</button>
+                    <button id="save" class="btn btn-danger">Save Indent</button>
+                </form>
+            </div>
+        </div>
+        <div class="col-md-9">
+            <div class="right-side">
+                <h4 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">Indent Lines</h4>
+                <div class="table-container">
+                    <table id="indentLinesTable" class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Item Code</th>
+                                <th>Item Description</th>
+                                <th>UOM</th>
+                                <th>Basic Price</th>
+                                <th>Stock</th>
+                                <th>Quantity Required</th>
+                                <th>Last Order Qty</th>
+                                <th>Last Order Date</th>
+                                <th>Previous Supplier</th>
+                                <th>Average</th>
+                                <th>Exp STK Dt</th>
+                                <th>Remarks</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="indentLinesTbody">
+                            <!-- table rows will be added dynamically using ajax -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        //Get Voucher Number
+        $.ajax({
+            type: 'get',
+            url: '/Purchase/IndentVoucherNumber',
+            dataType: 'json',
+            success: function (data) {
+                $('#vouchernumber').val(data.VoucherNumber);
+            }
+        })
+    })
+</script>
+<script>
+    $(document).ready(function () {
+        var indentLines = []; // temporary array to store indent lines
+
+        $('#addButton').click(function (e) {
+            e.preventDefault();
+            var itemCode = $('#itemCode').val();
+            var itemDesc = $('#itemDesc').val();
+            var uom = $('#uom').val();
+            var basicPrice = $('#basicPrice').val();
+            var stock = $('#stock').val();
+            var quantityRequired = $('#quantityRequired').val();
+            var LastOrderQuantity = $('#LastOrderQuantity').val();
+            var LastOrderDate = $('#LastOrderDate').val();
+            var previousSupplier = $('#PreviousSpplier').val();
+            var itemid = $('#itemid').val();
+            var supplierid = $('#supplierid').val();
+            var average = $('#average').val();
+            var expectedstkdate = $('#expectedstkdate').val();
+            var userremarks = $('#userremarks').val();
+
+            // Check if itemCode already exists in the table
+            var existingItemCode = $('#indentLinesTbody tr td:first-child').filter(function () {
+                return $(this).text() === itemCode;
+            }).length;
+
+            if (existingItemCode > 0) {
+                toastr.error('Item Code already exists in the table!');
+                return;
+            }
+            if (expectedstkdate == "") {
+                toastr.error('Expected Stock End Date Cannot be Blank');
+                return;
+            }
+
+            // add to temporary array
+            indentLines.push({
+                itemCode: itemCode,
+                itemDesc: itemDesc,
+                uom: uom,
+                basicPrice: basicPrice,
+                stock: stock,
+                quantityRequired: quantityRequired,
+                previousSupplier: previousSupplier,
+                average: average,
+                expectedstkdate: expectedstkdate,
+                userremarks: userremarks
+            });
+
+            // add table row to right side div
+            var tableRow = '<tr>' +
+                '<td>' + itemCode + '</td>' +
+                '<td>' + itemDesc + '</td>' +
+                '<td>' + uom + '</td>' +
+                '<td>' + basicPrice + '</td>' +
+                '<td>' + stock + '</td>' +
+                '<td>' + quantityRequired + '</td>' +
+                '<td>' + LastOrderQuantity + '</td>' +
+                '<td>' + LastOrderDate + '</td>' +
+                '<td>' + previousSupplier + '</td>' +
+                '<td>' + average + '</td>' +
+                '<td>' + expectedstkdate + '</td>' +
+                '<td>' + userremarks + '</td>' +
+                '<td style="display:none">' + itemid + '</td>' +
+                '<td style="display:none">' + supplierid + '</td>' +
+                '<td><button class="btn btn-danger delete-line">Delete</button></td>' +
+                '</tr>';
+
+            $('#indentLinesTbody').append(tableRow);
+
+            // clear form fields
+            $('#itemCode').val('');
+            $('#itemDesc').val('');
+            $('#uom').val('');
+            $('#basicPrice').val('');
+            $('#stock').val('');
+            $('#quantityRequired').val('');
+            $('#LastOrderQuantity').val('');
+            $('#LastOrderDate').val('');
+            $('#PreviousSpplier').val('');
+            $('#average').val('');
+            $('#expectedstkdate').val('');
+            $('#userremarks').val('');
+        });
+
+        $('#save').on('click', function () {
+            $('#wait-sign').show();
+            //collect Head Date
+            let headdata = {
+                VoucherNumber: $('#vouchernumber').val(),
+                VoucherDate: $('#voucherdate').val(),
+            };
+
+            //collect tabel data
+            let tabledata = [];
+
+            $('#indentLinesTbody tr').each(function () {
+                let row = $(this);
+                let itemid = row.find('td:eq(12)').text();
+                let basicrate = row.find('td:eq(3)').text();
+                let stock = row.find('td:eq(4)').text();
+                let quantityrequired = row.find('td:eq(5)').text();
+                let lastorderquantity = row.find('td:eq(6)').text();
+                let lastorderdate = row.find('td:eq(7)').text();
+                let previoussupplier = row.find('td:eq(13)').text();
+                let average = row.find('td:eq(9)').text();
+                let expectedstkdate = row.find('td:eq(10)').text();
+                let userremarks = row.find('td:eq(11)').text();
+
+                tabledata.push({
+                    itemid: itemid,
+                    basicrate: basicrate,
+                    stock: stock,
+                    quantityrequired: quantityrequired,
+                    lastorderquantity: lastorderquantity,
+                    lastorderdate: lastorderdate,
+                    previoussupplier: previoussupplier,
+                    average: average,
+                    expectedstkdate: expectedstkdate,
+                    userremarks: userremarks,
+
+                });
+            });
+            debugger;
+            $.ajax({
+                url: '/Purchase/SaveIndentManual',
+                type: 'POST',
+                data: JSON.stringify({ headData: headdata, lineData: tabledata }),
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                success: function (response) {
+                    debugger;
+                    if (response.success) {
+                        $('#vouchernumber').val(response.VoucherNumber);
+                        toastr.success(response.message);
+                        $('#wait-sign').hide();
+                        // ... other actions on success (e.g., clear the form)
+                    } else {
+                        toastr.error(response.message);
+                        $('#wait-sign').hide();
+                    }
+                },
+                error: function (xhr, status, error) {
+                    toastr.error("An error occurred while saving.");
+                    $('#wait-sign').hide();
+                }
+            });
+        });
+
+
+        // delete line functionality
+        $(document).on('click', '.delete-line', function () {
+            var row = $(this).closest('tr');
+            var itemCode = row.find('td:eq(0)').text();
+            // find and remove from temporary array
+            for (var i = 0; i < indentLines.length; i++) {
+                if (indentLines[i].itemCode === itemCode) {
+                    indentLines.splice(i, 1);
+                    break;
+                }
+            }
+            row.remove();
+        });
+    });
+</script>
+<script>
+
+    $(document).ready(function () {
+        $('#itemCode').on('keyup', function (e) {
+            if (e.which === 13 || e.which === 9) { // enter or tab key
+                getItemDetails();
+            }
+        });
+
+        $('#itemCode').on('blur', function () {
+            getItemDetails();
+        });
+        function getItemDetails() {
+            var itemCode = $('#itemCode').val();
+
+            function jsonDateToDate(jsonDate) {
+                if (!jsonDate) return '';
+                var date = new Date(parseInt(jsonDate.replace(/\/Date\((\d+)\)\//, '$1')));
+                var day = date.getDate();
+                var month = date.getMonth() + 1; // months are 0-based, so add 1
+                var year = date.getFullYear();
+                return `${padZero(day)}/${padZero(month)}/${year}`;
+            }
+
+            function padZero(value) {
+                return (value < 10 ? '0' : '') + value;
+            }
+            $.ajax({
+                type: 'GET',
+                url: '/Purchase/GetItemDetails',
+                data: { itemCode: itemCode },
+                success: function (data) {
+                    if (data.success) {
+                        debugger;
+                        //let Dateformatted = "NA";
+                        // Directly use the value from data.LastDate or 'NA' if it's 0
+                        let formattedDate = data.LastDate === 0 || data.LastDate === "NA" ? 'NA' : moment(data.LastDate, 'DD-MM-YYYY HH:mm:ss').format('DD/MM/YYYY');
+                        if (data.get && data.get.length > 0 && data.get[0].Date) {
+                            Dateformatted = jsonDateToDate(data.get[0].Date);
+                        } else {
+                            Dateformatted = 'NA';
+                        }
+                        debugger;
+                        $('#itemDesc').val(data.itemname);
+                        $('#uom').val(data.uomText);
+                        $('#basicPrice').val(data.Basic);
+                        $('#stock').val(data.stock);
+                        $('#quantityRequired').focus();
+                        $('#LastOrderQuantity').val(data.Lastquantity);
+                        $('#LastOrderDate').val(Dateformatted);
+                        $('#PreviousSpplier').val(data.LastSupplier);
+                        $('#itemid').val(data.itemid);
+                        $('#supplierid').val(data.suppllierID);
+                        $('#average').val(data.average);
+                        toastr.success('Details Reterived');
+                        var audio = new Audio('/Sound/Save.mp3');
+                        audio.play();
+                    } else {
+                        toastr.error('Item Not Found');
+                        // alert('Item not found / ' + data.error);
+                        var audio = new Audio('/Sound/Error.mp3');
+                        audio.play();
+                    }
+                },
+            });
+        }
+    });
+
+</script>
+<script type="text/javascript">
+    $(function () {
+        $.ajax({
+            url: '@Url.Action("GetSupplier", "Purchase")',
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                $('#supplier').empty(); // clear existing options
+                $.each(data, function (index, item) {
+                    $('#supplier').append('<option value="' + item.value + '">' + item.text + '</option>');
+                });
+            },
+            error: function (xhr, status, error) {
+                console.log(error);
+            }
+        });
+    });
+</script>
+
+<img id="wait-sign" src="~/images/wait.gif" class="wait-sign-image" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);" />
+
+
+<style>
+    .wait-sign-image {
+        width: 140px;
+        height: 140px;
+    }
+</style>

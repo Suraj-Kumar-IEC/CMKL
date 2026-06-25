@@ -1,0 +1,112 @@
+﻿
+@{
+    ViewBag.Title = "PurchaseReport";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Purchase Report</title>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        .table-responsive {
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Purchase Report</h2>
+        <div class="table-responsive">
+            <table id="purchase-report-table" class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>Bill Number</th>
+                        <th>Bill Date</th>
+                        <th>Created By</th>
+                        <th>Created Date</th>
+                        <th>Voucher Number</th>
+                        <th>GR Number</th>
+                        <th>GR Date</th>
+                        <th>Supplier ID</th>
+                        <th>Bill Closed</th>
+                        <th>Bill Closed By</th>
+                        <th>Bill Closed Date</th>
+                        <th>Tax ID</th>
+                        <th>Freight Amount</th>
+                        <th>Tax Amount</th>
+                        <th>Bill Amount</th>
+                        <th>Item Code</th>
+                        <th>Bill Quantity</th>
+                        <th>Quantity</th>
+                        <th>Quality Approved</th>
+                        <th>Quality Approved Qty</th>
+                        <th>Q Approved Date</th>
+                        <th>Rejected Quantity</th>
+                        <th>Rejection Remarks</th>
+                        <th>Basic Price</th>
+                        <th>Tax Amount</th>
+                        <th>Total Amount</th>
+                    </tr>
+                </thead>
+                <tbody id="purchase-report-tbody">
+                </tbody>
+            </table>
+        </div>
+
+        <script src="~/Scripts/jquery-3.4.1.min.js"></script>
+        <script>
+            $(document).ready(function () {
+                $.ajax({
+                    type: "GET",
+                    url: "/PurchaseReport/GetPurchaseReport",
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (data) {
+                        $.each(data, function (index, item) {
+                            $("#purchase-report-tbody").append("<tr>" +
+                                "<td>" + item.BillNumber + "</td>" +
+                                "<td>" + item.BillDate + "</td>" +
+                                "<td>" + item.CreatedBy + "</td>" +
+                                "<td>" + item.CreatedDate + "</td>" +
+                                "<td>" + item.Vouchernumber + "</td>" +
+                                "<td>" + item.GRNumber + "</td>" +
+                                "<td>" + item.GRDate + "</td>" +
+                                "<td>" + item.Supplierid + "</td>" +
+                                "<td>" + item.BillClosed + "</td>" +
+                                "<td>" + item.BillCloseby + "</td>" +
+                                "<td>" + item.BillClosedatetime + "</td>" +
+                                "<td>" + item.Taxid + "</td>" +
+                                "<td>" + item.frieghtamount + "</td>" +
+                                "<td>" + item.TaxAmount + "</td>" +
+                                "<td>" + item.BillAmount + "</td>" +
+                                "<td>" + item.ItemCode + "</td>" +
+                                "<td>" + item.BillQuantity + "</td>" +
+                                "<td>" + item.Quantity + "</td>" +
+                                "<td>" + item.QualityApproved + "</td>" +
+                                "<td>" + item.QualityApprovedQty + "</td>" +
+                                "<td>" + item.QApprovedDate + "</td>" +
+                                "<td>" + item.RejectedQuantity + "</td>" +
+                                "<td>" + item.RejectionRemarks + "</td>" +
+                                "<td>" + item.BasicPrice + "</td>" +
+                                "<td>" + item.TaxAmountDetail + "</td>" +
+                                "<td>" + item.TotalAmount + "</td>" +
+                                "</tr>");
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        console.log(xhr.responseText);
+                    }
+                });
+            });
+        </script>
+    </div>
+</body>
+</html>

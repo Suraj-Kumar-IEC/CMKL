@@ -1,0 +1,147 @@
+﻿
+@{
+    ViewBag.Title = "FGReturnQualityAction";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if the current context is inside a Bootstrap modal
+            const isInModal = !!(document.querySelector('.modal.show'));
+
+            if (isInModal) {
+                // If inside a modal, wait for a short delay
+                setTimeout(() => {
+                    handleInvalidUser();
+                }, 500); // Adjust the delay as needed
+            } else {
+                // If not in a modal, proceed immediately
+                handleInvalidUser();
+            }
+
+            function handleInvalidUser() {
+                toastr.error("Invalid User");
+
+                setTimeout(function () {
+                    window.location.href = "@Url.Action("Index", "Login")";
+                }, 2000); // Redirect after 2 seconds
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<h3 style="background-color: #00698f; color: #ffffff; padding: 5px 10px; border-radius: 5px; text-align: center;">Dispatch Returns - Quality Check</h3>
+<table id="dispatchReturnTable" class="table table-bordered table-sm">
+    <thead>
+        <tr>
+            <th>Voucher Number</th>
+            <th>Dispatch Number</th>
+            <th>Bill Number</th>
+            <th>Bill Date</th>
+            <th>Return Date</th>
+            <th>Created By</th>
+            <th>Remarks</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+<div class="modal fade" id="qcRemarksModal" tabindex="-1" role="dialog" aria-labelledby="qcRemarksModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="qcRemarksModalLabel">Enter QC Remarks</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="hiddenItemId">
+                <div class="form-group">
+                    <label for="qcRemarks">Remarks:</label>
+                    <textarea class="form-control" id="qcRemarks" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="closemodal" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" id="SaveRemarks" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script>
+    $(document).ready(function () {
+        function loaddata() {
+            $.ajax({
+                url: '/Production/FGReturnPendingQC',
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    $('#dispatchReturnTable tbody').empty(); // Clear existing rows
+                    $.each(data, function (i, item) {
+                        var BillDate = new Date(parseInt(item.BillDate.substr(6))); // Extract milliseconds
+                        var formattedBillDate = moment(BillDate).format('DD/MM/YYYY');
+                        var ReturnDate = new Date(parseInt(item.ReturnDate.substr(6))); // Extract milliseconds
+                        var formattedReturnDate = moment(ReturnDate).format('DD/MM/YYYY');
+                        var row = '<tr>' +
+                            '<td>' + item.VoucherNumber + '</td>' +
+                            '<td>' + item.DispatchNumber + '</td>' +
+                            '<td>' + item.BillNumber + '</td>' +
+                            '<td>' + formattedBillDate + '</td>' +
+                            '<td>' + formattedReturnDate + '</td>' +
+                            '<td>' + item.Createdby + '</td>' +
+                            '<td>' + item.Remarks + '</td>' +
+                            '<td><button class="btn btn-primary btn-sm approve-button" style="background-color: #00698f; color: #ffffff; border-color: #0070d2;" data-id="' + item.id + '">Update Status</button></td>' +
+                            '</tr>';
+                        $('#dispatchReturnTable tbody').append(row);
+                    });
+                },
+                error: function (error) {
+                    console.log(error);
+                    alert('Error loading data.');
+                }
+            });
+        }
+
+        loaddata(); // Initial load of data
+
+        $(document).on('click', '.approve-button', function () {
+            var itemId = $(this).data('id');
+            $('#qcRemarksModal #hiddenItemId').val(itemId);
+            $('#qcRemarksModal #qcRemarks').val("");
+            $('#qcRemarksModal').modal('show');
+            console.log('Button clicked! Item ID:', itemId);
+            toastr.success('Working');
+        });
+
+        $('#closemodal').click(function () {
+            $('#qcRemarksModal').modal('hide');
+        });
+
+        $('#SaveRemarks').click(function () {
+            var id = $('#hiddenItemId').val();
+            var remarks = $('#qcRemarks').val();
+            $('#qcRemarksModal').modal('hide');
+            $.ajax({
+                url: '/Production/SaveQCRemarksFGReturn',
+                type: 'POST',
+                data: { id: id, remarks: remarks },
+                success: function (data) {
+                    loaddata(); // Reload data after save
+                    toastr.success('QC Remarks Updated..');
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error saving QC remarks:', error);
+                    toastr.error('Failed to update QC Remarks.');
+                }
+            });
+        });
+    });
+</script>

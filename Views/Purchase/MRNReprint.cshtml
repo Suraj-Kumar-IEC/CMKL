@@ -1,0 +1,426 @@
+﻿@{
+    ViewBag.Title = "Material Receipt Reprint Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const isInModal = !!(document.querySelector('.modal.show'));
+            if (isInModal) {
+                setTimeout(() => { handleInvalidUser(); }, 500);
+            } else {
+                handleInvalidUser();
+            }
+            function handleInvalidUser() {
+                toastr.error("Invalid User Session");
+                setTimeout(function () { window.location.href = "@Url.Action("Index", "Login")"; }, 2000);
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<style>
+    /* Scoped Container for Professional Aesthetic */
+    .mrn-reprint-container {
+        background-color: #f8fafc;
+        font-family: 'Inter', sans-serif;
+        color: #334155;
+        font-size: 0.8rem;
+    }
+
+    .report-header {
+        background: white;
+        padding: 15px 30px;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid #e2e8f0;
+    }
+
+    /* Table Styling */
+    .table-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+    }
+
+    .table-responsive-custom {
+        max-height: calc(100vh - 220px);
+        overflow-y: auto;
+    }
+
+    .table-custom thead th {
+        position: sticky;
+        top: 0;
+        background: #f1f5f9;
+        z-index: 10;
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #00698f;
+        border-bottom: 2px solid #e2e8f0;
+        padding: 12px 10px;
+        white-space: nowrap;
+    }
+
+    .table-custom tbody td {
+        padding: 10px;
+        font-size: 0.75rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+        white-space: nowrap;
+    }
+
+    /* Quick Search Input styling */
+    .search-input {
+        border-radius: 20px;
+        border: 1.5px solid #e2e8f0;
+        padding: 6px 15px;
+        font-size: 0.8rem;
+        width: 350px;
+        outline: none;
+        transition: 0.3s;
+    }
+    .search-input:focus { border-color: #00698f; box-shadow: 0 0 0 3px rgba(0, 105, 143, 0.1); }
+
+    .bill-pill {
+        font-weight: 700;
+        font-size: 0.65rem;
+        color: #ffffff;
+        background-color: #00698f;
+        padding: 2px 8px;
+        border-radius: 4px;
+        display: inline-block;
+    }
+
+    .btn-action {
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 0.65rem;
+        padding: 5px 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: 0.2s;
+    }
+
+    /* Modal Styling */
+    .modal-content-custom { border-radius: 16px; border: none; box-shadow: 0 25px 50px rgba(0,0,0,0.2); }
+    .modal-header-custom { background: #f8fafc; border-bottom: 1px solid #e2e8f0; border-radius: 16px 16px 0 0; }
+
+    .rejected-row { background-color: #fef2f2 !important; color: #dc2626 !important; }
+
+    /* Animations */
+    .animate-up {
+        animation: fadeInUpMRN 0.5s ease forwards;
+        opacity: 0;
+    }
+    @@keyframes fadeInUpMRN {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<div class="mrn-reprint-container container-fluid py-4 px-lg-5">
+
+    <!-- 1. Header Area -->
+    <div class="report-header animate-up">
+        <div>
+            <h4 class="fw-bold m-0 text-dark">Material Receipt Bill Wise</h4>
+            <p class="text-muted small m-0">Consolidated repository for MRN reprints and commercial verification.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <input type="text" id="txtSearch" class="search-input shadow-sm" placeholder="Quick Search (Bill, Supplier, Voucher)..." />
+            <button class="btn btn-sm btn-success fw-bold px-4 rounded-pill shadow-sm" onclick="exportToExcel()">
+                <i class="fas fa-file-excel me-2"></i> Export Excel
+            </button>
+            <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 shadow-sm" onclick="location.reload()">
+                <i class="fas fa-sync-alt me-1"></i> Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- 3. Report Grid -->
+    <div class="table-card animate-up shadow-lg" style="animation-delay: 0.1s;">
+        <div class="table-responsive-custom">
+            <table id="purchaseReportTable" class="table table-hover mb-0 table-custom">
+                <thead>
+                    <tr>
+                        <th class="text-center">ID</th>
+                        <th>Supplier Name</th>
+                        <th>Bill Number</th>
+                        <th class="text-center">Bill Date</th>
+                        <th>Voucher Number</th>
+                        <th class="text-center">Voucher Date</th>
+                        <th>GRN</th>
+                        <th class="text-center">GR Date</th>
+                        <th class="text-end">Freight</th>
+                        <th class="text-end">Tax Amt</th>
+                        <th class="text-end text-primary">Bill Amount</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="purchaseReportBody">
+                    <tr>
+                        <td colspan="12" class="text-center py-5">
+                            <div class="spinner-border spinner-border-sm text-primary"></div>
+                            <div class="mt-2 small fw-bold text-muted uppercase">Synchronizing Receipt Repository...</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Comprehensive MRN Details -->
+<div class="modal fade" id="viewItemsModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen-lg-down modal-xl" role="document">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header modal-header-custom border-0 shadow-sm py-3 px-4">
+                <div>
+                    <h5 class="modal-title fw-bold text-primary m-0"><i class="fas fa-receipt me-2"></i>Material Receipt Detail (IEPL)</h5>
+                    <small class="text-muted">Technical audit of received quantities and quality metrics.</small>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <!-- Detail Header Card -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4 p-3 bg-white">
+                    <input type="hidden" id="billid" />
+                    <div class="row g-3">
+                        <div class="col-md-3 border-end">
+                            <label class="stat-label text-muted" style="font-size: 0.6rem; font-weight: 800; text-transform: uppercase;">MRN Identification</label>
+                            <div class="fw-bold text-dark fs-5" id="MRNNo">---</div>
+                            <div class="small text-muted" id="MRNDate">---</div>
+                        </div>
+                        <div class="col-md-3 border-end">
+                            <label class="stat-label text-muted" style="font-size: 0.6rem; font-weight: 800; text-transform: uppercase;">Vendor Invoice</label>
+                            <div class="fw-bold text-primary" id="billNo">---</div>
+                            <div class="small text-muted" id="billDate">---</div>
+                        </div>
+                        <div class="col-md-3 border-end">
+                            <label class="stat-label text-muted" style="font-size: 0.6rem; font-weight: 800; text-transform: uppercase;">PO Reference</label>
+                            <div class="fw-bold text-dark" id="PONumber">---</div>
+                            <div class="small text-muted" id="PODate">---</div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="stat-label text-muted" style="font-size: 0.6rem; font-weight: 800; text-transform: uppercase;">Supplier Entity</label>
+                            <div class="fw-bold text-dark text-truncate" id="supplierName">---</div>
+                            <div class="fw-bold text-success" id="totalAmount">---</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Items Grid -->
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover mb-0" id="viewItemsTable">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Item Code</th>
+                                    <th class="text-center">Bill Qty</th>
+                                    <th class="text-center">Recv. Qty</th>
+                                    <th class="text-center text-success">QC Appr.</th>
+                                    <th class="text-center text-danger">QC Rej.</th>
+                                    <th class="text-end">Basic Price</th>
+                                    <th class="text-center">Tax %</th>
+                                    <th class="text-end">Tax Amt</th>
+                                    <th class="text-end fw-bold">Line Total</th>
+                                    <th class="text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="viewItemsTableBody">
+                                <!-- AJAX Content -->
+                            </tbody>
+                            <tfoot class="table-light fw-bold">
+                                <!-- Totals -->
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-white border-top py-3 px-4 justify-content-between">
+                <button type="button" class="btn btn-outline-secondary px-4 rounded-pill fw-bold" data-bs-dismiss="modal">Minimize</button>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-primary px-4 rounded-pill shadow-sm" id="createMRNButton" hidden="hidden">Generate MRN Document</button>
+                    <button type="button" class="btn btn-info text-white px-5 rounded-pill shadow fw-bold" id="print-btn">
+                        <i class="fas fa-print me-2"></i> Print MRN Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<img id="wait-sign" src="~/images/wait.gif" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10001; width:80px;" />
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        LoadMainReport();
+
+        // QUICK SEARCH LOGIC
+        $("#txtSearch").on("keyup", function () {
+            var value = $(this).val().toLowerCase();
+            $("#purchaseReportBody tr").filter(function () {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+    });
+
+    function LoadMainReport() {
+        $('#wait-sign').show();
+        $.ajax({
+            url: '@Url.Action("ReprintMRNData", "Purchase")',
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                $('#wait-sign').hide();
+                var tableBody = $('#purchaseReportBody');
+                tableBody.empty();
+
+                if (!data || data.length === 0) {
+                    tableBody.append('<tr><td colspan="12" class="text-center py-5 text-muted">No receipt records found.</td></tr>');
+                    return;
+                }
+
+                $.each(data, function (index, entry) {
+                    var billDt = entry.BillDate ? moment(entry.BillDate).format('DD-MM-YYYY') : '---';
+                    var voucherDt = entry.VoucherDate ? moment(entry.VoucherDate).format('DD-MM-YYYY') : '---';
+                    var grDt = entry.GRDate ? moment(entry.GRDate).format('DD-MM-YYYY') : '---';
+
+                    var row = `<tr>
+                        <td class="text-center text-muted small">${entry.id}</td>
+                        <td class="fw-bold text-dark text-truncate" style="max-width:200px;" title="${entry.SupplierName}">${entry.SupplierName}</td>
+                        <td><span class="bill-pill">${entry.BillNo}</span></td>
+                        <td class="text-center small">${billDt}</td>
+                        <td class="fw-bold text-primary">${entry.VoucherNo}</td>
+                        <td class="text-center small">${voucherDt}</td>
+                        <td class="small fw-bold">${entry.GRNo}</td>
+                        <td class="text-center small">${grDt}</td>
+                        <td class="text-end small">${parseFloat(entry.FrieghtAmount || 0).toFixed(2)}</td>
+                        <td class="text-end small text-muted">${parseFloat(entry.Taxamount || 0).toFixed(2)}</td>
+                        <td class="text-end fw-bold text-success">₹${parseFloat(entry.BillAmount || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                        <td class="text-center">
+                            <button class="btn btn-action btn-outline-primary shadow-sm" onclick="loadBillDetails(${entry.id})">
+                                <i class="fas fa-eye"></i> Detail
+                            </button>
+                        </td>
+                    </tr>`;
+                    tableBody.append(row);
+                });
+
+                toastr.success('Receipt records synchronized.');
+            },
+            error: function() {
+                $('#wait-sign').hide();
+                toastr.error("Failed to load records from server.");
+            }
+        });
+    }
+
+    function loadBillDetails(id) {
+        $('#wait-sign').show();
+        $.ajax({
+            type: 'GET',
+            url: '/Purchase/GetItemsDetail',
+            data: { id: id },
+            success: function (data) {
+                $('#wait-sign').hide();
+
+                // Populate Header
+                $('#billNo').text(data.billDetails.BillNo);
+                $('#billDate').text(moment(data.billDetails.BillDate).format('DD-MM-YYYY'));
+                $('#supplierName').text(data.billDetails.SupplierName);
+                $('#totalAmount').text("₹ " + parseFloat(data.billDetails.TotalAmount).toLocaleString('en-IN'));
+                $('#GR').text(data.billDetails.GRNumber);
+                $('#GRDT').text(moment(data.billDetails.GRDate).format('DD-MM-YYYY'));
+                $('#billid').val(id);
+                $('#PONumber').text(data.billDetails.PONumber);
+                $('#PODate').text(moment(data.billDetails.PODate).format('DD-MM-YYYY'));
+                $('#MRNNo').text(data.billDetails.MRNNo || 'PENDING');
+                $('#MRNDate').text(data.billDetails.MRNDate ? moment(data.billDetails.MRNDate).format('DD-MM-YYYY') : '---');
+
+                // Populate Table
+                var tableBody = $('#viewItemsTableBody');
+                tableBody.empty();
+
+                let totals = { bill: 0, recv: 0, acc: 0, rej: 0, tax: 0, gross: 0 };
+
+                $.each(data.itemsDetail, function (index, item) {
+                    var isRejected = parseFloat(item.RejectedQuantity) > 0;
+
+                    totals.bill += parseFloat(item.BillQuantity || 0);
+                    totals.recv += parseFloat(item.Quantity || 0);
+                    totals.acc += parseFloat(item.QualityApprovedQty || 0);
+                    totals.rej += parseFloat(item.RejectedQuantity || 0);
+                    totals.tax += parseFloat(item.TaxAmount || 0);
+                    totals.gross += parseFloat(item.TotalAmount || 0);
+
+                    var row = `<tr class="${isRejected ? 'rejected-row' : ''}">
+                        <td class="fw-bold">${item.ItemCode}</td>
+                        <td class="text-center">${item.BillQuantity}</td>
+                        <td class="text-center fw-bold">${item.Quantity}</td>
+                        <td class="text-center text-success fw-bold">${item.QualityApprovedQty}</td>
+                        <td class="text-center text-danger fw-bold">${item.RejectedQuantity}</td>
+                        <td class="text-end small">${parseFloat(item.BasicPrice || 0).toFixed(2)}</td>
+                        <td class="text-center small">${item.Tax}%</td>
+                        <td class="text-end small">${parseFloat(item.TaxAmount || 0).toFixed(2)}</td>
+                        <td class="text-end fw-bold">₹${parseFloat(item.TotalAmount || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                        <td class="text-center small">${item.RejectionReturn || 'Processed'}</td>
+                    </tr>`;
+                    tableBody.append(row);
+                });
+
+                // Set footer totals
+                $('#viewItemsTable tfoot').html(`
+                    <tr>
+                        <td class="text-end">Summary Totals:</td>
+                        <td class="text-center">${totals.bill.toFixed(2)}</td>
+                        <td class="text-center">${totals.recv.toFixed(2)}</td>
+                        <td class="text-center text-success">${totals.acc.toFixed(2)}</td>
+                        <td class="text-center text-danger">${totals.rej.toFixed(2)}</td>
+                        <td></td><td></td>
+                        <td class="text-end">${totals.tax.toFixed(2)}</td>
+                        <td class="text-end text-primary">₹${totals.gross.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                        <td></td>
+                    </tr>
+                `);
+
+                $('#viewItemsModal').modal('show');
+            },
+            error: function() {
+                $('#wait-sign').hide();
+                toastr.error("Error retrieving detail data.");
+            }
+        });
+    }
+
+    // Print Logic
+    $('#print-btn').on('click', function () {
+        var headid = $('#billid').val();
+        window.open('/Purchase/MRNPrintout?headid=' + headid, '_blank');
+    });
+
+    function exportToExcel() {
+        var table = document.getElementById("purchaseReportTable");
+        var wb = XLSX.utils.table_to_book(table, { raw: true });
+        XLSX.writeFile(wb, 'Material_Receipt_Reprint_' + moment().format('DDMMYYYY') + '.xlsx');
+    }
+</script>

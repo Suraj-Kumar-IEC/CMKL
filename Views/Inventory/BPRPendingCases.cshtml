@@ -1,0 +1,78 @@
+﻿@model IEnumerable<CMKL.Models.Pendingpurchase>
+
+@{
+    ViewBag.Title = "BPRPendingCases";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+
+
+
+<script type="text/javascript">
+        window.onload = function () {
+            toastr.success("@ViewBag.msg")
+            //this.alert("@ViewBag.Delete")
+        }
+</script>
+
+<h2 style="align-content:center">Logistic Acceptance Form - Bill Wise</h2>
+@if (Model != null)
+{
+    <div>
+        <div class="container">
+            @*<p>
+                    @Html.ActionLink("Create New", "Create")
+                </p>*@
+            <table class="table">
+                <tr>
+                    <th>
+                        
+                        @Html.DisplayName("Company")
+                    </th>
+                    <th>
+                        
+                        @Html.DisplayName("Bill No")
+                    </th>
+                    <th>
+                        
+                        @Html.DisplayName("Bill Date")
+                    </th>
+                    <th>
+                        
+                        @Html.DisplayName("Bill Quantity")
+                    </th>
+                    
+                    <th></th>
+                </tr>
+
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.company)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Billno)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.billdate)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Billqty)
+                        </td>                        
+                        <td>
+                            @*@Html.ActionLink("Edit", "Edit", new { id = item.id }) |
+                                @Html.ActionLink("Details", "Details", new { id = item.id }) |*@
+                            @Html.ActionLink("Add in Stock", "approvepurchase", new { ids = item.id })
+                        </td>
+                    </tr>
+                }
+
+            </table>
+        </div>
+    </div>
+}

@@ -1,0 +1,188 @@
+﻿@{
+    ViewBag.Title = "FGReturnEmailTemplate";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Genset Return Details</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #333333;
+        }
+
+        h3 {
+            background-color: #00698f;
+            color: #ffffff;
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #dddddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+        }
+
+        .footer {
+            margin-top: 30px;
+            color: #777777;
+            font-size: 14px;
+            text-align: center;
+        }
+
+            .footer a {
+                color: #337ab7;
+            }
+
+        .highlight {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h3>Sales Return Summary</h3>
+
+        <table>
+            <tr class="highlight">
+                <th>Return Voucher:</th>
+                <td>@Model.ReturnVoucherNumber</td>
+            </tr>            
+            <tr>
+                <th>Return Date:</th>
+                <td>@Model.ReturnDate.ToString("dd/MM/yyyy")</td>
+            </tr>
+            <tr>
+                <th>Created On:</th>
+                <td>@Model.ReturnCreatedon.ToString("dd/MM/yyyy")</td>
+            </tr>
+            <tr>
+                <th>Created By:</th>
+                <td>@Model.ReturnCreatedBy</td>
+            </tr>
+            <tr>
+                <th>Remarks:</th>
+                <td>@Model.ReturnRemarks</td>
+            </tr>            
+        </table>
+
+        <h3>Order Dispatched under Following.</h3>
+
+        <table>
+            <tr>
+                <th>Voucher Number:</th>
+                <td>@Model.VoucherNumber</td>
+            </tr>
+            <tr>
+                <th>Order Number:</th>
+                <td>@Model.OrderNumber</td>
+            </tr>
+            <tr>
+                <th>Order Date:</th>
+                <td>@Model.OrderDate.ToString("dd/MM/yyyy")</td>
+            </tr>
+            <tr>
+                <th>Bill Number:</th>
+                <td>@Model.Billbumber</td>
+            </tr>
+            <tr>
+                <th>Bill Date:</th>
+                <td>@Model.BillDate.ToString("dd/MM/yyyy")</td>
+            </tr>
+            <tr>
+                <th>Customer Name:</th>
+                <td>@Model.CustomerName</td>
+            </tr>
+            <tr>
+                <th>Customer Location:</th>
+                <td>@Model.CustomerLocation</td>
+            </tr>
+            <tr>
+                <th>Billing Address:</th>
+                <td>@Model.BillingAddress</td>
+            </tr>
+            <tr>
+                <th>Shipping Address:</th>
+                <td>@Model.ShippingAddress</td>
+            </tr>
+            <tr>
+                <th>Model:</th>
+                <td>@Model.Model</td>
+            </tr>
+            <tr>
+                <th>Genset Detail:</th>
+                <td>@Model.GensetDetail</td>
+            </tr>
+            <tr>
+                <th>Engine Serial:</th>
+                <td>@Model.EngineSerial</td>
+            </tr>
+            <tr>
+                <th>Alternator Serial:</th>
+                <td>@Model.AlternatorSerial</td>
+            </tr>
+            <tr>
+                <th>Panel Serial:</th>
+                <td>@Model.PanelSerial</td>
+            </tr>
+            <tr>
+                <th>Battery Serial:</th>
+                <td>@Model.BatterySerial</td>
+            </tr>
+            <tr>
+                <th>Battery Quantity:</th>
+                <td>@Model.BatteryQuantity</td>
+            </tr>
+            <tr>
+                <th>KRM No:</th>
+                <td>@Model.KRMNo</td>
+            </tr>
+            <tr>
+                <th>Genset Quantity:</th>
+                <td>@Model.GensetQuantity</td>
+            </tr>
+            <tr>
+                <th>Speciality:</th>
+                <td>@Model.Speciality</td>
+            </tr>
+        </table>
+
+        <div class="footer">
+            <p>Please do not reply to this email as it is an auto-generated email from IEPL ERP system.</p>
+            <p>All rights reserved. IEC Electric Power Limited.</p>
+            <p><a href="http://erp.iecelectric.co.in/">http://erp.iecelectric.co.in/</a></p>
+        </div>
+    </div>
+</body>
+</html>

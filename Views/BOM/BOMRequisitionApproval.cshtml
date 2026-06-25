@@ -1,0 +1,341 @@
+﻿
+@{
+    ViewBag.Title = "BOMRequisitionApproval";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if the current context is inside a Bootstrap modal
+            const isInModal = !!(document.querySelector('.modal.show'));
+
+            if (isInModal) {
+                // If inside a modal, wait for a short delay
+                setTimeout(() => {
+                    handleInvalidUser();
+                }, 500); // Adjust the delay as needed
+            } else {
+                // If not in a modal, proceed immediately
+                handleInvalidUser();
+            }
+
+            function handleInvalidUser() {
+                toastr.error("Invalid User");
+
+                setTimeout(function () {
+                    window.location.href = "@Url.Action("Index", "Login")";
+                }, 2000); // Redirect after 2 seconds
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+
+<h3 style="background-color: #00698f; color: #ffffff; padding: 5px 10px; border-radius: 5px; text-align: center;">BOM Requisition Approval</h3>
+
+<div class="dashboard-container">
+
+    <table class="table table-striped table-bordered table-sm table-hover" id="voucher-table">
+        <thead>
+            <tr>
+                <th>Requisition Number</th>
+                <th>BOM Number</th>
+                <th>Old FG Code</th>
+                <th>New FG Code</th>
+                <th>Voucher Date & Time</th>
+                <th>Created By</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="voucher-table-body">
+            <!-- data will be loaded here via AJAX -->
+        </tbody>
+    </table>
+</div>
+<!-- modal for viewing lines -->
+<div class="modal fade" id="viewLinesModal" tabindex="-1" role="dialog" aria-labelledby="viewLinesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewLinesModalLabel">View Lines for Voucher</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-sm table-bordered" id="lines-table">
+                    <thead>
+                        <tr>
+                            <th>Category Name</th>
+                            <th>Subcategory Name</th>
+                            <th>Final Item Name</th>
+                            <th>Raw Item Code</th>
+                            <th>Quantity Required</th>
+                            <th>UOM</th>
+                            <th>Action</th>
+                            <th>Present Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lines-table-body">
+                        <!-- data will be loaded here via AJAX -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<img id="wait-sign" src="~/images/wait.gif" class="wait-sign-image" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);" />
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.16.2/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.2.1/exceljs.min.js"></script>
+<script>
+    $(document).ready(function () {
+        loadVouchers();
+        setInterval(loadVouchers, 5000); // Refresh every 30 seconds
+    });
+
+    @*function loadVouchers() {
+        $.ajax({
+            type: 'GET',
+            url: '@Url.Action("GetRequisitions", "BOM")',
+            success: function (data) {
+                var audio = new Audio('/Sound/Save.mp3');
+                var hasUnapprovedOrders = false;
+
+                $('#voucher-table-body').empty();
+                $.each(data, function (index, item) {
+                    var approvalButton = '';
+                    if (item.IsApproved === 0) {
+                        approvalButton = '<a href="#" class="btn btn-success btn-sm ms-1" id="Approve" onclick="approveVoucher(' + item.id + ', this)">Approve</a>';
+                        hasUnapprovedOrders = true;
+                    }
+                    $('#voucher-table-body').append(`
+                        <tr>
+                            <td>${item.BOMReqeusitionNo}</td>
+                            <td>${item.BOMNumber}</td>
+                            <td>${item.OldFG}</td>
+                            <td>${item.NewFG}</td>
+                            <td>${formatDate(item.Createdon)}</td>
+                            <td>${item.Createdby}</td>
+                            <td>
+                                <a href="#" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#viewLinesModal" onclick="loadLines(${item.id})">View Lines</a>
+                                ${approvalButton}
+                            </td>
+                        </tr>
+                    `);
+                });
+                //toastr.success('Order Refresed');
+                if (hasUnapprovedOrders) {
+                    var audio = new Audio('/Sound/Save.mp3');
+                    audio.play();
+                }
+            }
+        });
+    }
+        *@
+
+    function formatDate(dateStr) {
+        if (!dateStr) {
+            return ''; // or some other default value
+        }
+        var timestamp = parseInt(dateStr.replace(/\/Date\((\d+)\)\//, '$1'));
+        var date = new Date(timestamp);
+        var day = date.getDate();
+        var month = date.getMonth() + 1;
+        var year = date.getFullYear();
+        var hours = date.getHours();
+        var minutes = date.getMinutes();
+        var seconds = date.getSeconds();
+
+        return `${padZero(day)}/${padZero(month)}/${year} ${padZero(hours)}:${padZero(minutes)}:${padZero(seconds)}`;
+    }
+
+    function padZero(value) {
+        return (value < 10 ? '0' : '') + value;
+    }
+
+    function loadVouchers() {
+    $('#wait-sign').show();
+
+    $.ajax({
+        type: 'GET',
+        url: '@Url.Action("GetRequisitions", "BOM")',
+        success: function (data) {
+            $('#wait-sign').hide();
+            var hasUnapprovedOrders = false;
+            $('#voucher-table-body').empty();
+
+            // Debugging: View the data structure in your browser console (F12)
+            console.log("Voucher Data Received:", data);
+
+            if (!data || data.length === 0) {
+                $('#voucher-table-body').append('<tr><td colspan="7" class="text-center text-muted">No requisitions found.</td></tr>');
+                return;
+            }
+
+            $.each(data, function (index, item) {
+                let approvalButton = '';
+
+                // FIX: Use loose equality (==) or check for common "unapproved" values
+                // This handles if the server returns 0, "0", false, or null.
+                // Also check for lowercase 'isApproved' in case of JSON serialization changes.
+               // var status = (item.IsApproved !== undefined) ? item.IsApproved : item.isApproved;
+
+                //if (status == 0 || status == "0" || status === false) {
+                    approvalButton = '<a href="#" class="btn btn-success btn-sm ms-1" id="Approve" onclick="approveVoucher(' + item.id + ', this)">Approve</a>';
+                    hasUnapprovedOrders = true;
+               // }
+
+                $('#voucher-table-body').append(`
+                    <tr>
+                        <td>${item.BOMReqeusitionNo || 'N/A'}</td>
+                        <td>${item.BOMNumber || 'N/A'}</td>
+                        <td>${item.OldFG || 'N/A'}</td>
+                        <td>${item.NewFG || 'N/A'}</td>
+                        <td>${formatDate(item.Createdon)}</td>
+                        <td>${item.Createdby || 'System'}</td>
+                        <td>
+                            <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#viewLinesModal" onclick="loadLines(${item.id})">View Lines</button>
+                            ${approvalButton}
+                        </td>
+                    </tr>
+                `);
+            });
+        },
+        error: function (xhr) {
+            $('#wait-sign').hide();
+            console.error("Error loading vouchers:", xhr.responseText);
+            toastr.error("Failed to load requisition list.");
+        }
+    });
+}
+
+
+        function loadLines(voucherId) {
+        debugger;
+        $.ajax({
+            type: 'GET',
+            url: '@Url.Action("GetRequisitionLines", "BOM")',
+            data: { voucherId: voucherId },
+            success: function (data) {
+                var audio = new Audio('/Sound/Save.mp3');
+                audio.play();
+                $('#lines-table-body').empty();
+                $.each(data, function (index, item) {
+                    $('#lines-table-body').append(`
+                        <tr>
+                            <td>${item.CategoryName}</td>
+                            <td>${item.SubcategoryName}</td>
+                            <td>${item.FinalItemName}</td>
+                            <td>${item.RawItemName}</td>
+                            <td>${item.QuantityRequired}</td>
+                            <td>${item.UOM}</td>
+                            <td>${item.Action}</td>
+                            <td>${item.Stock}</td>
+                        </tr>
+                    `);
+                });
+                $('#viewLinesModal').modal('show');
+            }
+
+        });
+    }
+            function approveVoucher(voucherId, element) {
+            const $el = $(element);
+            const originalContent = $el.html();
+
+            // 1. UI Feedback
+            $('#wait-sign').show();
+            $el.addClass('disabled').css('pointer-events', 'none');
+            $el.html('<i class="fas fa-spinner fa-spin"></i> Processing...');
+
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("ApproveReqisitionVouchernew", "BOM")',
+                data: { voucherId: voucherId },
+                success: function (data) {
+                    $('#wait-sign').hide();
+
+                    var isSuccess = data.success || data.Success;
+                    var message = data.msg || data.message || "";
+                    // Check for both 'details' and 'Negativeitems' for backward compatibility
+                    var details = data.details || data.Details || data.Negativeitems || [];
+
+                    if (isSuccess) {
+                        toastr.success(message || "Voucher approved successfully!", "Success", {
+                            timeOut: 12000,
+                            closeButton: true,
+                            progressBar: true
+                        });
+                        if (typeof loadVouchers === 'function') loadVouchers();
+                    }
+                    else {
+                        // FAILURE: Handle detailed validation lists
+                        if (message.includes("Validation failed") || details.length > 0) {
+                            let detailMsg = `<strong>${message}</strong>`;
+
+                            if (details.length > 0) {
+                                detailMsg += '<ul style="margin-top: 10px; padding-left: 20px; text-align: left; font-size: 13px;">';
+                                $.each(details, function(i, item) {
+                                    // Style: Stock errors in red, Lot errors in orange
+                                    let color = item.includes("[Stock]") ? "#dc3545" : "#fd7e14";
+                                    detailMsg += `<li style="color: ${color}; margin-bottom: 4px;">${item}</li>`;
+                                });
+                                detailMsg += '</ul>';
+                            }
+
+                            toastr.warning(detailMsg, "Validation Alert", {
+                                timeOut: 0,           // Sticky
+                                extendedTimeOut: 0,
+                                closeButton: true,
+                                allowHtml: true,      // Essential for <ul>
+                                tapToDismiss: false
+                            });
+                        }
+                        else {
+                            toastr.error(message || "Error approving voucher!");
+                        }
+
+                        // Reset button so user can retry
+                        $el.removeClass('disabled').css('pointer-events', 'auto');
+                        $el.html(originalContent);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    $('#wait-sign').hide();
+                    toastr.error("A network error occurred. Please try again.");
+                    $el.removeClass('disabled').css('pointer-events', 'auto');
+                    $el.html(originalContent);
+                }
+            });
+        }
+
+    $('#viewLinesModal .close').on('click', function () {
+        $('#viewLinesModal').modal('hide');
+    });
+
+</script>
+
+<img id="wait-sign" src="~/images/wait.gif" class="wait-sign-image" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);" />
+
+<style>
+    .wait-sign-image {
+        width: 200px;
+        height: 200px;
+    }
+</style>
+
+
+

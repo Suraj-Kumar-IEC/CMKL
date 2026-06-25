@@ -1,0 +1,64 @@
+﻿@model IEnumerable<CMKL.Models.PurchaseGFE>
+
+@{
+    ViewBag.Title = "PlantInCases";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>PlantInCases</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.company)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Billno)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.billdate)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.flag)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.purchaseapproval)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Billqty)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.company)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Billno)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.billdate)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.flag)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.purchaseapproval)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Billqty)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.id }) |
+            @Html.ActionLink("Details", "Details", new { id=item.id }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.id })
+        </td>
+    </tr>
+}
+
+</table>

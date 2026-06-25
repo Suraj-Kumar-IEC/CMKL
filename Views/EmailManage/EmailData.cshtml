@@ -1,0 +1,77 @@
+﻿@model List<CMKL.Models.CMKL_Email>
+@{
+}
+
+<br />
+<hr />
+@{
+    //string URole = "";
+    if (Session["U_Role"] == null)
+    {
+        Response.Redirect("~/Login/Index");
+        ViewBag.logout = "User Logged Out, Please Login Again";
+        // URole = Session["U_Role"].ToString();
+    }
+    else
+    {
+    }
+
+}
+
+@if (ViewBag.Delete != null)
+
+{
+    <script src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script src="~/toastr/Js/toastr.js"></script>
+    <link href="~/toastr/toastr.css" rel="stylesheet" />
+
+    <script type="text/javascript">
+        window.onload = function () {
+            toastr.success("@ViewBag.Delete")
+            //this.alert("@ViewBag.Delete")
+        }
+    </script>
+}
+
+@if (Model != null)
+{
+    <p>
+        @*  @Html.ActionLink("Add New", "Create")*@
+    </p>
+
+
+    <table class="table table-striped">
+        <tr>
+
+            <th>
+                Email
+            </th>
+            <th>
+                Name
+            </th>
+            <th></th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+
+                <td>
+                    @item.Email
+
+                </td>
+                <td>
+                    @item.DDLName
+
+                </td>
+                <td>
+                    @*  @Html.ActionLink("Edit", "Edit", new { id = item.id }) |*@
+                    @*  @Html.ActionLink("Details", "EmailManage", new { id = item.id }) |*@ |
+                    @Html.ActionLink("Delete", "DeleteEmail", new { id = item.id, EType = item.DDLName })
+                </td>
+            </tr>
+        }
+
+    </table>
+}

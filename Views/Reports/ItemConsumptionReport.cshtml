@@ -1,0 +1,80 @@
+﻿
+@{
+    ViewBag.Title = "ItemConsumptionReport";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if the current context is inside a Bootstrap modal
+            const isInModal = !!(document.querySelector('.modal.show'));
+
+            if (isInModal) {
+                // If inside a modal, wait for a short delay
+                setTimeout(() => {
+                    handleInvalidUser();
+                }, 500); // Adjust the delay as needed
+            } else {
+                // If not in a modal, proceed immediately
+                handleInvalidUser();
+            }
+
+            function handleInvalidUser() {
+                toastr.error("Invalid User");
+
+                setTimeout(function () {
+                    window.location.href = "@Url.Action("Index", "Login")";
+                }, 2000); // Redirect after 2 seconds
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<h3 style="background-color: #00698f; color: #ffffff; padding: 5px 10px; border-radius: 5px; text-align: center;">Item Consumption - 3 Month Analysis</h3>
+
+<div class="container">
+    <table id="report" class="table table-sm table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Item Code</th>
+                <th>Item Name</th>
+                <th>UOM</th>
+                <th>Available Stock</th>
+                <th>Manual Issue Qty</th>
+                <th>BOM Issue Qty</th>
+                <th>Average Consumption / Month</th>
+            </tr>
+
+        </thead>
+        <tbody id="reportlines"></tbody>
+    </table>
+</div>
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $.ajax({
+            type: 'GET',
+            url: '/Reports/CalculateConsumption',
+            success: function (data) {
+
+                $.each(data, function (index, item) {
+                    var row = '<tr>' +
+                        '<td>' + item.ItemCode + '</td>' +
+                        '<td>' + item.ItemName + '</td>' +
+                        '<td>' + item.UOM + '</td>' +
+                        '<td>' + item.AvailableStock + '</td>' + // Assuming you have AvailableStock in your model
+                        '<td>' + item.IssuedQuantity + '</td>' + // Use IssuedQuantity from your model
+                        '<td>' + item.BOMIssueQuantity + '</td>' + // Use QuantityRequired from your model
+                        '<td>' + item.Last3MonthsAvg + '</td>' + // Use the correct average property
+                        '</tr>';
+                    $('#reportlines').append(row); // Append the row to the table body
+                });
+            }
+        });
+    });
+</script>

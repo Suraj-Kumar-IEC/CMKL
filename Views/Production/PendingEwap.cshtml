@@ -1,0 +1,609 @@
+﻿
+@{
+    ViewBag.Title = "PendingEwap";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if the current context is inside a Bootstrap modal
+            const isInModal = !!(document.querySelector('.modal.show'));
+
+            if (isInModal) {
+                // If inside a modal, wait for a short delay
+                setTimeout(() => {
+                    handleInvalidUser();
+                }, 500); // Adjust the delay as needed
+            } else {
+                // If not in a modal, proceed immediately
+                handleInvalidUser();
+            }
+
+            function handleInvalidUser() {
+                toastr.error("Invalid User");
+
+                setTimeout(function () {
+                    window.location.href = "@Url.Action("Index", "Login")";
+                }, 2000); // Redirect after 2 seconds
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<h3 style="background-color: #00698f; color: #ffffff; padding: 5px 10px; border-radius: 5px; text-align: center;">Pending For Ewap</h3>
+<div class="container-fluid">
+    <div class="row">
+        <table class="table table-bordered table-sm" id="PendingTable">
+            <thead>
+                <tr>
+                    <th>Voucher Number</th>
+                    <th>Voucher Date</th>
+                    <th>Created By</th>
+                    <th>FG Product Code</th>
+                    <th>FG Product Name</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="PendingRows"></tbody>
+
+        </table>
+    </div>
+</div>
+<div class="modal fade" id="updateStatusModal" tabindex="-1" role="dialog" aria-labelledby="updateStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateStatusModalLabel">Update Status</h5>               
+            </div>
+            <div class="modal-body">
+                <form id="updateStatusForm">
+                    <input type="hidden" id="headid" name="itemId">
+                    <div class="accordion" id="detailsAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="engineHeading">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#engineCollapse" aria-expanded="false" aria-controls="engineCollapse" style="background-color: #00698f; color: #ffffff; padding: 5px 10px; border-radius: 5px; text-align: center;">
+                                    Engine Detail
+                                </button>
+                            </h2>
+                            <div id="engineCollapse" class="accordion-collapse collapse" aria-labelledby="engineHeading" data-bs-parent="#detailsAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label for="emake">Make</label>
+                                            <input type="text" id="emake" class="form-control form-control-sm" disabled />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="emodel">Model</label>
+                                            <select id="model" class="form-control form-control-sm" disabled></select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="eserial">Serial No</label>
+                                            <input type="text" id="engineSerialNo" class="form-control form-control-sm" disabled />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="etestcert">Test Certificate</label>
+                                            <input type="text" id="etestcert" class="form-control form-control-sm" disabled>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <label for="eremarks">Remarks</label>
+                                            <input type="text" id="eremarks" class="form-control form-control-sm" disabled />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="alternatorHeading">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#alternatorCollapse" aria-expanded="false" aria-controls="alternatorCollapse" style="background-color: #00698f; color: #ffffff; padding: 5px 10px; border-radius: 5px; text-align: center;">
+                                    Alternator Detail
+                                </button>
+                            </h2>
+                            <div id="alternatorCollapse" class="accordion-collapse collapse" aria-labelledby="alternatorHeading" data-bs-parent="#detailsAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label for="amake">Make</label>
+                                            <input type="text" id="amake" class="form-control form-control-sm" disabled />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="aframe">Frame</label>
+                                            <input type="text" id="aframe" class="form-control form-control-sm" disabled />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="amcno">MC No</label>
+                                            <input type="text" id="alternatorSerialNo" class="form-control form-control-sm" disabled />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="arating">Alternator Rating</label>
+                                            <select id="arating" class="form-control form-control-sm" disabled></select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="aphase">Phase</label>
+                                            <select id="aphase" class="form-control form-control-sm" disabled></select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="atestcert">Test Certificate</label>
+                                            <input type="text" id="atestcert" class="form-control form-control-sm" disabled>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="awarranty">Warranty Card</label>
+                                            <input type="text" id="awarranty" class="form-control form-control-sm" disabled>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="aremarks">Remarks</label>
+                                            <input type="text" id="aremarks" class="form-control form-control-sm" disabled />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="otherHeading">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#otherCollapse" aria-expanded="false" aria-controls="otherCollapse" style="background-color: #00698f; color: #ffffff; padding: 5px 10px; border-radius: 5px; text-align: center;">
+                                    Other Detail
+                                </button>
+                            </h2>
+                            <div id="otherCollapse" class="accordion-collapse collapse" aria-labelledby="otherHeading" data-bs-parent="#detailsAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label for="exhaust">Exhaust Pipe</label>
+                                            <input type="number" id="exhaust" class="form-control form-control-sm" disabled />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="kgsticker">KG Sticker</label>
+                                            <input type="text" id="kgsticker" class="form-control form-control-sm" disabled />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="AVM">AVM Pads</label>
+                                            <input type="text" id="AVM" class="form-control form-control-sm" disabled />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="fuelspout">Fuel Spout</label>
+                                            <input type="number" id="fuelspout" class="form-control form-control-sm" disabled />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="flexbel">Flexible Bellow</label>
+                                            <input type="number" id="flexbel" class="form-control form-control-sm" disabled />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @*<div class="row">
+            <div class="col-md-3">
+                <label for="model">Engine Model:</label>
+                <select id="model" class="form-control form-control-sm"></select>
+            </div>
+            <div class="col-md-3">
+                <label for="engineSerialNo">Engine Serial No.:</label>
+                <input type="text" class="form-control form-control-sm" id="engineSerialNo" name="engineSerialNo" required>
+            </div>
+            <div class="col-md-3">
+                <label for="alternatorSerialNo">Alternator Serial No.:</label>
+                <input type="text" class="form-control form-control-sm" id="alternatorSerialNo" name="alternatorSerialNo" required>
+            </div>
+
+        </div>
+                    *@
+                    <div class="row">
+                        <h5 style="background-color: #00698f; color: #ffffff; padding: 5px 10px; border-radius: 5px; text-align: center;">Control Panel Details</h5>
+                        <div class="col-md-3">
+                            <label for="CPtype">Type</label>
+                            <select id="cptype" class="form-control form-control-sm"></select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="cprating">Rating:</label>
+                            <select class="form-control form-control-sm" id="cprating" required></select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="PanelSerialNo">Panel Serial No.:</label>
+                            <input type="text" class="form-control form-control-sm" id="PanelSerialNo" name="PanelSerialNo" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label>Other Detail</label>
+                            <input type="text" id="cpotherdetail" class="form-control form-control-sm" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <h5 style="background-color: #00698f; color: #ffffff; padding: 5px 10px; border-radius: 5px; text-align: center;">Battery Details</h5>
+                        <div class="col-md-3">
+                            <label for="bmake">Make:</label>
+                            <input type="text" class="form-control form-control-sm" id="bmake" name="ratingOfGenset" value="Kirloskar" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="BatteryRating">Battery Rating:</label>
+                            <select id="BatteryRating" class="form-control form-control-sm"></select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="BatteryQTY">Battery QTY:</label>
+                            <input type="number" class="form-control form-control-sm" id="Batteryqty" name="Batteryqty" required value="1">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="BatterySerialNo">Battery Serial No.:</label>
+                            <input type="text" class="form-control form-control-sm" id="BatterySerialNo" name="BatterySerialNo" required>
+                        </div>
+                        @*  <div class="col-md-3">
+            <label for="erection">Erection Material:</label>
+            <select class="form-control form-control-sm" id="erection" name="BatterySerialNo" required>
+                <option>Yes</option>
+                <option>No</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="erectiondetail">Erection Detail:</label>
+            <input type="text" class="form-control form-control-sm" id="erectiondetail" value="As Per Attached Annexure at Extra Cost" disabled required>
+        </div>
+                        *@
+                    </div>
+                    <div class="row">
+                        <h5 style="background-color: #00698f; color: #ffffff; padding: 5px 10px; border-radius: 5px; text-align: center;">Material Other Details</h5>
+                        <div class="col-md-3">
+                            <label for="dateOfTesting">Date of Testing:</label>
+                            <input type="date" class="form-control form-control-sm" id="dateOfTesting" name="dateOfTesting" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="ratingOfGenset">Rating of Genset:</label>
+                            <select class="form-control form-control-sm" id="ratingOfGenset" name="ratingOfGenset" required></select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="canopy">Canopy Qty:</label>
+                            <input type="number" class="form-control form-control-sm" id="canopy" value="1" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="lube">Lube Oil:</label>
+                            <input type="text" class="form-control form-control-sm" id="lube" value="First Fill" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="kcool">K Cool:</label>
+                            <input type="text" class="form-control form-control-sm" id="kcool" value="First Fill" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="KRMNo">KRM No.:</label>
+                            <input type="text" class="form-control form-control-sm" id="KRMNo" name="KRMNo" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="adblue">AD Blue:</label>
+                            <input type="text" class="form-control form-control-sm" id="adblue" value="First Fill" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="specialRemarks">Special Remarks:</label>
+                            <input type="text" class="form-control form-control-sm" id="specialRemarks" name="specialRemarks">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="closemodel" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="Reject" style="background-color: #00698f; color: #ffffff; border-color: #00698f;">Reject Production Details</button>
+                <button type="button" class="btn btn-primary" id="saveStatus" style="background-color: #00698f; color: #ffffff; border-color: #00698f;">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+<img id="wait-sign" src="~/images/wait.gif" class="wait-sign-image" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);" />
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.16.2/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.2.1/exceljs.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        //Load Engine Models in Modal list
+        $.ajax({
+            url: '/Production/GetEngineModel',
+            type: 'GET',
+            success: function (data) {
+                $('#model').append($('<option></option>').val("").text("Select Engine Model"));
+                $.each(data, function (index, item) {
+                    $('#model').append($('<option></option>').val(item.value).text(item.text));
+                });
+            }
+
+        })
+       //Change Erection Remarks On The Basis of Selection
+        $('#erection').change(function () {
+            var val = $(this).val(); // Get the *value* of the selected option            
+            if (val === 'Yes') { // Use === for strict equality comparison
+                $('#erectiondetail').val('As Per Attached Annexure at Extra Cost'); // Corrected selector
+            } else {
+                $('#erectiondetail').val('NA'); // Corrected selector
+            }
+        });
+        //Get Phase
+        $.ajax({
+            url: '/Production/GetAlternatorPhase',
+            type: 'GET',
+            success: function (data) {
+                $('#aphase').append($('<option></option>').val("").text("Select Phase"));
+                $.each(data.phase, function (index, item) {
+                    $('#aphase').append($('<option></option>').val(item.value).text(item.text));
+                });
+            }
+        })
+        //Get Panel Type
+        $.ajax({
+            url: '/Production/GetCPType',
+            type: 'GET',
+            success: function (data) {
+                $('#cptype').append($('<option></option>').val("").text("Select Control Panel"));
+                $.each(data.type, function (index, item) {
+                    $('#cptype').append($('<option></option>').val(item.value).text(item.text));
+                });
+            }
+        })
+        //Get Ratings 
+        $.ajax({
+            url: '/Production/GetRatings',
+            type: 'GET',
+            success: function (data) {
+                $('#ratingOfGenset').append($('<option></option>').val("").text("Select Rating"));
+                $.each(data.rating, function (index, item) {
+                    $('#ratingOfGenset').append($('<option></option>').val(item.value).text(item.text));
+                });
+                //Update ControlPanel Rating
+                $('#cprating').append($('<option></option>').val("").text("Select Rating"));
+                $.each(data.rating, function (index, item) {
+                    $('#cprating').append($('<option></option>').val(item.value).text(item.text));
+                });
+                $('#arating').append($('<option></option>').val("").text("Select Rating"));
+                $.each(data.rating, function (index, item) {
+                    $('#arating').append($('<option></option>').val(item.value).text(item.text));
+                });
+            }
+        })
+        $.ajax({
+            url: '/Production/GetBatteriesModel',
+            type: 'GET',
+            success: function (data) {
+                $('#BatteryRating').append($('<option></option>').val("").text("Select Battery"));
+                $.each(data, function (index, item) {
+                    $('#BatteryRating').append($('<option></option>').val(item.value).text(item.text));
+                });
+            }
+        })
+
+        // Function to load pending records
+        function loadPendingRecords() {
+            $.ajax({
+                type: 'GET',
+                url: '/Production/PendingEwapCases',
+                dataType: 'JSON',
+                success: function (data) {
+                    $('#PendingRows').empty();
+                    if (data && data.get && data.get.length > 0) {
+                        $.each(data.get, function (index, item) {
+                            var dateValue = parseInt(item.VoucherDate.replace(/[^0-9]/g, ''));
+                            var voucherDate = new Date(dateValue);
+                            var formattedDate = voucherDate.toLocaleDateString('en-GB', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric'
+                            }).replace(/\//g, '-');
+
+                            var row = '<tr>' +
+                                '<td>' + item.VoucherNumber + '</td>' +
+                                '<td>' + formattedDate + '</td>' +
+                                '<td>' + item.CreatedBy + '</td>' +
+                                '<td>' + item.FGProductCode + '</td>' +
+                                '<td>' + item.FGProductName + '</td>' +
+                                '<td><button class="btn btn-primary btn-sm approve-button" style="background-color: #00698f; color: #ffffff; padding: 3px 6px; border-radius: 5px;" data-voucher="' + item.id + '">Update Status</button></td>' +
+                                '</tr>';
+
+                            $('#PendingRows').append(row);
+                        });
+                    } else {
+                        // Handle case where no data is returned
+                        $('#PendingRows').append('<tr><td colspan="6">No pending records found.</td></tr>');
+                    }
+                },
+                error: function (error) {
+                    console.error("Error loading pending records:", error);
+                    toastr.error("Failed to load pending production records.");
+                }
+            });
+        }
+
+        $('#Reject').click(function () {
+            var headid = $('#headid').val();
+            $.ajax({
+                type: 'GET',
+                url: '/Production/RejectProductionData',
+                data: { headid: headid },
+                success: function (data) {
+                    if (data.success) {
+                        toastr.success(data.message);
+                        $('#updateStatusModal').modal('hide');
+                        loadPendingRecords(); // This function should refresh your data grid/list
+                    } else {
+                        toastr.error(data.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    // Added for better error handling
+                    toastr.error("An error occurred: " + error);
+                    console.error("AJAX Error:", status, error, xhr);
+                }
+            });
+        });
+
+        // Handle approve button click (using event delegation)
+        $('#PendingTable').on('click', '.approve-button', function () {
+            var itemId = $(this).data('voucher');
+            $.ajax({
+                type: 'GET',
+                url: '/Production/GetProdutionUpdate',
+                data: { BOMID: itemId },
+                success: function (response) {
+                    if (response.success) {
+                        var data = response.data;
+                        // Populate the battery fields
+                        $('#BatterySerialNo').val(data.batterySerial);
+                        $('#Batteryqty').val(data.batteryQty);
+
+                        // Toggle Editability
+                        if (data.isBatteryEditable) {
+                            // If true, no lot was found, let the user type
+                            $('#BatterySerialNo').prop('disabled', false);
+                            $('#BatterySerialNo').css('background-color', '#ffffff');
+                            $('#Batteryqty').prop('disabled', false);
+                            $('#Batteryqty').css('background-color', '#ffffff');// Optional: visual cue
+                        } else {
+                            // If false, data came from FIFO lot, lock the field
+                            $('#BatterySerialNo').prop('disabled', true);
+                            $('#BatterySerialNo').css('background-color', '#e9ecef');
+                            $('#Batteryqty').prop('disabled', true);
+                            $('#Batteryqty').css('background-color', '#e9ecef'); // Standard disabled look
+                        }
+                        // Access the data object
+                        $('#emake').val(data.emake);
+                       // $('#emodel').val(data.emodel);
+                        $('#engineSerialNo').val(data.engineSerialNo);
+                        $('#etestcert').val(data.etestcert);
+                        $('#eremarks').val(data.eremarks);
+                        $('#amake').val(data.amake);
+                        $('#aframe').val(data.aframe);
+                        $('#alternatorSerialNo').val(data.alternatorSerialNo);
+                        $('#atestcert').val(data.atestcert);
+                        $('#awarranty').val(data.awarranty);
+                        $('#aremarks').val(data.aremarks);
+                        $('#exhaust').val(data.exhaust);
+                        $('#kgsticker').val(data.kgsticker);
+                        $('#AVM').val(data.AVM);
+                        $('#fuelspout').val(data.fuelspout);
+                        $('#flexbel').val(data.flexbel);
+                        $('#aphase').val(data.aphase);
+                        $('#arating').val(data.arating);
+                        var emodelValue = data.emodel;  // Get the *value* of emodel from the AJAX response.
+                        $('#model').val(emodelValue);
+                    } else {
+                        toastr.error(response.message); // Show the user-friendly message
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("AJAX Error:", error);
+                    alert("An error occurred while fetching data. Please check the console."); // basic error
+                }
+            })
+            $('#headid').val(itemId);
+            $('#updateStatusModal').modal('show');
+        });
+
+        $('#closemodel').click(function () {
+            $('#updateStatusModal').modal('hide');
+        });
+
+        $('#saveStatus').on('click', function () {
+            // Gather Information
+            $('#saveStatus').prop('disabled', true);
+            $('#wait-sign').show();
+
+            var id = $('#headid').val();
+            var testingdate = $('#dateOfTesting').val();
+            var engineserial = $('#engineSerialNo').val();
+            var model = $('#model option:selected').val();
+            var alternatorserial = $('#alternatorSerialNo').val();
+            var rating = $('#ratingOfGenset').val();
+            var remarks = $('#specialRemarks').val();
+            var PanelSerialNo = $('#PanelSerialNo').val();
+            var KRMNo = $('#KRMNo').val();
+            var BatteryRating = $('#BatteryRating').val();
+            var BatterySerialNo = $('#BatterySerialNo').val();
+            var Batteryqty = $('#Batteryqty').val();
+
+            // 1.  Save EWAP Status Data
+            $.ajax({
+                type: 'POST',
+                url: '/Production/SaveEwapStatus',
+                dataType: 'JSON', // Corrected:  Expect JSON response
+                data: {
+                    id: id,
+                    testingdate: testingdate,
+                    engineserial: engineserial,
+                    model: model,
+                    alternatorserial: alternatorserial,
+                    rating: rating,
+                    remarks: remarks,
+                    PanelSerialNo: PanelSerialNo,
+                    KRMNo: KRMNo,
+                    BatteryRating: BatteryRating,
+                    BatterySerialNo: BatterySerialNo,
+                    Batteryqty: Batteryqty
+                },
+                success: function (response) { // Changed 'data' to 'response'
+                    if (response.success) {
+                        $('#updateStatusModal').modal('hide');
+                        loadPendingRecords();
+                        toastr.success(response.msg); // Use response.msg
+                    } else {
+                        toastr.error(response.error); // Use response.error
+                    }
+                },
+                error: function (xhr, status, error) {
+                    toastr.error("An error occurred while saving EWAP status: " + error); // Include error
+                    console.error("EWAP Status AJAX Error:", error); // Log the error
+                },
+                complete: function () { //runs after success or error
+                    $('#saveStatus').prop('disabled', false);
+                    $('#wait-sign').hide();
+                }
+            });
+
+            // 2.  Save Testing Data 
+            var testingData = { // Changed variable name to testingData
+                id: id, // Use the 'id' from above
+                CPtype: $('#cptype').val(),
+                CPRating: $('#cprating').val(),
+                PanelSerialNo: $('#PanelSerialNo').val(),
+                CPOtherDetail: $('#cpotherdetail').val(),
+                BMake: $('#bmake').val(),
+                BatteryRating: $('#BatteryRating').val(),
+                BatteryQTY: $('#Batteryqty').val(),
+                BatterySerialNo: $('#BatterySerialNo').val(),
+               // Erection: $('#erection').val(),
+               // ErectionDetail: $('#erectiondetail').val(),
+                DateOfTesting: $('#dateOfTesting').val(),
+                RatingOfGenset: $('#ratingOfGenset').val(),
+                Canopy: $('#canopy').val(),
+                Lube: $('#lube').val(),
+                KCool: $('#kcool').val(),
+                KRMNo: $('#KRMNo').val(),
+                ADBlue: $('#adblue').val(),
+                SpecialRemarks: $('#specialRemarks').val(),
+            };
+
+            $.ajax({
+                type: 'POST',
+                url: '/Production/SaveTestingData',
+                contentType: 'application/json; charset=utf-8', // Added contentType
+                data: JSON.stringify(testingData), //  Corrected data to testingData and stringified
+                success: function (response) { // Changed 'data' to 'response'
+                    if (response.success) {
+                        toastr.success(response.message);
+                    }
+                    else {
+                        toastr.error(response.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    toastr.error("An error occurred while saving testing data: " + error);
+                    console.error("Testing Data AJAX Error:", error);
+                }
+            });
+        });
+
+
+        // Initial loading of records
+        loadPendingRecords();
+
+    });
+</script>
+

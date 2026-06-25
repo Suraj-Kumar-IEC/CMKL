@@ -1,0 +1,106 @@
+﻿@{
+    ViewBag.Title = "Material Inward Entry";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid py-4 px-lg-5">
+    <div class="card shadow-sm border-0 mb-4 rounded-4 overflow-hidden">
+        <div class="card-header bg-primary text-white py-3" style="background-color:#00698f !important">
+            <h5 class="mb-0"><i class="fas fa-truck-loading me-2"></i> Material Receipt Entry</h5>
+        </div>
+        <div class="card-body bg-light p-4">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small text-uppercase">Enter Indent Number to Receive Items</label>
+                    <div class="input-group">
+                        <input type="text" id="txtIndentNo" class="form-control" placeholder="e.g. IND/24/001" />
+                        <button class="btn btn-primary" id="btnFetch" style="background-color:#00698f">Fetch Pending Items</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="receiptSection" style="display:none;">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Item Details</th>
+                            <th class="text-center">Indented Qty</th>
+                            <th class="text-center">Previously Recv.</th>
+                            <th class="text-center">Remaining Balance</th>
+                            <th class="text-center" style="width: 200px;">Now Receiving</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lineBody"></tbody>
+                </table>
+            </div>
+            <div class="card-footer bg-white border-0 text-end py-3 px-4">
+                <button class="btn btn-secondary px-4 rounded-pill me-2" onclick="location.reload()">Cancel</button>
+                <button id="btnSaveReceipt" class="btn btn-success px-5 rounded-pill shadow fw-bold">Post Material Receipt</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+@section scripts {
+    <script>
+        $('#btnFetch').click(function() {
+            let vNo = $('#txtIndentNo').val();
+            if(!vNo) { toastr.warning("Enter Indent Number"); return; }
+
+            $.getJSON('@Url.Action("GetIndentForReceipt")', { indentNo: vNo }, function(res) {
+                if(res.data.length === 0) { toastr.error("No pending items found for this Indent."); return; }
+
+                $('#lineBody').empty();
+                $.each(res.data, function(i, item) {
+                    $('#lineBody').append(`
+                        <tr data-lineid="${item.LineId}">
+                            <td>
+                                <div class="fw-bold text-dark">${item.ItemName}</div>
+                                <div class="small text-muted">${item.ItemCode}</div>
+                            </td>
+                            <td class="text-center fw-bold">${item.ActualRequired} ${item.UOM}</td>
+                            <td class="text-center text-primary">${item.QuantityRecieved || 0}</td>
+                            <td class="text-center text-danger fw-bold">${item.Pending}</td>
+                            <td>
+                                <input type="number" class="form-control form-control-sm text-center border-primary receiving-input"
+                                       max="${item.Pending}" min="0" value="0" step="0.01" />
+                            </td>
+                        </tr>
+                    `);
+                });
+                $('#receiptSection').fadeIn();
+            });
+        });
+
+        $('#btnSaveReceipt').click(function() {
+            let items = [];
+            $('.receiving-input').each(function() {
+                let qty = parseFloat($(this).val());
+                if(qty > 0) {
+                    items.push({
+                        LineId: $(this).closest('tr').data('lineid'),
+                        ReceivingQty: qty
+                    });
+                }
+            });
+
+            if(items.length === 0) { toastr.warning("Please enter quantity for at least one item."); return; }
+
+            $.post('@Url.Action("SavePartialReceipt")', { items: items }, function(res) {
+                if(res.success) {
+                    toastr.success(res.msg);
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    toastr.error(res.msg);
+                }
+            });
+        });
+    </script>
+}

@@ -1,0 +1,158 @@
+﻿@model CMKL.Models.CMKL_Enquiry
+@*@{
+        //string URole = "";
+        if (Session["U_Role"] == null)
+        {
+            Response.Redirect("~/Login/Index");
+            ViewBag.logout = "User Logged Out, Please Login Again";
+            // URole = Session["U_Role"].ToString();
+        }
+        else
+        {
+        }
+    }
+*@
+
+<br />
+
+
+@using (Html.BeginForm("GetStatus", "EnquiryStatus", FormMethod.Get))
+{
+
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-4">
+                @* @Html.LabelFor(mode => mode.EnquiryNo)*@
+                <p>@Html.TextBoxFor(x => x.EnquiryNo, new { placeholder = "Enquiry Number", @class = "form-control" })</p>
+            </div>
+            <div class="col-sm-4">
+                @* @Html.LabelFor(mode => mode.Billseries)*@
+                <p>@Html.TextBoxFor(x => x.Billseries, new { placeholder = "Bill Series", @class = "form-control" })</p>
+
+            </div>
+            <div class="col-sm-4">
+                @* @Html.LabelFor(mode => mode.Year)*@
+                <p>@Html.TextBoxFor(x => x.Year, new { placeholder = "2018-19 OR 2019-20", @class = "form-control" })</p>
+
+            </div>
+
+            <div class="col-sm-4">
+                <p> <button type="submit" id="search" class="btn btn-primary">Check Status</button> </p>
+            </div>
+            <div class="col-sm-4">
+                <p>  </p>
+            </div>
+        </div>
+
+
+        @{
+            string customewidth1 = "0";
+            string customewidth2 = "0";
+            string customewidth3 = "0";
+            string customewidth4 = "0";
+            string customewidth5 = "0";
+            string customewidth6 = "0";
+            string customewidth7 = "0";
+            string customewidth8 = "0";
+
+        }
+
+        @if (Model != null)
+
+        {
+
+            if (Model.OAStage >= 1)
+            {
+
+                customewidth1 = "12.5";
+            }
+            if (Model.OAStage >= 2)
+            {
+                customewidth2 = "12.5";
+            }
+            if (Model.OAStage >= 3)
+            {
+                customewidth3 = "12.5";
+            }
+            if (Model.OAStage >= 4)
+            {
+                customewidth4 = "12.5";
+            }
+            if (Model.OAStage >= 5)
+            {
+                customewidth5 = "12.5";
+            }
+            if (Model.OAStage >= 6)
+            {
+                customewidth6 = "12.5";
+            }
+            if (Model.OAStage >= 7)
+            {
+                customewidth7 = "12.5";
+            }
+            if (Model.OAStage >= 8)
+            {
+                customewidth8 = "12.5";
+            }
+
+
+
+        }
+
+        @if (ViewBag.Enable != null)
+        {
+            {
+                <script src="~/Scripts/jquery-3.4.1.min.js"></script>
+                <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+                <script src="~/toastr/Js/toastr.js"></script>
+                <link href="~/toastr/toastr.css" rel="stylesheet" />
+
+                <script type="text/javascript">
+        window.onload = function () {
+            toastr.success("Record Found")
+            //this.alert("@ViewBag.Delete")
+        }
+                </script>
+
+
+
+            }
+            <div class="progress">
+                <div class="progress-bar progress-bar-success progress-bar-striped active progress-bar-animated active" style="width:@customewidth1%;">
+                    OA Approval
+                </div>
+                <div class="progress-bar progress-bar-info progress-bar-striped active" style="width:@customewidth2%;">
+                    Drawing Upload
+                </div>
+                <div class="progress-bar progress-bar-warning progress-bar-striped active" style="width:@customewidth3%;">
+                    Drawing Approval
+                </div>
+                <div class="progress-bar progress-bar-danger progress-bar-striped active" style="width:@customewidth4%;">
+                    Pending Production
+                </div>
+                <div class="progress-bar progress-bar-success progress-bar-striped active" style="width:@customewidth5%;">
+                    In Production
+                </div>
+                <div class="progress-bar progress-bar-info progress-bar-striped active" style="width:@customewidth6%;">
+                    Quality Pending
+                </div>
+                <div class="progress-bar progress-bar-warning progress-bar-striped active" style="width:@customewidth7%;">
+                    Ready Dispatch
+                </div>
+                <div class="progress-bar progress-bar-danger progress-bar-striped active" style="width:@customewidth8%;">
+                    Dispatched
+                </div>
+            </div>
+        }
+
+    </div>
+
+
+}
+@using (Html.BeginForm("Clear", "EnquiryStatus", FormMethod.Post))
+{<div class="col-sm-10">
+        <button type="submit" id="Clear" class="btn btn-primary">Track Another Order</button>
+    </div>
+
+}
+

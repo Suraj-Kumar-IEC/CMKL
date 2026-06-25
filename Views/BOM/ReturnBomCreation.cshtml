@@ -1,0 +1,408 @@
+﻿
+@{
+    ViewBag.Title = "ReturnBomCreation";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if the current context is inside a Bootstrap modal
+            const isInModal = !!(document.querySelector('.modal.show'));
+
+            if (isInModal) {
+                // If inside a modal, wait for a short delay
+                setTimeout(() => {
+                    handleInvalidUser();
+                }, 500); // Adjust the delay as needed
+            } else {
+                // If not in a modal, proceed immediately
+                handleInvalidUser();
+            }
+
+            function handleInvalidUser() {
+                toastr.error("Invalid User");
+
+                setTimeout(function () {
+                    window.location.href = "@Url.Action("Index", "Login")";
+                }, 2000); // Redirect after 2 seconds
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+<div class="container">
+    <div class="row">
+        <div class="col-md-2">
+            <label for="returnvoucher" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Return Voucher Number</label>
+            <input type="text" id="returnvouchernumber" class="form-control form-control-sm" disabled />
+            <input type="text" id="returnid" class="form-control" style="display:none" />
+        </div>
+        <div class="col-md-2">
+            <label for="fgproductcode" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">FG Product Code</label>
+            <input type="text" id="FGitemcode" class="form-control form-control-sm" disabled />
+            <input type="text" id="fgitemid" style="display:none" />
+        </div>
+        <div class="col-md-2">
+            <label for="series" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Series</label>
+            <input type="text" id="series" class="form-control form-control-sm" disabled />
+            <input type="text" id="seriesid" style="display:none" />
+        </div>
+        <div class="col-md-6">
+            <label for="FGdesc" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">FG Product Name</label>
+            <input type="text" id="FGdesc" class="form-control form-control-sm" disabled />
+        </div>
+    </div>
+</div>
+<br />
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-3">
+            <div class="left-side">
+                <form>
+                    <div class="form-group">
+                        <label for="itemCode" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Item Code</label>
+                        <input type="text" id="itemCode" class="form-control form-control-sm" />
+                        <input type="text" id="itemid" class="form-control form-control-sm" style="display:none" />
+                    </div>
+                    <div class="form-group">
+                        <label for="itemDesc" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Item Description</label>
+                        <input type="text" id="itemDesc" class="form-control form-control-sm" disabled />
+                    </div>
+                    <div class="form-group">
+                        <label for="uom" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">UOM</label>
+                        <input type="text" id="uom" class="form-control form-control-sm" disabled />
+                    </div>
+                    <div class="form-group">
+                        <label for="Category" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Category</label>
+                        <select id="category" class="form-control form-control-sm"></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="subcategory" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Sub Category</label>
+                        <select id="subcategory" class="form-control form-control-sm"></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="stock" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Available Stock</label>
+                        <input type="text" id="stock" class="form-control form-control-sm" disabled />
+                    </div>
+                    <div class="form-group">
+                        <label for="quantityRequired" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Quantity Required</label>
+                        <input type="text" id="quantityRequired" class="form-control form-control-sm" />
+                    </div>
+                    <button id="addButton" class="btn btn-primary" style="background-color:#00698f">Add</button>
+                    <button id="save" class="btn btn-danger">Create Return BOM</button>
+                </form>
+            </div>
+        </div>
+        <div class="col-md-9">
+            <div class="right-side">
+                <h4 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">Items</h4>
+                <div class="table-container">
+                    <table id="itemLinesTable" class="table table-striped table-sm">
+                        <thead>
+                            <tr>
+                                <th>Item Code</th>
+                                <th>Item Description</th>
+                                <th>UOM</th>
+                                <th>Category</th>
+                                <th>Sub Category</th>
+                                <th>Stock</th>
+                                <th>Quantity Required</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemLinesTbody">
+                            <!-- table rows will be added dynamically using ajax -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // Fetch Data of Categories
+        $.ajax({
+            type: 'GET',
+            url: "/BOM/linkmasterlist",
+            success: function (data) {
+                var dropdown = $('#category'); // Replace 'categoryDropdown' with the actual ID of your dropdown.
+                dropdown.empty(); // Clear existing options
+
+                dropdown.append($('<option></option>').val("").text("Select Category"));
+                $.each(data.categorylist, function (index, item) {
+                    dropdown.append("<option value='" + item.value + "'>" + item.text + "</option>");
+                });
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.error("Error fetching categories:", textStatus, errorThrown);
+                // Optionally, display an error message to the user.
+            }
+        });
+
+        $('#category').on('change', function () {
+            var categoryId = $(this).val();
+            $.ajax({
+                type: 'GET',
+                url: '/BOM/GetSubCategories',
+                data: { categoryId: categoryId },
+                dataType: 'json',
+                success: function (data) {
+                    $('#subcategory').empty();
+                    $.each(data.subcategory, function (index, item) {
+                        $('#subcategory').append($('<option>', { value: item.value, text: item.text }));
+                    });
+                }
+            });
+        });
+    });
+</script>
+<script>
+    $(document).ready(function () {
+        var itemLines = []; // temporary array to store indent lines
+
+        $('#addButton').click(function (e) {
+            e.preventDefault();
+            debugger;
+            var itemCode = $('#itemCode').val();
+            var itemDesc = $('#itemDesc').val();
+            var uom = $('#uom').val();
+            var stock = $('#stock').val();
+            var quantityRequired = $('#quantityRequired').val();
+            var itemid = $('#itemid').val();
+            var category = $('#category option:selected').text();
+            var categoryid = $('#category option:selected').val();
+            var subcategory = $('#subcategory option:selected').text();
+            var subcategoryid = $('#subcategory option:selected').val();
+
+            // Check if itemCode already exists in the table
+            var existingItemCode = $('#itemLinesTbody tr td:first-child').filter(function () {
+                return $(this).text() === itemCode;
+            }).length;
+
+            if (existingItemCode > 0) {
+                toastr.error('Item Code already exists in the table!');
+                return;
+            }
+
+            // add to temporary array
+            itemLines.push({
+                itemCode: itemCode,
+                itemDesc: itemDesc,
+                uom: uom,
+                stock: stock,
+                quantityRequired: quantityRequired,
+                category: category,
+                categoryid: categoryid,
+                subcategory: subcategory,
+                subcategoryid: subcategoryid,
+
+            });
+
+            // add table row to right side div
+            var tableRow = '<tr>' +
+                '<td>' + itemCode + '</td>' +
+                '<td>' + itemDesc + '</td>' +
+                '<td>' + uom + '</td>' +
+                '<td>' + category + '</td>' +
+                '<td>' + subcategory + '</td>' +
+                '<td>' + stock + '</td>' +
+                '<td>' + quantityRequired + '</td>' +
+                '<td style="display:none">' + itemid + '</td>' +
+                '<td style="display:none">' + categoryid + '</td>' +
+                '<td style="display:none">' + subcategoryid + '</td>' +
+                '<td><button class="btn btn-danger delete-line">Delete</button></td>' +
+                '</tr>';
+
+            $('#itemLinesTbody').append(tableRow);
+
+            // clear form fields
+            $('#itemCode').val('');
+            $('#itemDesc').val('');
+            $('#uom').val('');
+            $('#stock').val('');
+            $('#quantityRequired').val('');
+        });
+
+        $('#save').on('click', function () {
+
+            //collect Head Date
+            let headdata = {
+                returnid: $('#returnid').val(),
+                fgitemid: $('#fgitemid').val(),
+                masteritemid: $('#seriesid').val(),
+            };
+
+            //collect tabel data
+            let tabledata = [];
+
+            $('#itemLinesTbody tr').each(function () {
+                let row = $(this);
+                let itemid = row.find('td:eq(7)').text();
+                let quantityrequired = row.find('td:eq(6)').text();
+                let categoryid = row.find('td:eq(8)').text();
+                let subcategoryid = row.find('td:eq(9)').text();
+
+                tabledata.push({
+                    itemid: itemid,
+                    quantityrequired: quantityrequired,
+                    categoryid: categoryid,
+                    subcategoryid: subcategoryid,
+
+                });
+            });
+            debugger;
+            $.ajax({
+                url: '/BOM/SaveReturnBOM',
+                type: 'POST',
+                data: JSON.stringify({ headData: headdata, lineData: tabledata }),
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                success: function (response) {
+                    debugger;
+                    if (response.success) {
+                        toastr.success('Voucher Saved-' + response.vouchernumber);
+                        setTimeout(function () {
+                            window.location.href = '/Production/FGReturnBOMCreation'; // Replace '/Your/New/Page' with the actual URL
+                        }, 5000);
+                        // ... other actions on success (e.g., clear the form)
+                    } else {
+                        toastr.error(response.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    toastr.error("An error occurred while saving.");
+                }
+            });
+        });
+
+
+        // delete line functionality
+        $(document).on('click', '.delete-line', function () {
+            var row = $(this).closest('tr');
+            var itemCode = row.find('td:eq(0)').text();
+            // find and remove from temporary array
+            for (var i = 0; i < itemLines.length; i++) {
+                if (itemLines[i].itemCode === itemCode) {
+                    itemLines.splice(i, 1);
+                    break;
+                }
+            }
+            row.remove();
+        });
+    });
+</script>
+<script>
+
+    $(document).ready(function () {
+        $('#itemCode').on('keyup', function (e) {
+            if (e.which === 13 || e.which === 9) { // enter or tab key
+                getItemDetails();
+                $('#category').focus();
+                toastr.info('Select Category & Subcategory..')
+            }
+        });
+
+        $('#itemCode').on('blur', function () {
+            getItemDetails();
+            $('#category').focus();
+            toastr.info('Select Category & Subcategory..')
+        });
+        function getItemDetails() {
+            var itemCode = $('#itemCode').val();
+
+            function jsonDateToDate(jsonDate) {
+                if (!jsonDate) return '';
+                var date = new Date(parseInt(jsonDate.replace(/\/Date\((\d+)\)\//, '$1')));
+                var day = date.getDate();
+                var month = date.getMonth() + 1; // months are 0-based, so add 1
+                var year = date.getFullYear();
+                return `${padZero(day)}/${padZero(month)}/${year}`;
+            }
+
+            function padZero(value) {
+                return (value < 10 ? '0' : '') + value;
+            }
+            $.ajax({
+                type: 'GET',
+                url: '/Purchase/GetItemDetails',
+                data: { itemCode: itemCode },
+                success: function (data) {
+                    if (data.success) {
+                        //let Dateformatted = "NA";
+                        // Directly use the value from data.LastDate or 'NA' if it's 0
+                        let formattedDate = data.LastDate === 0 || data.LastDate === "NA" ? 'NA' : moment(data.LastDate, 'DD-MM-YYYY HH:mm:ss').format('DD/MM/YYYY');
+                        if (data.get && data.get.length > 0 && data.get[0].Date) {
+                            Dateformatted = jsonDateToDate(data.get[0].Date);
+                        } else {
+                            Dateformatted = 'NA';
+                        }
+
+                        $('#itemDesc').val(data.itemname);
+                        $('#uom').val(data.uomText);
+                        $('#stock').val(data.stock);
+                        $('#itemid').val(data.itemid);
+                        toastr.success('Details Reterived');
+                        var audio = new Audio('/Sound/Save.mp3');
+                        audio.play();
+                    } else {
+                        toastr.error('Item Not Found');
+                        // alert('Item not found / ' + data.error);
+                        var audio = new Audio('/Sound/Error.mp3');
+                        audio.play();
+                    }
+                },
+            });
+        }
+    });
+
+</script>
+<script>
+    $(document).ready(function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        const Returnid = urlParams.get('itemId');
+        $('#returnid').val(Returnid);
+
+        if (!Returnid) {
+            // If Returnid is null or undefined, redirect to another page
+            setTimeout(function () {
+                window.location.href = '/Production/FGReturnBOMCreation';
+            }, 5000); // 5 second delay
+            return; // Exit the function to prevent further execution
+        }
+
+        // Get Return Voucher Number
+        $.ajax({
+            type: 'GET',
+            url: '/BOM/GetReturnVoucherNumber',
+            data: { Returnid: Returnid },
+            success: function (data) {
+                $('#returnvouchernumber').val(data.data);
+                $('#FGitemcode').val(data.itemcode);
+                $('#FGdesc').val(data.desc);
+                $('#fgitemid').val(data.fgitemid);
+                $('#series').val(data.series);
+                $('#seriesid').val(data.masteritemid);
+
+                toastr.success('Voucher Number Retrieved..');
+
+                // Remove itemId from the URL
+                const newUrl = window.location.pathname; // Get the base URL (without query string)
+                history.replaceState({}, document.title, newUrl);
+            },
+            error: function (xhr, status, error) {
+                toastr.error('Error occurred: ' + error);
+            }
+        });
+    });
+</script>
+
+
+
+

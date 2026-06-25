@@ -1,0 +1,316 @@
+﻿@{
+    ViewBag.Title = "Material Receipt Registry";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const isInModal = !!(document.querySelector('.modal.show'));
+            if (isInModal) {
+                setTimeout(() => { handleInvalidUser(); }, 500);
+            } else {
+                handleInvalidUser();
+            }
+            function handleInvalidUser() {
+                toastr.error("Invalid User Session");
+                setTimeout(function () { window.location.href = "@Url.Action("Index", "Login")"; }, 2000);
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    :root {
+        --brand-blue: #00698f;
+        --bg-slate: #f8fafc;
+        --border-color: #e2e8f0;
+        --jakarta: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    /* GLOBAL FORCE OVERRIDE */
+    *, html, body, div, span, table, thead, tbody, tfoot, tr, th, td, input, select, button, h4, p {
+        font-family: var(--jakarta) !important;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+        background-color: var(--bg-slate);
+        color: #334155;
+    }
+
+    .master-header {
+        background: white;
+        padding: 20px 30px;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        margin-bottom: 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .filter-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
+        padding: 24px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+
+    .form-label-pill {
+        font-weight: 800;
+        font-size: 0.62rem;
+        color: #ffffff !important;
+        background: var(--brand-blue);
+        text-transform: uppercase;
+        padding: 3px 10px;
+        border-radius: 4px;
+        display: inline-block;
+        margin-bottom: 6px;
+        letter-spacing: 0.8px;
+    }
+
+    .form-control-modern {
+        border-radius: 10px;
+        border: 1.5px solid var(--border-color);
+        font-size: 0.88rem;
+        font-weight: 600;
+        padding: 10px 15px;
+    }
+
+    .table-container {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04);
+    }
+
+    .table thead th {
+        background: #f1f5f9;
+        color: var(--brand-blue);
+        font-weight: 800;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 15px;
+        border: none;
+        white-space: nowrap;
+    }
+
+    .table tbody td {
+        font-size: 0.82rem;
+        font-weight: 600;
+        padding: 12px 15px;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .merged-cell {
+        background-color: #fafbfc;
+        font-weight: 800 !important;
+        color: var(--brand-blue);
+        text-align: center;
+        border-right: 1px solid var(--border-color) !important;
+    }
+
+    .btn-brand {
+        background: var(--brand-blue);
+        color: white;
+        font-weight: 800;
+        border-radius: 10px;
+        padding: 12px 25px;
+        border: none;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        width: 100%;
+        transition: 0.3s;
+    }
+
+        .btn-brand:hover {
+            background: #004e6b;
+            transform: translateY(-1px);
+        }
+
+    .animate-up {
+        animation: fadeInUp 0.6s ease forwards;
+        opacity: 0;
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="container-fluid py-4 px-lg-5">
+
+    <div class="master-header animate-up">
+        <div>
+            <h4 style="font-weight: 800; margin: 0; letter-spacing: -0.5px;">Material Receipt Registry</h4>
+            <p class="text-muted small m-0 fw-600">Audit trail for Gate Entry, Invoicing, and Stock Inbound.</p>
+        </div>
+        <button class="btn btn-sm btn-success fw-800 px-4 rounded-pill shadow-sm" onclick="exportToExcel()">
+            <i class="fas fa-file-excel me-2"></i> Export Registry
+        </button>
+    </div>
+
+    <div class="filter-card animate-up" style="animation-delay: 0.1s;">
+        <div class="row g-4 align-items-end">
+            <div class="col-md-2">
+                <label class="form-label-pill">From Date</label>
+                <input type="date" id="fromDate" class="form-control form-control-modern">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label-pill">To Date</label>
+                <input type="date" id="toDate" class="form-control form-control-modern">
+            </div>
+            <div class="col-md-5">
+                <label class="form-label-pill">Live Search</label>
+                <div class="position-relative">
+                    <i class="fas fa-search position-absolute" style="left:15px; top:50%; transform:translateY(-50%); color:#94a3b8;"></i>
+                    <input type="text" id="tableFilter" class="form-control form-control-modern" style="padding-left: 40px !important; border-radius: 30px !important; background: #f8fafc !important;" placeholder="Search Supplier, Invoice, MRN or Item...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <button class="btn-brand" onclick="fetchReceiptReport()">
+                    <i class="fas fa-sync me-2"></i> Fetch Records
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-container animate-up" style="animation-delay: 0.2s;">
+        <div class="table-responsive">
+            <table class="table mb-0" id="receiptTable">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Supplier / Vendor</th>
+                        <th class="text-center">Invoice No</th>
+                        <th class="text-center">Invoice Date</th>
+                        <th class="text-center">MRN / GR No</th>
+                        <th class="text-center">GE No</th>
+                        <th class="text-center">GE Date</th>
+                        <th>Item Name</th>
+                        <th>Item Code</th>
+                        <th class="text-end">Bill Qty</th>
+                        <th class="text-center">UOM</th>
+                    </tr>
+                </thead>
+                <tbody id="receiptBody">
+                    <tr><td colspan="10" class="text-center py-5 text-muted fw-600">Awaiting query parameters...</td></tr>
+                </tbody>
+                <tfoot id="receiptFoot" class="bg-light"></tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+
+<img id="wait-sign" src="~/images/wait.gif" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10001; width:80px;" />
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        let d = new Date();
+        $('#fromDate').val(new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split('T')[0]);
+        $('#toDate').val(new Date().toISOString().split('T')[0]);
+
+        $("#tableFilter").on("keyup", function() {
+            var value = $(this).val().toLowerCase();
+            $("#receiptBody tr").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+    });
+
+    function fetchReceiptReport() {
+        let from = $('#fromDate').val();
+        let to = $('#toDate').val();
+        $('#wait-sign').show();
+
+        $.getJSON('@Url.Action("GetMaterialReceiptReport", "Reports")', { from: from, to: to }, function(res) {
+            $('#wait-sign').hide();
+            if (res.success) {
+                renderMergedTable(res.data);
+            }
+        });
+    }
+
+    function renderMergedTable(data) {
+        let html = "";
+        let totalQty = 0;
+
+        // Note: The data is already sorted by ID/MRN from the Controller.
+        // We ensure grouping logic matches the Bill + MRN combination.
+
+        $.each(data, function (i, item) {
+            totalQty += parseFloat(item.Qty) || 0;
+
+            // Logic to check if this is the start of a new Header group
+            // We check BillNumber + MRNNo to ensure uniqueness
+            let isFirst = (i === 0 || (data[i - 1].InvoiceNo !== item.InvoiceNo || data[i - 1].MRNNo !== item.MRNNo));
+            let rowSpan = 0;
+
+            if (isFirst) {
+                // Count how many rows share this specific Header (Bill + MRN)
+                for (let j = i; j < data.length; j++) {
+                    if (data[j].InvoiceNo === item.InvoiceNo && data[j].MRNNo === item.MRNNo) {
+                        rowSpan++;
+                    } else {
+                        break;
+                    }
+                }
+            }
+
+            html += `<tr>
+                ${isFirst ? `
+                    <td rowspan="${rowSpan}" class="ps-4 fw-800 border-end" style="background:#fff; vertical-align: middle;">${item.VendorName}</td>
+                    <td rowspan="${rowSpan}" class="merged-cell" style="vertical-align: middle;">${item.InvoiceNo}</td>
+                    <td rowspan="${rowSpan}" class="text-center border-end fw-700" style="background:#fff; vertical-align: middle;">${item.InvoiceDate}</td>
+                    <td rowspan="${rowSpan}" class="text-center border-end" style="background:#fff; vertical-align: middle;">
+                        <span class="badge bg-light text-primary border px-2 fw-700 font-monospace">${item.MRNNo || '---'}</span>
+                    </td>
+                    <td rowspan="${rowSpan}" class="text-center border-end fw-700 text-dark" style="background:#fff; vertical-align: middle;">${item.GateEntryNo || '---'}</td>
+                    <td rowspan="${rowSpan}" class="text-center border-end text-muted small" style="background:#fff; vertical-align: middle;">${item.GateEntryDate || '---'}</td>
+                ` : ''}
+
+                <td class="fw-700 text-dark" style="max-width: 200px;">${item.ItemName || 'N/A'}</td>
+                <td class="fw-700 text-primary font-monospace">${item.ItemCode || 'N/A'}</td>
+
+                <td class="text-end fw-800 text-primary" style="font-size: 14px;">${item.Qty}</td>
+                <td class="text-center fw-700 text-muted small">${item.UOM || 'NOS'}</td>
+            </tr>`;
+        });
+
+        if (data.length === 0) {
+            $("#receiptBody").html('<tr><td colspan="10" class="text-center py-4">No records found</td></tr>');
+        } else {
+            $("#receiptBody").html(html);
+        }
+
+        $("#receiptFoot").html(`<tr><td colspan="8" class="text-end ps-4 py-3 fw-800 text-muted uppercase">Grand Total Quantity</td><td class="text-end pe-3 text-white bg-primary py-3 fw-800" style="font-size:16px">${totalQty.toLocaleString()}</td><td></td></tr>`);
+    }
+
+    function exportToExcel() {
+        var wb = XLSX.utils.table_to_book(document.getElementById("receiptTable"));
+        XLSX.writeFile(wb, 'Material_Receipt_Registry.xlsx');
+    }
+</script>

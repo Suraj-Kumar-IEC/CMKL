@@ -1,0 +1,147 @@
+﻿
+@{
+    ViewBag.Title = "Product Information";
+    Layout = null;
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css">
+
+<div class="container mt-5">
+    <h3 class="card-title text-center" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Product Information</h3>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">           
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Customer Detail</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <strong>
+                                Firm  
+                                Name:
+                            </strong> <span id="firm"></span>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Job Number:</strong> <span id="job"></span>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>OA Number:</strong> <span id="oa"></span>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Year:</strong> <span id="year"></span>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Contact Person:</strong> <span id="contactp"></span>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Contact Number:</strong> <span id="contactn"></span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">CMKL Contacts</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <strong>Marketing:</strong> +91 9316322077 (Mr. Neeraj Malhotra)
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Service:</strong> +91 9316369146 (Mr. Sarvesh)
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Downloads</h5>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="#" id="drawing" class="btn btn-outline-primary btn-block">Drawing</a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="#" id="sld" class="btn btn-outline-primary btn-block">SLD</a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="#" id="bom" class="btn btn-outline-primary btn-block">BOM</a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="#" id="qc" class="btn btn-outline-primary btn-block">QC Reports</a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="#" id="wiring" class="btn btn-outline-primary btn-block">Wiring Drawing</a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="#" id="asbuilt" class="btn btn-outline-primary btn-block">As Built Drawing</a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="#" id="packing" class="btn btn-outline-primary btn-block">Packing List</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<img id="wait-sign" src="~/images/wait-cmkl.gif" class="wait-sign-image" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);" />
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script>
+    $(document).ready(function () {
+        //Download Data
+        debugger;
+        $.ajax(
+            {
+                type: 'get',
+                url: '/CMKLProduct/ProductInformationData',
+                success: function (data) {
+                    debugger;
+                    var baseUrl = 'http://cmklqrcode.in';
+
+                    var SLD = data.GetData.SingleDrawing;                    
+                    var SLDPATH = (SLD && SLD.length > 0) ? baseUrl + SLD.substring(1) : '#';
+                    var PGA = data.GetData.GADrawing;
+                    var GAPath = (PGA && PGA.length > 0) ? baseUrl + PGA.substring(1) : '#';
+                    var PABD = data.GetData.AsbuiltDRW;
+                    var PABDPath = (PABD && PABD.length > 0) ? baseUrl + PABD.substring(1) : '#';
+                    var BOM = data.GetData.BillDrawing;
+                    var BOMPATH = (BOM && BOM.length > 0) ? baseUrl + BOM.substring(1) : '#';
+                    var WIR = data.GetData.WiringDrawing;
+                    var WIRPATH = (WIR && WIR.length > 0) ? baseUrl + WIR.substring(1) : '#';
+                    var PAC = data.GetData.PackingList;
+                    var PACPATH = (PAC && PAC.length > 0) ? baseUrl + PAC.substring(1) : '#';
+                    var QC = data.GetData.QualityDoc;
+                    var QCPATH = (QC && QC.length > 0) ? baseUrl + QC.substring(1) : '#';
+
+                 
+                   
+                    $('#firm').text(data.GetData.Project_Client);
+                    $('#job').text(data.GetData.Jobnumber);
+                    $('#oa').text(data.GetData.OANumber);
+                    $('#year').text(data.GetData.Year);
+                    $('#contactp').text(data.GetData.Contact_Name);
+                    $('#contactn').text(data.GetData.Contact);
+                    // $('#sld').text(data.GetData.SingleDrawing);
+                    $('#sld').attr('href', SLDPATH);
+                    $('#asbuilt').attr('href', PABDPath);
+                    $('#drawing').attr('href', GAPath);
+                    $('#bom').attr('href', BOMPATH);
+                    $('#wiring').attr('href', WIRPATH);
+                    $('#packing').attr('href', PACPATH);
+                    $('#qc').attr('href', QCPATH);
+                    toastr.success('Data Retrived Against QR Code..')
+                   
+                }
+            })
+    })
+</script>
+

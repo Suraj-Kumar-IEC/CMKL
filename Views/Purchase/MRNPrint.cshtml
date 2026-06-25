@@ -1,0 +1,489 @@
+﻿<table id="stockInTable" class="table table-bordered table-striped table-sm">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Supplier Name</th>
+            <th>Bill No</th>
+            <th>Bill Date</th>
+            <th>Voucher No</th>
+            <th>Voucher Date</th>
+            <th>GR Number</th>
+            <th>GR Date</th>
+            <th>Frieght</th>
+            <th>Tax Amount</th>
+            <th>Bill Amount</th>
+            <th>Tax (On Bill)</th>
+            <th>Amount (On Bill)</th>
+            <th>View Detail</th>           
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+<!-- Modal -->
+<div class="modal fade" id="viewItemsModal" tabindex="-1" role="dialog" aria-labelledby="viewItemsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewItemsModalLabel">View Items</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="bill-details">
+                    <h3 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">MRN Detail (IEPL)</h3>
+                    <div class="row" style="line-height:2px">
+                        <div class="col-md-2">
+                            <p><strong>MRN No:</strong> <span id="MRNNo"></span></p>
+                            <p><strong>MRN Date:</strong> <span id="MRNDate"></span></p>
+                        </div>
+                        <div class="col-md-2">
+                            <p><strong>Bill No:</strong> <span id="billNo"></span></p>
+                            <p><strong>Bill Date:</strong> <span id="billDate"></span></p>
+                            <input type="number" hidden="hidden" id="billid" />
+                        </div>
+                        <div class="col-md-2">
+                            <p><strong>PO No:</strong> <span id="PONumber"></span></p>
+                            <p><strong>PO Date:</strong> <span id="PODate"></span></p>
+
+                        </div>
+                        <div class="col-md-2">
+                            <p><strong>Supplier Name:</strong> <span id="supplierName"></span></p>
+                            <p><strong>Total Amount:</strong> <span id="totalAmount"></span></p>
+                        </div>
+                        <div class="col-md-2">
+                            <p><strong>GR Number:</strong> <span id="GR"></span></p>
+                            <p><strong>GR Date:</strong> <span id="GRDT"></span></p>
+                        </div>
+                        <div class="col-md-2">
+                            <p><strong>Gate Entry:</strong> <span id="GE"></span></p>                            
+                        </div>
+                    </div>
+                    <hr style="border-top: 1px solid #000; margin-top: 10px; margin-bottom: 10px;">
+                    <br />
+                </div>
+                <table class="table table-striped" id="viewItemsTable">
+                    <thead>
+                        <tr>
+                            <th>Item Code</th>
+                            <th>Bill Quantity</th>
+                            <th>Recieved Quantity</th>
+                            <th>Quality Accepted</th>
+                            <th>Quality Rejected</th>
+                            <th>Basic Price</th>
+                            <th>Tax</th>
+                            <th>Tax Amount</th>
+                            <th>Total Amount</th>
+                            <th>Rejection Return</th>
+                        </tr>
+                    </thead>
+                    <tbody id="viewItemsTableBody">
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" id="closemodal">Close</button>
+                <button type="button" class="btn btn-primary" id="createMRNButton">Create MRN</button>
+                <button type="button" class="btn btn-info" id="print-btn" hidden>Print</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script>
+
+
+    $(document).ready(function () {
+
+        $.ajax({
+            url: '@Url.Action("GetMRNData", "Purchase")', // Replace with your actual controller name
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                var tableBody = $('#stockInTable tbody');
+                $.each(data, function (index, entry) {
+
+                    var formattedBillDate = moment(entry.BillDate).format('DD-MM-YYYY');
+                    var formattedVoucherDate = moment(entry.VoucherDate).format('DD-MM-YYYY');
+                    var formattedGRDate = moment(entry.GRDate).format('DD-MM-YYYY');
+                    var row = '<tr>' +
+                        '<td>' + entry.id + '</td>' +
+                        '<td>' + entry.SupplierName + '</td>' +
+                        '<td>' + entry.BillNo + '</td>' +
+                        '<td>' + formattedBillDate + '</td>' +
+                        '<td>' + entry.VoucherNo + '</td>' +
+                        '<td>' + formattedVoucherDate + '</td>' +
+                        '<td>' + entry.GRNo + '</td>' +
+                        '<td>' + formattedGRDate + '</td>' +
+                        '<td>' + entry.FrieghtAmount + '</td>' +
+                        '<td>' + entry.Taxamount + '</td>' +
+                        '<td>' + entry.BillAmount + '</td>' +
+                        '<td>' + (entry.TaxAmountonBill || 0) + '</td>' +
+                        '<td>' + (entry.BillAmountonBill || 0) + '</td>' +
+                        '<td><button class="btn btn-success btn-sm view-items-btn" data-id="' + entry.id + '">View Items</button></td>' +
+                        '</tr>';
+
+                    tableBody.append(row);
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error("Error fetching data: " + error);
+            }
+        });
+
+        // Crete MRN
+        $('#create-mrn-btn').on('click', function () {
+
+
+            // Call AJAX to create MRN
+            $.ajax({
+                type: 'POST',
+                url: '/create-mrn', // Replace with your actual URL
+                data: {
+                    // Pass any required data here
+                },
+                success: function (response) {
+                    console.log(response);
+                    // Handle success response
+                },
+                error: function (xhr, status, error) {
+                    console.log(xhr.responseText);
+                    // Handle error response
+                }
+            });
+        });
+
+        //Print MRN
+       @* $('#print-btn').on('click', function () {
+            // Print the modal content
+            var modalContent = $('#viewItemsModal .modal-content').html();
+            var printWindow = window.open('', '', 'height=500,width=800');
+            printWindow.document.write('<html><head><title>MRN Detail</title>');
+            printWindow.document.write('<style>');
+            printWindow.document.write('body { border: 1px solid #000; padding: 10px; }'); // Add border around the page
+            printWindow.document.write('table { border-collapse: collapse; }');
+            printWindow.document.write('table th, table td { border: 1px solid #000; padding: 5px; text-align: center; }');
+            printWindow.document.write('.modal-title { display: none; }'); // Hide the title element
+            printWindow.document.write('button { display: none; }'); // Hide buttons
+            printWindow.document.write('input[type="button"] { display: none; }'); // Hide input buttons
+            printWindow.document.write('.top-bill-detail { display: flex; flex-wrap: wrap; }'); // Make top bill detail section wrap to 2 lines
+            printWindow.document.write('.top-bill-detail > div { width: 50%; }'); // Make each item in top bill detail section take up 50% of the width
+            printWindow.document.write('</style>');
+            printWindow.document.write('</head><body>');
+            printWindow.document.write(modalContent);
+            printWindow.document.write('</body></html>');
+            printWindow.print();
+            printWindow.close();
+        });
+           *@
+
+        $('#print-btn').on('click', function () {
+            var headid = $('#billid').val();
+
+            // Construct the URL with the headid parameter
+            var url = '/Purchase/MRNPrintout?headid=' + headid;
+
+            // Open the MRNPrintout view in a new window/tab
+            var newWindow = window.open(url, '_blank');
+
+            // Wait for the new window to load, then trigger printing
+           // newWindow.onload = function () {
+               // newWindow.print();
+                // Optionally, close the new window after printing
+                // newWindow.close(); 
+            
+        });
+
+        // Create MRN
+
+      
+            // Loop through each row of the table
+        $('#createMRNButton').click(function () {
+
+                var rejectedQuantityFound = false;
+                var returnCreated = false;
+                var stopProcessing = false; // Flag to stop processing if needed
+
+                // Loop through each row of the table
+                $('#viewItemsTableBody tr:not(:last-child)').each(function () {
+                    var qualityRejected = parseFloat($(this).find('td:nth-child(5)').text()) || 0; // Parse as float, handle potential NaN
+
+                    if (qualityRejected > 0) {
+                        rejectedQuantityFound = true;
+
+                        // Check if return is created for this row
+                        var rejectionReturn = $(this).find('td:nth-child(10)').text();
+                        if (rejectionReturn == 'NA') {
+                            returnCreated = false;
+                            stopProcessing = true; // Stop processing if rejected quantity and no return
+                            return false; // Break out of the .each() loop
+                        } else {
+                            returnCreated = true;
+                        }
+                    }
+                });
+
+                if (stopProcessing) {
+                    // Show error message
+                    toastr.warning('Purchase Return Not Created Yet');
+                    $('#print-btn').hide();
+                } else {
+                var billid = $('#billid').val();
+                $.ajax({
+                    type: 'POST',
+                    url: '/Purchase/generateMRN/',
+                    data: { BillID: billid },
+                    success: function (data) {
+                        debugger;
+                        var formattedMRNDate = moment(data.mrndate).format('DD-MM-YYYY');
+                        $('#MRNNo').text(data.mrn);
+                        $('#MRNDate').text(formattedMRNDate);
+                        toastr.success('MRN Number Generated-' + data.mrn);
+
+                        $('#print-btn').removeAttr('hidden').show();
+                        $('#createMRNButton').hide();
+                        Loaddata();
+                        
+                    }
+
+                });
+            }
+        });
+        function Loaddata() {
+            $.ajax({
+            url: '@Url.Action("GetMRNData", "Purchase")',
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+            var tableBody = $('#stockInTable tbody');
+            tableBody.empty(); // Clear existing rows before appending new ones
+
+            $.each(data, function(index, entry) {
+                var formattedBillDate = moment(entry.BillDate).format('DD-MM-YYYY');
+                var formattedVoucherDate = moment(entry.VoucherDate).format('DD-MM-YYYY');
+                var formattedGRDate = moment(entry.GRDate).format('DD-MM-YYYY');
+
+                var row = '<tr>' +
+                          '<td>' + entry.id + '</td>' +
+                          '<td>' + entry.SupplierName + '</td>' +
+                          '<td>' + entry.BillNo + '</td>' +
+                          '<td>' + formattedBillDate + '</td>' +
+                          '<td>' + entry.VoucherNo + '</td>' +
+                          '<td>' + formattedVoucherDate + '</td>' +
+                          '<td>' + entry.GRNo + '</td>' +
+                          '<td>' + formattedGRDate + '</td>' +
+                          '<td>' + entry.FrieghtAmount + '</td>' +
+                          '<td>' + entry.Taxamount + '</td>' +
+                          '<td>' + entry.BillAmount + '</td>' +
+                          '<td>' + (entry.TaxAmountonBill || 0) + '</td>' +
+                          '<td>' + (entry.BillAmountonBill || 0) + '</td>' +
+                          '<td><button class="btn btn-success btn-sm view-items-btn" data-id="' + entry.id + '">View Items</button></td>' +
+                          '</tr>';
+
+                tableBody.append(row);
+            });
+        },
+        error: function(xhr, status, error) {
+            console.error("Error fetching data: " + error);
+            // Consider adding more user-friendly error handling here (e.g., display an error message)
+        }
+    });
+}
+
+        $('#closemodal').click(function () {
+            debugger;
+            $('#viewItemsModal').modal('hide');
+        });
+
+
+
+        //
+
+        $(document).on('click', '.view-items-btn', function () {
+            var id = $(this).data('id');
+            loadBillDetails(id);
+        });
+
+        function loadBillDetails(id) {
+            $.ajax({
+                type: 'GET',
+                url: '/Purchase/GetItemsDetail', // Replace with your actual API URL
+                data: { id: id },
+                success: function (data) {
+
+                    var BillDate = moment(data.billDetails.BillDate).format('DD-MM-YYYY');
+                    var GRDate = moment(data.billDetails.GRDate).format('DD-MM-YYYY');
+                    var FormatedPODate = moment(data.billDetails.PODate).format('DD-MM-YYYY');
+                    // Populate the bill details section with data
+                    $('#billNo').text(data.billDetails.BillNo);
+                    $('#billDate').text(BillDate);
+                    $('#supplierName').text(data.billDetails.SupplierName);
+                    $('#totalAmount').text(data.billDetails.TotalAmount);
+                    $('#GR').text(data.billDetails.GRNumber);
+                    $('#GRDT').text(GRDate);
+                    $('#billid').val(id);
+                    $('#PONumber').text(data.billDetails.PONumber);
+                    $('#PODate').text(FormatedPODate);
+
+
+
+                    // Populate the modal table with data
+                    var tableBody = $('#viewItemsTableBody');
+                    tableBody.empty();
+                    $.each(data.itemsDetail, function (index, item) {
+                        var row = '<tr' + (item.RejectedQuantity !== 0 ? ' class="rejected"' : '') + '>' +
+                            '<td>' + item.ItemCode + '</td>' +
+                            '<td>' + item.BillQuantity + '</td>' +
+                            '<td>' + item.Quantity + '</td>' +
+                            '<td>' + item.QualityApprovedQty + '</td>' +
+                            '<td>' + item.RejectedQuantity + '</td>' +
+                            '<td>' + item.BasicPrice + '</td>' +
+                            '<td>' + item.Tax + '</td>' +
+                            '<td>' + item.TaxAmount + '</td>' +
+                            '<td>' + item.TotalAmount + '</td>' +
+                            '<td>' + item.RejectionReturn + '</td>' +
+                            '</tr>';
+                        tableBody.append(row);
+                    });
+
+                    // Calculate totals
+                    var totalBillQuantity = 0;
+                    var totalQuantity = 0;
+                    var totalQualityApprovedQty = 0;
+                    var totalRejectedQuantity = 0;
+                    var totalBasicPrice = 0;
+                    var totalTaxAmount = 0;
+                    var totalTotalAmount = 0;
+
+                    $.each(data.itemsDetail, function (index, item) {
+                        totalBillQuantity += parseFloat(item.BillQuantity);
+                        totalQuantity += parseFloat(item.Quantity);
+                        totalQualityApprovedQty += parseFloat(item.QualityApprovedQty);
+                        totalRejectedQuantity += parseFloat(item.RejectedQuantity);
+                        totalBasicPrice += parseFloat(item.BasicPrice);
+                        totalTaxAmount += parseFloat(item.TaxAmount);
+                        totalTotalAmount += parseFloat(item.TotalAmount);
+                    });
+                    // Append totals to footer
+                    var footerRow = '<tr>' +
+                        '<td colspan="1">Total:</td>' +
+                        '<td>' + totalBillQuantity.toFixed(2) + '</td>' +
+                        '<td>' + totalQuantity.toFixed(2) + '</td>' +
+                        '<td>' + totalQualityApprovedQty.toFixed(2) + '</td>' +
+                        '<td>' + totalRejectedQuantity.toFixed(2) + '</td>' +
+                        '<td>' + totalBasicPrice.toFixed(2) + '</td>' +
+                        '<td></td>' + // Tax column is not summed
+                        '<td>' + totalTaxAmount.toFixed(2) + '</td>' +
+                        '<td>' + totalTotalAmount.toFixed(2) + '</td>' +
+                        '<td></td>' + // Rejection Return column is not summed
+                        '</tr>';
+                    tableBody.append(footerRow);
+                    // Show the modal
+                    $('#viewItemsModal').modal('show');
+                    $('#print-btn').removeAttr('hidden').hide();
+                    // $('#print-btn').removeAttr('hidden').show();
+                    $('#createMRNButton').show();
+                   
+                    $('#MRNNo').text('');
+                    $('#MRNDate').text(''); 
+
+                }
+            });
+        }
+        // Button click event handler
+        $(document).on('click', '.view-itemss-btn', function () {
+            var id = $(this).data('id');
+            debugger;
+            $.ajax({
+                type: 'GET',
+                url: '/Purchase/GetItemsDetail', // Replace with your actual API URL
+                data: { id: id },
+                success: function (data) {
+                    // Populate the modal table with data
+                    var tableBody = $('#viewItemsTableBody');
+                    tableBody.empty();
+                    $.each(data, function (index, item) {
+                        var row = '<tr' + (item.RejectedQuantity !== 0 ? ' class="rejected"' : '') + '>' +
+                            '<td>' + item.ItemCode + '</td>' +
+                            '<td>' + item.BillQuantity + '</td>' +
+                            '<td>' + item.Quantity + '</td>' +
+                            '<td>' + item.QualityApprovedQty + '</td>' +
+                            '<td>' + item.RejectedQuantity + '</td>' +
+                            '<td>' + item.BasicPrice + '</td>' +
+                            '<td>' + item.Tax + '</td>' +
+                            '<td>' + item.TaxAmount + '</td>' +
+                            '<td>' + item.TotalAmount + '</td>' +
+                            '<td>' + item.RejectionReturn + '</td>' +
+                            '</tr>';
+                        tableBody.append(row);
+                    });
+
+                    // Calculate totals
+                    var totalBillQuantity = 0;
+                    var totalQuantity = 0;
+                    var totalQualityApprovedQty = 0;
+                    var totalRejectedQuantity = 0;
+                    var totalBasicPrice = 0;
+                    var totalTaxAmount = 0;
+                    var totalTotalAmount = 0;
+
+                    $.each(data, function (index, item) {
+                        totalBillQuantity += parseFloat(item.BillQuantity);
+                        totalQuantity += parseFloat(item.Quantity);
+                        totalQualityApprovedQty += parseFloat(item.QualityApprovedQty);
+                        totalRejectedQuantity += parseFloat(item.RejectedQuantity);
+                        totalBasicPrice += parseFloat(item.BasicPrice);
+                        totalTaxAmount += parseFloat(item.TaxAmount);
+                        totalTotalAmount += parseFloat(item.TotalAmount);
+                    });
+
+                    // Append totals to footer
+                    var footerRow = '<tr>' +
+                        '<td colspan="1">Total:</td>' +
+                        '<td>' + totalBillQuantity.toFixed(2) + '</td>' +
+                        '<td>' + totalQuantity.toFixed(2) + '</td>' +
+                        '<td>' + totalQualityApprovedQty.toFixed(2) + '</td>' +
+                        '<td>' + totalRejectedQuantity.toFixed(2) + '</td>' +
+                        '<td>' + totalBasicPrice.toFixed(2) + '</td>' +
+                        '<td></td>' + // Tax column is not summed
+                        '<td>' + totalTaxAmount.toFixed(2) + '</td>' +
+                        '<td>' + totalTotalAmount.toFixed(2) + '</td>' +
+                        '<td></td>' + // Rejection Return column is not summed
+                        '</tr>';
+                    tableBody.append(footerRow);
+                    // Show the modal
+                    $('#viewItemsModal').modal('show');
+                }
+            });
+        });
+    });
+</script>
+<style>
+    .rejected {
+        background-color: #ffc080; /* or any other color you prefer */
+    }
+
+    .bill-details {
+        text-align: center;
+    }
+
+        .bill-details .row {
+            display: flex;
+            justify-content: center;
+        }
+
+        .bill-details .col-md-6 {
+            flex: 1;
+        }
+
+        .bill-details p {
+            margin-bottom: 10px;
+        }
+    .bill-details-row {
+        border-bottom: 1px solid #000;
+        margin-bottom: 10px;
+    }
+</style>
+

@@ -1,0 +1,82 @@
+﻿@model List<CMKL.Models.Tender>
+
+@if (ViewBag.Update != null)
+
+{
+    <script src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script src="~/toastr/Js/toastr.js"></script>
+    <link href="~/toastr/toastr.css" rel="stylesheet" />
+
+    <script type="text/javascript">
+        window.onload = function () {
+            toastr.success("@ViewBag.Update")
+            //this.alert("@ViewBag.Delete")
+        }
+    </script>
+}
+
+@if (Model != null)
+{
+    <p>
+        @*  @Html.ActionLink("Add New", "Create")*@
+    </p>
+
+
+    <table class="table table-striped">
+        <tr>
+
+            <th>
+                Buyer
+            </th>
+            <th>
+                Required
+            </th>
+            <th>
+                Tender No
+            </th>
+            <th>
+                Quantity
+            </th>
+            <th>
+                Due Date
+            </th>
+
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+
+                <td>
+                    @item.Buyer
+                </td>
+                <td>
+                    @item.Rating
+                </td>
+
+                <td>
+                    @item.TenderNumber
+                </td>
+                <td>
+                    @item.Quantity
+                </td>
+                <td>
+                    @item.DueDate.Value.ToString("dd/MM/yyyy")
+
+                </td>
+
+
+                <td>
+                    @Html.ActionLink("Participated", "ParticationDone", new { id = item.ID, @class = "btn btn-success" }) | 
+                    @Html.ActionLink("Not Participated", "ParticationNotDone", new { id = item.ID, @class = "btn btn-success" })
+                    @*  @Html.ActionLink("Details", "EmailManage", new { id = item.id }) |*@
+                    @*  @Html.ActionLink("Delete", "DeleteEmail", new { id = item.id, EType = item.DDLName })*@
+                </td>
+            </tr>
+        }
+
+    </table>
+
+}
+

@@ -1,0 +1,256 @@
+﻿@model dynamic
+@{
+    Layout = null;
+    var indianCulture = new System.Globalization.CultureInfo("en-IN");
+    var receiptItems = Model.RecipetData as IEnumerable<dynamic> ?? new List<dynamic>();
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@Model.Title</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f1f5f9;
+            margin: 0;
+            padding: 0;
+            color: #334155;
+        }
+
+        .wrapper {
+            width: 100%;
+            max-width: 880px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #004d69 0%, #00698f 100%);
+            color: #ffffff;
+            padding: 25px 30px;
+        }
+
+            .header h1 {
+                margin: 0;
+                font-size: 20px;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+
+        .dashboard {
+            padding: 15px;
+            background-color: #f8fafc;
+            display: table;
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 8px;
+        }
+
+        .stat-card {
+            display: table-cell;
+            background: #ffffff;
+            padding: 12px 8px;
+            border-radius: 10px;
+            text-align: center;
+            width: 25%;
+            border: 1px solid #e2e8f0;
+            vertical-align: middle;
+        }
+
+        .stat-label {
+            font-size: 8px;
+            font-weight: 800;
+            color: #94a3b8;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .stat-value {
+            font-size: 13px;
+            font-weight: 800;
+            color: #00698f;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .section-title {
+            font-size: 11px;
+            font-weight: 800;
+            color: #1e293b;
+            text-transform: uppercase;
+            border-left: 4px solid #00698f;
+            padding-left: 10px;
+            margin-bottom: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            border: 1px solid #e2e8f0;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: #64748b;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 10px 8px;
+            text-align: left;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+        }
+
+        .item-name {
+            font-weight: 700;
+            color: #0f172a;
+            font-size: 11.5px;
+            margin-bottom: 3px;
+        }
+
+        .sub-text {
+            font-size: 9.5px;
+            color: #64748b;
+            line-height: 1.3;
+        }
+
+        .val-text {
+            font-weight: 700;
+            color: #00698f;
+        }
+
+        .pill {
+            background: #f0f9ff;
+            color: #0369a1;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 800;
+            font-size: 9px;
+            border: 1px solid #bae6fd;
+        }
+
+        .total-row {
+            background-color: #f8fafc;
+            font-weight: 800;
+            color: #0f172a;
+            font-size: 12px;
+        }
+
+        .footer {
+            padding: 25px;
+            text-align: center;
+            border-top: 1px solid #f1f5f9;
+            font-size: 10px;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="header">
+            <h1>@Model.Title</h1>
+            <p style="margin:5px 0 0; opacity:0.8; font-size:11px;">Material Inward Audit | @DateTime.Now.ToString("dd MMM yyyy")</p>
+        </div>
+
+        <div class="dashboard">
+            <div class="stat-card" style="border-top: 3px solid #00698f;">
+                <span class="stat-label">Total Basic</span>
+                <span class="stat-value">₹@String.Format(indianCulture, "{0:N0}", Model.totalBasic)</span>
+            </div>
+            <div class="stat-card" style="border-top: 3px solid #6366f1;">
+                <span class="stat-label">Total Tax</span>
+                <span class="stat-value">₹@String.Format(indianCulture, "{0:N0}", Model.totalTaxAmount)</span>
+            </div>
+            <div class="stat-card" style="border-top: 3px solid #f59e0b;">
+                <span class="stat-label">Other/Freight</span>
+                <span class="stat-value">₹@String.Format(indianCulture, "{0:N0}", (Model.Othertaxtotal + Model.frieghtamounttotal))</span>
+            </div>
+            <div class="stat-card" style="border-top: 3px solid #10b981;">
+                <span class="stat-label">Net Bill Value</span>
+                <span class="stat-value" style="color:#10b981;">₹@String.Format(indianCulture, "{0:N0}", Model.billamounttotal)</span>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="section-title">Material Receipt Log Summary</div>
+
+            <table border="0" cellpadding="0" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th style="width:22%">Source & Timeline</th>
+                        <th style="width:40%">Item Specification</th>
+                        <th style="width:13%; text-align:center;">Quantity</th>
+                        <th style="width:25%; text-align:right;">Value Summary</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (receiptItems.Any())
+                    {
+                        foreach (var item in receiptItems)
+                        {
+                            <tr>
+                                <td>
+                                    <span class="pill">INV: @item.InvoiceNo</span>
+                                    <div class="sub-text" style="margin-top:6px;">
+                                        <b>Supplier:</b> @item.SupplierName<br />
+                                        <b>Inv Date:</b> @(item.InvoiceDate.ToString("dd/MM/yy"))<br />
+                                        <b>Recv Date:</b> @(item.RecievingDate.ToString("dd/MM/yy"))
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="item-name">@item.ItemName</div>
+                                    <div class="sub-text">
+                                        <b>Tax:</b> @item.TaxType | <b>Lot:</b> @(item.LotNo ?? "NA")
+                                    </div>
+                                </td>
+                                <td style="text-align:center;">
+                                    <div style="font-size:13px; font-weight:800; color:#1e293b;">@(item.Quantity ?? "0")</div>
+                                    <div class="sub-text">UOM: @item.UOM</div>
+                                </td>
+                                <td style="text-align:right;">
+                                    <div class="sub-text">Basic: ₹@String.Format("{0:N2}", item.TotalBasic)</div>
+                                    <div class="sub-text">Tax: ₹@String.Format("{0:N2}", item.TotalTaxAmount ?? 0)</div>
+                                    <div class="sub-text">F/O: ₹@String.Format("{0:N2}", (item.FrightAmount ?? 0) + (item.OtherTax ?? 0))</div>
+                                    <div class="val-text" style="margin-top:4px; font-size:12px; color:#10b981;">₹@String.Format("{0:N2}", item.BillTotal ?? 0)</div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr><td colspan="4" style="text-align:center; padding: 40px; color: #94a3b8; font-style: italic;">No transactions recorded.</td></tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td colspan="2" style="text-align:right; padding:15px;">TOTALS:</td>
+                        <td style="text-align:center;">@receiptItems.Count() Items</td>
+                        <td style="text-align:right; color:#10b981; padding:15px;">₹@String.Format(indianCulture, "{0:N2}", Model.billamounttotal)</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="footer">
+            <p>System-generated summary from <strong>IEPL ERP Cloud</strong>.</p>
+            <p style="margin-top: 6px;">&copy; @DateTime.Now.Year IEC Electric Power Limited | <a href="http://erp.iecelectric.co.in/">ERP Portal</a></p>
+        </div>
+    </div>
+</body>
+</html>

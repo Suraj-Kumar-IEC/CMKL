@@ -1,0 +1,764 @@
+﻿@{
+    ViewBag.Title = "ERP Live Executive Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const isInModal = !!(document.querySelector('.modal.show'));
+            if (isInModal) {
+                setTimeout(() => { handleInvalidUser(); }, 500);
+            } else {
+                handleInvalidUser();
+            }
+
+            function handleInvalidUser() {
+                toastr.error("Invalid User Session");
+                setTimeout(function () {
+                    window.location.href = "@Url.Action("Index", "Login")";
+                }, 2000);
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<style>
+    /* 1. Refined Dashboard Theme */
+    body {
+        background-color: #f0f2f5;
+        font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+        overflow-x: hidden;
+    }
+
+    .dashboard-container {
+        padding: 30px;
+    }
+
+    /* 2. Entrance Animations */
+    .animate-up {
+        opacity: 0;
+        transform: translateY(25px);
+        animation: fadeInUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @@keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .stagger-1 {
+        animation-delay: 0.1s;
+    }
+
+    .stagger-2 {
+        animation-delay: 0.2s;
+    }
+
+    .stagger-3 {
+        animation-delay: 0.3s;
+    }
+
+    .stagger-4 {
+        animation-delay: 0.4s;
+    }
+
+    /* 3. Analytics Redirect Cards */
+    .analytics-redirect-card {
+        min-height: 220px;
+        border-radius: 24px;
+        padding: 30px;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        border: none;
+        display: flex;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+    .theme-dispatch {
+        background: linear-gradient(135deg, #004d69 0%, #00698f 100%);
+    }
+
+    .theme-inventory {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    }
+
+    .analytics-redirect-card:hover {
+        transform: translateY(-8px) scale(1.01);
+        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-info {
+        position: relative;
+        z-index: 5;
+        width: 65%;
+        color: white;
+    }
+
+    .card-graph {
+        position: absolute;
+        right: -10px;
+        bottom: 0;
+        width: 45%;
+        height: 80%;
+        z-index: 2;
+        opacity: 0.6;
+    }
+
+    .floating-icon {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 5rem;
+        color: #fff;
+        opacity: 0.1;
+        transition: all 0.5s ease;
+        z-index: 1;
+    }
+
+    .analytics-title {
+        color: #fff;
+        font-weight: 800;
+        font-size: 1.6rem;
+        margin-bottom: 8px;
+        letter-spacing: -0.5px;
+    }
+
+    .analytics-desc {
+        color: rgba(255,255,255,0.7);
+        font-size: 0.85rem;
+        line-height: 1.4;
+        margin-bottom: 20px;
+    }
+
+    .btn-explore {
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(5px);
+        color: #fff;
+        border: 1px solid rgba(255,255,255,0.3);
+        padding: 8px 18px;
+        border-radius: 30px;
+        font-weight: 700;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+    }
+
+    .analytics-redirect-card:hover .btn-explore {
+        background: #fff;
+        color: #000;
+    }
+
+    .live-dot {
+        height: 8px;
+        width: 8px;
+        background-color: #22c55e;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+        box-shadow: 0 0 10px #22c55e;
+        animation: pulse-green 2s infinite;
+    }
+
+    @@keyframes pulse-green {
+        0% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+        }
+
+        70% {
+            transform: scale(1);
+            box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
+        }
+
+        100% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+        }
+    }
+
+    /* 4. Chart Cards & KPI Tiles */
+    .chart-card {
+        background: #ffffff;
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+        margin-bottom: 30px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid rgba(0,0,0,0.05);
+        position: relative;
+    }
+
+        .chart-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 105, 143, 0.12);
+        }
+
+    .chart-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .chart-title {
+        color: #00698f;
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .chart-body {
+        padding: 24px;
+        height: 350px;
+    }
+
+    .erp-kpi-tile {
+        background: white;
+        border-radius: 12px;
+        padding: 10px 15px;
+        min-width: 155px;
+        border: 1px solid #eef0f2;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        transition: transform 0.2s ease;
+        cursor: pointer;
+    }
+
+        .erp-kpi-tile:hover {
+            transform: translateY(-5px);
+            border-color: #00698f;
+            box-shadow: 0 10px 20px rgba(0, 105, 143, 0.1);
+        }
+
+    .kpi-label {
+        font-size: 0.6rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #6c757d;
+        letter-spacing: 0.5px;
+        margin-bottom: 3px;
+    }
+
+    .kpi-value {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #00698f;
+        line-height: 1;
+    }
+
+        .kpi-value.danger {
+            color: #dc3545;
+        }
+
+        .kpi-value.warning {
+            color: #fd7e14;
+        }
+
+    .live-indicator {
+        display: inline-flex;
+        align-items: center;
+        background: #e6f4ea;
+        color: #1e7e34;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .live-pulse {
+        width: 8px;
+        height: 8px;
+        background: #28a745;
+        border-radius: 50%;
+        margin-right: 8px;
+        animation: pulse 2s infinite;
+    }
+
+    @@keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+        }
+
+        70% {
+            box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+        }
+    }
+
+    .total-badge {
+        background-color: #e7f3f7;
+        color: #00698f;
+        font-size: 0.75rem;
+        border: 1px solid #00698f;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-weight: 800;
+    }
+</style>
+
+<div class="dashboard-container">
+    <!-- Header row with KPI Widgets -->
+    <div class="row align-items-center mb-5 animate-up">
+        <div class="col-lg-12">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                    <h1 class="fw-bold mb-1" style="color: #333; letter-spacing: -1px;">Executive Overview</h1>
+                    <div class="live-indicator">
+                        <span class="live-pulse"></span> Streaming (5s)
+                    </div>
+                </div>
+                <div class="text-end text-muted small fw-bold">
+                    <i class="fas fa-calendar-day me-1"></i> @DateTime.Now.ToString("dddd, dd MMMM yyyy")
+                </div>
+            </div>
+
+            <!-- ERP Useful KPI Widgets -->
+            <div class="d-flex flex-wrap gap-2 justify-content-start mb-2">
+                <div class="erp-kpi-tile border-start border-primary border-4"
+                     onclick="location.href='@Url.Action("PendingEwap", "Production")'">
+                    <span class="kpi-label">Pending for Ewap</span>
+                    <span class="kpi-value" id="kpi-untested">...</span>
+                </div>
+
+                <div class="erp-kpi-tile border-start border-success border-4"
+                     onclick="location.href='@Url.Action("PendingPDI", "Production")'")">
+                    <span class="kpi-label">Pending for PDI</span>
+                    <span class="kpi-value text-success" id="kpi-ready">...</span>
+                </div>
+
+                <div class="erp-kpi-tile border-start border-info border-4" style="border-left-color: #6f42c1 !important;"
+                     onclick="location.href='@Url.Action("PendingPDI", "Production")'")">                     
+                    <span class="kpi-label">Completed PDI (Ready)</span>
+                    <span class="kpi-value" id="kpi-pdi-ready" style="color: #6f42c1;">...</span>
+                </div>
+
+                <!-- Asset Breakdown KPIs -->
+                <div class="erp-kpi-tile border-start border-danger border-4"
+                     onclick="location.href='@Url.Action("BreakdownManagement", "Asset")'")">                      
+                    <span class="kpi-label">Total Machines Down</span>
+                    <span class="kpi-value text-danger" id="kpi-machines-down">...</span>
+                </div>
+
+                <div class="erp-kpi-tile border-start border-success border-4"
+                     onclick="location.href='@Url.Action("BreakdownManagement", "Asset")'")">                     
+                    <span class="kpi-label">Total Machines Working</span>
+                    <span class="kpi-value text-success" id="kpi-machines-working">...</span>
+                </div>
+
+                <div class="erp-kpi-tile border-start border-warning border-4"
+                     onclick="location.href='@Url.Action("BreakdownHistory", "Asset")'")">                      
+                    <span class="kpi-label">Monthly Machine Downtime</span>
+                    <span class="kpi-value text-warning" id="kpi-monthly-downtime">...</span>
+                </div>
+
+                <div class="erp-kpi-tile border-start border-danger border-4"
+                     onclick="location.href='@Url.Action("Index", "StockReport")'")">                     
+                    <span class="kpi-label">Item Below Min Level</span>
+                    <span class="kpi-value danger" id="kpi-shortage">...</span>
+                </div>
+
+                <div class="erp-kpi-tile border-start border-warning border-4"
+                     onclick="location.href='@Url.Action("PurchaseOrderSAdminApproval", "Purchase")'")">                     
+                    <span class="kpi-label">Pending PO</span>
+                    <span class="kpi-value warning" id="kpi-po-hod">...</span>
+                </div>
+
+                <div class="erp-kpi-tile border-start border-info border-4" style="border-left-color: #17a2b8 !important;"
+                     onclick="location.href='@Url.Action("ManagementApproval", "BOM")'")">                      
+                    <span class="kpi-label">Pending BOM Appr.</span>
+                    <span class="kpi-value" id="kpi-bom-store" style="color: #17a2b8;">...</span>
+                </div>
+
+                <div class="erp-kpi-tile border-start border-secondary border-4" style="border-left-color: #6610f2 !important;"
+                     onclick="location.href='@Url.Action("GetHeads", "Inventory") '")">
+                    <span class="kpi-label">Pending Incoming Quality</span>
+                    <span class="kpi-value" id="kpi-incoming-qc" style="color: #6610f2;">...</span>
+                </div>
+
+                <div class="erp-kpi-tile border-start border-dark border-4" style="border-left-color: #e83e8c !important;"
+                     onclick="location.href='@Url.Action("QualityRejectionReturnReport", "Reports") '")">                     
+                    <span class="kpi-label">Pending QC Rejections</span>
+                    <span class="kpi-value" id="kpi-qc-rejections" style="color: #e83e8c;">...</span>
+                </div>
+
+                <div class="erp-kpi-tile border-start border-primary border-4" style="border-left-color: #20c997 !important;"
+                     onclick="location.href='@Url.Action("PendingMaintananceLogBook", "Asset") '")">                     
+                    <span class="kpi-label">Pending Asset Tasks</span>
+                    <span class="kpi-value" id="kpi-asset-tasks" style="color: #20c997;">...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="table-responsive p-3 mb-5">
+        <table class="table table-hover align-middle mb-0" id="tblRatingMatrix">
+            <thead class="table-light">
+                <tr id="matrixHeader">
+                </tr>
+            </thead>
+            <tbody id="ratingMatrixBody">
+            </tbody>
+        </table>
+    </div>
+
+    <div class="py-2"></div>
+
+    <div class="row animate-up stagger-1 mt-3">
+        <div class="col-xl-6 mb-4">
+            <div id="ratingTrendRedirectCard" class="analytics-redirect-card theme-dispatch shadow" onclick="location.href='@Url.Action("RatingTrendGraphs", "Dashboard")'">
+                <i class="fas fa-truck-loading floating-icon"></i>
+                <div class="card-info">
+                    <div class="mb-2"><span class="live-dot"></span><small class="text-white opacity-50 fw-bold uppercase">Operational Flow</small></div>
+                    <h3 class="analytics-title">Dispatch Dynamics</h3>
+                    <p class="analytics-desc">Monthly performance benchmarks and delivery trends for all Genset Ratings across the current financial year.</p>
+                    <button class="btn-explore">Visual Analytics <i class="fas fa-arrow-right ms-2"></i></button>
+                </div>
+                <div class="card-graph">
+                    <canvas id="miniDispatchSparkline"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-6 mb-4">
+            <div class="analytics-redirect-card theme-inventory shadow" onclick="location.href='@Url.Action("ItemTrendAnalysis", "Inventory")'">
+                <i class="fas fa-warehouse floating-icon"></i>
+                <div class="card-info">
+                    <div class="mb-2"><span class="live-dot"></span><small class="text-white opacity-50 fw-bold uppercase">Store Intelligence</small></div>
+                    <h3 class="analytics-title">Inventory Velocity</h3>
+                    <p class="analytics-desc">Real-time stock movement analysis. Monitor item health against safety boundaries and peak storage capacity.</p>
+                    <button class="btn-explore">Flow Analysis <i class="fas fa-chart-area ms-2"></i></button>
+                </div>
+                <div class="card-graph">
+                    <canvas id="miniInventorySparkline"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. EXECUTIVE DECISION SUPPORT ROW (Quality & Maintenance) -->
+    <div class="row animate-up stagger-2">
+        <div class="col-xl-4">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h5 class="chart-title"><i class="fas fa-truck-loading text-primary me-2"></i>Inward Quality Rejections (FY)</h5>
+                    <div class="small fw-bold text-muted">Top 5 Gate Entry Failures</div>
+                </div>
+                <div class="chart-body">
+                    <canvas id="inwardRejectionChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h5 class="chart-title"><i class="fas fa-filter text-danger me-2"></i>Line Rejection Pareto (FY)</h5>
+                    <div class="small fw-bold text-muted">Top 5 Production Drivers</div>
+                </div>
+                <div class="chart-body">
+                    <canvas id="qualityParetoChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h5 class="chart-title"><i class="fas fa-history text-primary me-2"></i>Maintenance MTTR Trend</h5>
+                    <div class="small fw-bold text-muted">Avg. Resolution Time (Hours)</div>
+                </div>
+                <div class="chart-body">
+                    <canvas id="mttrTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 3. RESTORED OPERATIONAL GRAPHS GRID -->
+    <div class="row">
+        <div class="col-xl-6 animate-up stagger-2">
+            <div class="chart-card">
+                <div class="chart-header"><h5 class="chart-title"><i class="fas fa-microchip me-2"></i>Pending For Ewap</h5></div>
+                <div class="chart-body"><canvas id="ewapChart"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h5 class="chart-title">
+                        <i class="fas fa-truck-loading me-2"></i>Monthly Dispatch Volume
+                        <span id="totalDispatchBadge" class="total-badge ms-2">Total: 0</span>
+                    </h5>
+                </div>
+                <div class="chart-body"><canvas id="dispatchChart"></canvas></div>
+            </div>
+        </div>
+        <div class="col-xl-6 animate-up stagger-3">
+            <div class="chart-card">
+                <div class="chart-header"><h5 class="chart-title"><i class="fas fa-check-circle me-2"></i>Pending for PDI</h5></div>
+                <div class="chart-body"><canvas id="item-stock-chart"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-header"><h5 class="chart-title"><i class="fas fa-star me-2"></i>Dispatch by KVA Rating</h5></div>
+                <div class="chart-body"><canvas id="salesRatingChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. RESTORED ANNUAL PERFORMANCE SUMMARY -->
+    <div class="row animate-up stagger-4">
+        <div class="col-12">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h5 class="chart-title">
+                        <i class="fas fa-calendar-alt me-2"></i>Annual Performance (Financial Year)
+                        <span id="yearlyTotalUnitsBadge" class="total-badge ms-2">Year Total: 0 Units</span>
+                        <span id="yearlyTotalValueBadge" class="total-badge ms-1" style="background-color: #00698f; color: #fff;">Value: ₹0</span>
+                    </h5>
+                </div>
+                <div class="chart-body" style="height: 450px;">
+                    <canvas id="monthlyTotalChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<img id="wait-sign" src="~/images/wait.gif" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999;" />
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+    <script>
+        let charts = {};
+        let sparklines = {};
+        let monthlyDispatchDataForLabels;
+
+        $(document).ready(function () {
+            initDashboardCharts();
+            initMiniSparklines();
+
+            refreshDashboardData();
+            setInterval(refreshDashboardData, 5000);
+        });
+
+        function safeInitChart(id, config) {
+            const el = document.getElementById(id);
+            if (!el) return null;
+            const existingChart = Chart.getChart(el);
+            if (existingChart) existingChart.destroy();
+            return new Chart(el, config);
+        }
+
+        function initMiniSparklines() {
+            const commonOptions = {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                scales: { x: { display: false }, y: { display: false, beginAtZero: true } },
+                elements: { point: { radius: 0 } }
+            };
+
+            sparklines.dispatch = safeInitChart('miniDispatchSparkline', {
+                type: 'bar',
+                data: { labels: [1,2,3,4,5,6,7,8,9,10], datasets: [{ data: [12,19,15,25,22,30,28,35,40,38], backgroundColor: 'rgba(255, 255, 255, 0.2)', borderRadius: 5 }] },
+                options: commonOptions
+            });
+
+            sparklines.inventory = safeInitChart('miniInventorySparkline', {
+                type: 'line',
+                data: { labels: [1,2,3,4,5,6,7,8,9,10], datasets: [{ data: [30,35,32,45,42,38,50,48,55,60], borderColor: 'rgba(255,255,255,0.3)', borderWidth: 3, fill: true, backgroundColor: 'rgba(255,255,255,0.05)', tension: 0.4 }] },
+                options: commonOptions
+            });
+        }
+
+        function initDashboardCharts() {
+            const commonOptions = {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { backgroundColor: 'rgba(0, 105, 143, 0.96)', titleFont: { size: 14, weight: 'bold' }, bodyFont: { size: 13 }, padding: 12, cornerRadius: 10, displayColors: false }
+                },
+                scales: {
+                    x: { ticks: { color: '#666', font: { size: 11 }, maxRotation: 90, minRotation: 45 } },
+                    y: { beginAtZero: true, ticks: { color: '#666', font: { size: 11 } }, grid: { borderDash: [5, 5], color: '#eee' } }
+                }
+            };
+
+            // NEW: Inward Rejection Pareto
+            charts.inwardRej = safeInitChart('inwardRejectionChart', {
+                type: 'bar',
+                data: { labels: [], datasets: [{ label: 'Qty Rejected', data: [], backgroundColor: '#00698f', borderRadius: 4 }] },
+                options: { ...commonOptions, indexAxis: 'y' }
+            });
+
+            // NEW: Quality Pareto
+            charts.qualityPareto = safeInitChart('qualityParetoChart', {
+                type: 'bar',
+                data: { labels: [], datasets: [{ label: 'Rejection Events', data: [], backgroundColor: '#dc3545', borderRadius: 4 }] },
+                options: { ...commonOptions, indexAxis: 'y' }
+            });
+
+            // NEW: MTTR Trend
+            charts.mttrTrend = safeInitChart('mttrTrendChart', {
+                type: 'line',
+                data: { labels: [], datasets: [{ label: 'Avg Hrs to Fix', data: [], borderColor: '#10b981', tension: 0.4, fill: true, backgroundColor: 'rgba(16,185,129,0.05)' }] },
+                options: commonOptions
+            });
+
+            charts.ewap = safeInitChart('ewapChart', {
+                type: 'bar',
+                data: { labels: [], datasets: [{ label: 'Quantity', data: [], backgroundColor: '#00698f', borderRadius: 4 }] },
+                options: { ...commonOptions, plugins: { ...commonOptions.plugins, tooltip: { ...commonOptions.plugins.tooltip, callbacks: { title: function (context) { return context[0].chart.fullItemNames ? context[0].chart.fullItemNames[context[0].dataIndex] : context[0].label; } } } } }
+            });
+
+            charts.dispatch = safeInitChart('dispatchChart', {
+                type: 'bar',
+                data: { labels: [], datasets: [{ label: 'Units Dispatched', data: [], backgroundColor: '#28a745', borderRadius: 4 }] },
+                options: commonOptions
+            });
+
+            charts.stock = safeInitChart('item-stock-chart', {
+                type: 'bar',
+                data: { labels: [], datasets: [{ label: 'Quantity', data: [], backgroundColor: '#00698f', borderRadius: 4 }] },
+                options: { ...commonOptions, plugins: { ...commonOptions.plugins, tooltip: { ...commonOptions.plugins.tooltip, callbacks: { title: function (context) { return context[0].chart.fullItemNames ? context[0].chart.fullItemNames[context[0].dataIndex] : context[0].label; } } } } }
+            });
+
+            charts.rating = safeInitChart('salesRatingChart', {
+                type: 'bar',
+                data: { labels: [], datasets: [{ label: 'Units', data: [], backgroundColor: '#fd7e14', borderRadius: 4 }] },
+                options: commonOptions
+            });
+
+            charts.yearly = safeInitChart('monthlyTotalChart', {
+                type: 'bar',
+                data: { labels: [], datasets: [{ label: 'Monthly Total', data: [], backgroundColor: '#00698f', borderRadius: 8 }] },
+                options: {
+                    ...commonOptions,
+                    plugins: {
+                        legend: { display: true, position: 'bottom' },
+                        datalabels: {
+                            align: 'top', anchor: 'end', color: '#00698f', font: { weight: 'bold', size: 10 },
+                            formatter: (v, ctx) => {
+                                let price = monthlyDispatchDataForLabels?.[ctx.dataIndex]?.TotalBasicPrice;
+                                if (price) return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price);
+                                return '';
+                            }
+                        }
+                    }
+                },
+                plugins: [ChartDataLabels]
+            });
+        }
+
+        function refreshDashboardData() {
+            $.getJSON('@Url.Action("GetVouchers", "BOM")', (d) => $('#kpi-bom-store').text(d.length || 0));
+            $.getJSON('@Url.Action("GetQualityData", "Inventory")', (d) => $('#kpi-incoming-qc').text(d.length || 0));
+            $.getJSON('@Url.Action("GetBills", "Inventory")', (d) => $('#kpi-qc-rejections').text(d.length || 0));
+            $.getJSON('@Url.Action("GetPendingTasks", "Asset")', (res) => { if (res.success) $('#kpi-asset-tasks').text(res.data.length || 0); });
+            $.getJSON('@Url.Action("PurchaseOrderPendingSAdmin", "Purchase")', (d) => $('#kpi-po-hod').text(d.length || 0));
+            $.getJSON('@Url.Action("GetBreakdownDashboardKPIs", "Asset")', (res) => { if(res.success) { $('#kpi-machines-down').text(res.machinesDown + " Units"); $('#kpi-machines-working').text(res.machinesWorking + " Units"); $('#kpi-monthly-downtime').text(res.monthlyDowntime); } });
+            $.getJSON('@Url.Action("PendingPDIRecords", "Production")', (res) => { if(res && res.get) { $('#kpi-pdi-ready').text(res.get.filter(item => item.Status == 1).length); } });
+
+            // Sync Quality Analytics
+              $.getJSON('@Url.Action("GetInwardRejectionsFinYear", "Reports")', (res) => {
+                        if(res.success) {
+                            charts.inwardRej.data.labels = res.data.map(x => x.ItemName);
+                            charts.inwardRej.data.datasets[0].data = res.data.map(x => x.Count);
+                            charts.inwardRej.update('none');
+                        }
+                    });
+               $.getJSON('@Url.Action("GetDashboardRatingMatrix", "Reports")', function(res) {
+                    if(res.success) {
+                        let thead = $('#matrixHeader').empty();
+                        let tbody = $('#ratingMatrixBody').empty();
+                        let vQ = res.visibleQuarters;
+
+                        // 1. Build Dynamic Headers
+                        let headerHtml = `<th class="ps-4">KVA Power Segment</th>
+                                          <th class="text-center">${res.currentMonthName}</th>`;
+
+                        for(let j=1; j<=vQ; j++) {
+                            headerHtml += `<th class="text-center bg-light border-start border-end text-primary">Q${j}</th>`;
+                        }
+
+                        headerHtml += `<th class="text-center">Full FY</th>
+                                       <th class="text-center">Share %</th>`;
+                        thead.append(headerHtml);
+
+                        // 2. Build Rows
+                        let totalFY = res.data.reduce((sum, item) => sum + item.FYCount, 0);
+
+                        $.each(res.data, function(i, item) {
+                            let share = totalFY > 0 ? ((item.FYCount / totalFY) * 100).toFixed(1) : 0;
+
+                                let row = `<tr>
+                                    <td class="ps-4 fw-bold text-primary">${item.RangeName}</td>
+                                    <td class="text-center fw-bold text-dark">${item.MonthCount}</td>`;
+
+                                // Inject only visible quarter counts
+                                if(vQ >= 1) row += `<td class="text-center fw-bold bg-light">${item.Q1Count}</td>`;
+                                if(vQ >= 2) row += `<td class="text-center fw-bold bg-light">${item.Q2Count}</td>`;
+                                if(vQ >= 3) row += `<td class="text-center fw-bold bg-light">${item.Q3Count}</td>`;
+                                if(vQ >= 4) row += `<td class="text-center fw-bold bg-light">${item.Q4Count}</td>`;
+
+                                row += `<td class="text-center fw-bold text-dark">${item.FYCount}</td>
+                                    <td class="text-center">
+                                        <div class="d-flex align-items-center gap-2" style="width: 100px; margin: auto;">
+                                            <div class="progress flex-grow-1" style="height: 6px; background-color: #f1f5f9;">
+                                                <div class="progress-bar bg-success" style="width: ${share}%"></div>
+                                            </div>
+                                            <small class="fw-bold">${share}%</small>
+                                        </div>
+                                    </td>
+                                </tr>`;
+                                tbody.append(row);
+                            });
+                        } else {
+                            toastr.error(res.message);
+                        }
+                    });
+
+            $.getJSON('@Url.Action("GetTopRejectionsFinYear","Reports")', (res) => {
+                if(res.success) {
+                    charts.qualityPareto.data.labels = res.data.map(x => x.ItemName);
+                    charts.qualityPareto.data.datasets[0].data = res.data.map(x => x.Count);
+                    charts.qualityPareto.update('none');
+                }
+            });
+
+            $.getJSON('@Url.Action("GetMTTRTrend", "Asset")', (d) => {
+                if(d.success) {
+                    charts.mttrTrend.data.labels = d.data.map(x => x.Month);
+                    charts.mttrTrend.data.datasets[0].data = d.data.map(x => x.AvgHours);
+                    charts.mttrTrend.update('none');
+                }
+            });
+
+            $.getJSON('@Url.Action("DashboardDataForEwap", "StockReport")', (d) => { charts.ewap.fullItemNames = d.pendingEwapItems.map(x => x.ItemNameBar); charts.ewap.data.labels = d.pendingEwapItems.map(x => x.ItemName); charts.ewap.data.datasets[0].data = d.pendingEwapItems.map(x => x.Count); $('#kpi-untested').text(d.totalQuantity); charts.ewap.update('none'); });
+            $.getJSON('@Url.Action("GetFinancialYearDispatchData", "StockReport")', (d) => { monthlyDispatchDataForLabels = d.monthlyData; charts.yearly.data.labels = d.monthlyData.map(x => x.MonthYear); charts.yearly.data.datasets[0].data = d.monthlyData.map(x => x.TotalDispatch); $('#yearlyTotalUnitsBadge').text(`Year Total: ${d.monthlyData.reduce((acc, curr) => acc + (curr.TotalDispatch || 0), 0)} Units`); $('#yearlyTotalValueBadge').text(`Total Value: ${new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(d.monthlyData.reduce((acc, curr) => acc + (curr.TotalBasicPrice || 0), 0))}`); charts.yearly.update('none'); });
+            $.getJSON('@Url.Action("GetCurrentMonthDispatchData", "StockReport")', (d) => { charts.dispatch.data.labels = d.data.map(x => x.Date); charts.dispatch.data.datasets[0].data = d.data.map(x => x.DispatchCount); $('#totalDispatchBadge').text(`Total: ${d.totalCount}`); charts.dispatch.update('none'); });
+            $.getJSON('@Url.Action("GetReportData", "StockReport")', (d) => { if(charts.stock) { charts.stock.fullItemNames = d.data.map(x => x.ItemNameBar); charts.stock.data.labels = d.data.map(x => x.ItemName); charts.stock.data.datasets[0].data = d.data.map(x => x.TotalQuantity); $('#kpi-ready').text(d.grandTotalQuantity); charts.stock.update('none'); } });
+            $.getJSON('@Url.Action("GetLowStockItems", "StockReport")', (d) => $('#kpi-shortage').text(d.length || 0));
+            $.getJSON('@Url.Action("GetMonthlySaleRatingData", "StockReport")', (d) => { charts.rating.data.labels = d.saledata.map(x => x.RatingDescription + ' KVA'); charts.rating.data.datasets[0].data = d.saledata.map(x => x.Count); charts.rating.update('none'); });
+        }
+    </script>
+}

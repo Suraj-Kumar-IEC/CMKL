@@ -1,0 +1,449 @@
+﻿
+@{
+    ViewBag.Title = "UpdateBOMQtyPercentage";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@* Essential CSS includes *@
+
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+@* jQuery UI for Datepicker and Autocomplete (optional, but good for UX) *@
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+<div class="container">
+    <div class="card">
+        <div class="card-header text-center">
+            Adjust Approved Quantity
+        </div>
+        <div class="card-body">
+            <form id="adjustmentForm">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="itemCodeInput">Item Code<span class="text-danger">*</span>:</label>
+                            <input type="text" class="form-control" id="itemCodeInput" name="itemCodeInput" placeholder="Scan or Enter Item Code" required>
+                            <div class="invalid-feedback">Item Code is required.</div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="form-group">
+                            <label for="itemNameDisplay">Item Name:</label>
+                            <input type="text" class="form-control" id="itemNameDisplay" readonly placeholder="Auto-populated Item Name">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="itemDescDisplay">Item Description:</label>
+                            <input type="text" class="form-control" id="itemDescDisplay" readonly placeholder="Auto-populated Description">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="itemUOMDisplay">UOM:</label>
+                            <input type="text" class="form-control" id="itemUOMDisplay" readonly placeholder="Auto-populated UOM">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="percentageReductionInput">Percentage Reduction<span class="text-danger">*</span>:</label>
+                            <input type="number" step="0.01" min="0" max="100" class="form-control" id="percentageReductionInput" name="percentageReductionInput" required value="0" placeholder="e.g., 10 for 10%">
+                            <div class="invalid-feedback">Percentage must be between 0 and 100.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="fromDateInput">From Date<span class="text-danger">*</span>:</label>
+                            <input type="date" class="form-control" id="fromDateInput" name="fromDateInput" required>
+                            <div class="invalid-feedback">From Date is required.</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="toDateInput">To Date<span class="text-danger">*</span>:</label>
+                            <input type="date" class="form-control" id="toDateInput" name="toDateInput" required>
+                            <div class="invalid-feedback">To Date is required.</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="button" id="getRecordsBtn" class="btn btn-info btn-block">Get Records</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Section to display fetched records -->
+    <div class="card data-table-section">
+        <div class="card-header text-center">
+            Records for Adjustment
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table id="recordsTable" class="table table-hover table-records mb-0 table-sm">
+                    <thead>
+                        <tr>
+                            <th>BOM Voucher ID</th>
+                            <th>Item Code</th>
+                            <th>Item Name</th>
+                            <th>Quantity Required</th>
+                            <th>Approved Quantity (Original)</th>
+                            <th>UOM</th>
+                            <th>Approved Quantity (After Reduction)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="7" class="text-center">Use "Get Records" to load data.</td></tr>
+                    </tbody>
+                    <tfoot>
+                        @* <<< NEW: Table Footer Section >>> *@
+                        <tr class="table-info">
+                            @* Using Bootstrap's table-info for light blue background *@
+                            <td colspan="3" class="text-right"><strong>Overall Totals:</strong></td>
+                            <td class="text-right"><strong>Qty Req:</strong> <span id="totalQtyRequiredDisplay">0.00</span></td>
+                            <td class="text-right"><strong>App. Orig:</strong> <span id="totalApprovedOriginalDisplay">0.00</span></td>
+                            <td class="text-right"><strong>App. New:</strong> <span id="totalApprovedNewDisplay">0.00</span></td>
+                            <td class="text-right"><strong>Difference:</strong> <span id="DiffApprovedNewDisplay">0.00</span></td>
+                        </tr>
+                        <tr class="table-info">
+                            <td colspan="6" class="text-right"><strong>Total Records:</strong></td>
+                            <td class="text-center" id="totalRecordsDisplay"><strong>0</strong></td>
+                        </tr>
+                    </tfoot> @* >>> END: Table Footer Section >>> *@
+                </table>
+            </div>
+            <div id="recordsMessage" class="alert alert-info text-center m-3" style="display:none;">
+                No records found for the selected criteria.
+            </div>
+        </div>
+        <div class="card-footer text-center">
+            <button type="button" id="applyReductionBtn" class="btn btn-primary mr-2" disabled>Apply Reduction</button>
+            <button type="button" id="clearRecordsBtn" class="btn btn-secondary">Clear Table</button>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="~/toastr/Js/toastr.js"></script>
+    @* jQuery UI for Datepicker (if using it, ensure it's loaded) *@
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            // Global array to store the fetched records with their original and new quantities
+            var fetchedRecords = [];
+            var selectedRawItemId = null; // Store the ItemId from lookup
+
+            // Initialize datepickers (if you want to use jQuery UI Datepicker)
+            // $('#fromDateInput, #toDateInput').datepicker({
+            //     dateFormat: 'yy-mm-dd' // Match HTML5 date input format
+            // });
+
+            // --- Item Code Lookup Handler ---
+            $('#itemCodeInput').on('change', function () {
+                var itemCode = $(this).val().trim();
+                if (itemCode.length > 0) {
+                    getItemDetailsByCode(itemCode);
+                } else {
+                    clearItemDetails();
+                }
+            });
+
+            // --- Get Records Button Handler ---
+            $('#getRecordsBtn').on('click', function () {
+                getRecordsForAdjustment();
+            });
+
+            // --- Apply Reduction Button Handler ---
+            $('#applyReductionBtn').on('click', function () {
+                applyPercentageReduction();
+            });
+
+            // --- Clear Table Button Handler ---
+            $('#clearRecordsBtn').on('click', function () {
+                clearRecordsTable();
+            });
+
+            // --- Helper Functions ---
+
+            function clearItemDetails() {
+                $('#itemNameDisplay').val('');
+                $('#itemDescDisplay').val('');
+                $('#itemUOMDisplay').val('');
+                $('#itemCodeInput').removeClass('is-invalid').next('.invalid-feedback').empty();
+                selectedRawItemId = null; // Clear stored ItemId
+            }
+
+            function validateAdjustmentCriteria() {
+                var isValid = true;
+                $('.form-control').removeClass('is-invalid');
+                $('.invalid-feedback').empty();
+
+                if ($('#itemCodeInput').val().trim() === '' || selectedRawItemId === null) {
+                    $('#itemCodeInput').addClass('is-invalid').next('.invalid-feedback').text('Please enter a valid Item Code and ensure details are loaded.').show();
+                    isValid = false;
+                }
+                if ($('#fromDateInput').val().trim() === '') {
+                    $('#fromDateInput').addClass('is-invalid').next('.invalid-feedback').text('From Date is required.').show();
+                    isValid = false;
+                }
+                if ($('#toDateInput').val().trim() === '') {
+                    $('#toDateInput').addClass('is-invalid').next('.invalid-feedback').text('To Date is required.').show();
+                    isValid = false;
+                }
+                var percentage = parseFloat($('#percentageReductionInput').val());
+                if (isNaN(percentage) || percentage < 0 || percentage > 100) {
+                    $('#percentageReductionInput').addClass('is-invalid').next('.invalid-feedback').text('Percentage must be between 0 and 100.').show();
+                    isValid = false;
+                }
+                return isValid;
+            }
+
+            function clearRecordsTable() {
+                $('#recordsTable tbody').empty().append('<tr><td colspan="7" class="text-center">Use "Get Records" to load data.</td></tr>');
+                $('#recordsMessage').hide();
+                $('#applyReductionBtn').prop('disabled', true);
+                fetchedRecords = []; // Clear the data array
+            }
+
+            // --- AJAX Functions ---
+
+            function getItemDetailsByCode(itemCode) {
+                clearItemDetails(); // Clear first
+                $.ajax({
+                    url: '@Url.Action("GetItemDetailsForAdjustment", "BOM")', // <<< C# Controller action
+                    type: 'GET',
+                    dataType: 'json',
+                    data: { itemCode: itemCode },
+                    success: function (response) {
+                        if (response.success && response.item) {
+                            $('#itemNameDisplay').val(response.item.ItemName);
+                            $('#itemDescDisplay').val(response.item.ItemDesc);
+                            $('#itemUOMDisplay').val(response.item.UOM);
+                            selectedRawItemId = response.item.ItemId; // Store the ItemId
+                            toastr.success("Item details loaded.", "Success");
+                        } else {
+                            $('#itemCodeInput').addClass('is-invalid').next('.invalid-feedback').text(response.message || 'Item not found.').show();
+                            toastr.warning(response.message || "Item not found.");
+                            selectedRawItemId = null;
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error fetching item details:", status, error, xhr.responseText);
+                        $('#itemCodeInput').addClass('is-invalid').next('.invalid-feedback').text('Error fetching item details.').show();
+                        toastr.error("Error fetching item details.", "Error");
+                        selectedRawItemId = null;
+                    }
+                });
+            }
+
+                function getRecordsForAdjustment() {
+                    if (!validateAdjustmentCriteria()) {
+                        return;
+                    }
+
+                    $('#recordsTable tbody').html('<tr><td colspan="7" class="text-center"><div class="spinner-border text-info" role="status"><span class="sr-only">Loading...</span></div> Loading records...</td></tr>');
+                    $('#recordsMessage').hide();
+                    $('#applyReductionBtn').prop('disabled', true);
+                    fetchedRecords = []; // Clear previous data
+
+                    var fromDate = $('#fromDateInput').val();
+                    var toDate = $('#toDateInput').val();
+                    var percentageReduction = parseFloat($('#percentageReductionInput').val());
+
+                    $.ajax({
+                        url: '@Url.Action("GetBOMVoucherlinesForAdjustment", "BOM")', // <<< C# Controller action
+                        type: 'GET',
+                        dataType: 'json',
+                        data: {
+                            rawItemId: selectedRawItemId,
+                            fromDate: fromDate,
+                            toDate: toDate
+                        },
+                        success: function (response) {
+                            var tableBody = $('#recordsTable tbody');
+                            tableBody.empty();
+
+                            if (response.success && response.data && response.data.length > 0) {
+                                fetchedRecords = response.data.map(line => {
+                                    var currentApproved = line.ApprovedQuantity;
+                                    var reductionFactor = percentageReduction / 100;
+                                    var newApproved = currentApproved * (1 - reductionFactor);
+                                    newApproved = Math.round(newApproved * 100) / 100;
+
+                                    return {
+                                        Id: line.Id,
+                                        BOMVoucherId: line.BOMVoucherId,
+                                        ItemCode: line.ItemCode,
+                                        ItemName: line.ItemName,
+                                        QuantityRequired: line.QuantityRequired,
+                                        ApprovedQuantityOriginal: currentApproved,
+                                        ApprovedQuantityNew: newApproved,
+                                        UOM: line.UOM,
+                                        RawItemId: line.RawItemId
+                                    };
+                                });
+
+                                $.each(fetchedRecords, function (index, line) {
+                                    var row = `
+                                        <tr>
+                                            <td>${line.BOMVoucherId}</td>
+                                            <td>${line.ItemCode}</td>
+                                            <td>${line.ItemName}</td>
+                                            <td class="text-right">${line.QuantityRequired}</td>
+                                            <td class="text-right">${line.ApprovedQuantityOriginal}</td>
+                                            <td>${line.UOM}</td>
+                                            <td class="text-right text-primary"><strong>${line.ApprovedQuantityNew.toFixed(2)}</strong></td>
+                                        </tr>
+                                    `;
+                                    tableBody.append(row);
+                                });
+
+                                // --- FIX: Calculate and update total sums ---
+                                var sumQtyRequired = fetchedRecords.reduce((sum, line) => sum + (line.QuantityRequired || 0), 0);
+                                var sumApprovedOriginal = fetchedRecords.reduce((sum, line) => sum + (line.ApprovedQuantityOriginal || 0), 0);
+                                var sumApprovedNew = fetchedRecords.reduce((sum, line) => sum + (line.ApprovedQuantityNew || 0), 0);
+                                // --- NEW: Calculate the total difference ---
+                                var totalDifference = fetchedRecords.reduce((sum, line) => {
+                                    // Ensure both values are treated as 0 if null before subtraction
+                                    var original = line.ApprovedQuantityOriginal || 0;
+                                    var newQty = line.ApprovedQuantityNew || 0;
+                                    return sum + (original - newQty);
+                                }, 0);
+                                // Round the total difference for display if needed
+                                totalDifference = Math.round(totalDifference * 100) / 100;
+
+                                $('#totalRecordsDisplay').text(fetchedRecords.length); // Update total records count
+                                $('#totalQtyRequiredDisplay').text(sumQtyRequired.toFixed(2)); // Update Qty Required sum
+                                $('#totalApprovedOriginalDisplay').text(sumApprovedOriginal.toFixed(2)); // Update App. Original sum
+                                $('#totalApprovedNewDisplay').text(sumApprovedNew.toFixed(2)); // Update App. New sum
+                                $('#DiffApprovedNewDisplay').text(totalDifference.toFixed(2)); 
+                                
+
+
+                                $('#applyReductionBtn').prop('disabled', false); // Enable apply button
+                                toastr.success(`${fetchedRecords.length} records loaded.`, "Success");
+                            } else {
+                                $('#recordsMessage').text(response.message || 'No records found for the selected criteria.').show();
+                                tableBody.append('<tr><td colspan="7" class="text-center">No records found.</td></tr>');
+                                $('#applyReductionBtn').prop('disabled', true);
+                                $('#totalRecordsDisplay').text('0');
+                                $('#totalQtyRequiredDisplay').text('0.00');
+                                $('#totalApprovedOriginalDisplay').text('0.00');
+                                $('#totalApprovedNewDisplay').text('0.00');
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Error fetching records:", status, error, xhr.responseText);
+                            toastr.error("Failed to load records.", "Error");
+                            $('#recordsMessage').text('Error loading records.').show();
+                            tableBody.append('<tr><td colspan="7" class="text-center text-danger">Error loading records.</td></tr>');
+                            $('#applyReductionBtn').prop('disabled', true);
+                            $('#totalRecordsDisplay').text('0');
+                            $('#totalQtyRequiredDisplay').text('0.00');
+                            $('#totalApprovedOriginalDisplay').text('0.00');
+                            $('#totalApprovedNewDisplay').text('0.00');
+                        }
+                    });
+                }
+
+            function applyPercentageReduction() {
+
+                if (fetchedRecords.length === 0) {
+                    toastr.warning("No records to update.", "Warning");
+                    return;
+                }
+
+                if (!confirm("Are you sure you want to apply the percentage reduction to ALL " + fetchedRecords.length + " displayed records?")) {
+                    return;
+                }
+
+                const BATCH_SIZE = 200; // Define your batch size
+                let totalRecords = fetchedRecords.length;
+                let totalBatches = Math.ceil(totalRecords / BATCH_SIZE); // Calculate total number of batches
+                let currentBatchIndex = 0; // Track which batch is being processed
+
+                // Store common payload details that are the same for all batches
+                var commonPayloadDetails = {
+                    RawItemId: selectedRawItemId,
+                    FromDate: $('#fromDateInput').val(),
+                    ToDate: $('#toDateInput').val(),
+                    PercentageReduction: parseFloat($('#percentageReductionInput').val())
+                };
+
+                // Update UI to indicate batch processing has started
+                $('#applyReductionBtn').prop('disabled', true).text(`Applying... (0/${totalRecords} records)`);
+                $('#recordsMessage').hide(); // Hide any previous general message
+
+            // --- Recursive function to process each batch ---
+                    function processNextBatch() {
+                        if (currentBatchIndex < totalBatches) {
+                            const start = currentBatchIndex * BATCH_SIZE;
+                            const end = Math.min(start + BATCH_SIZE, totalRecords); // Ensure 'end' doesn't exceed total records
+                            const currentBatchOfLines = fetchedRecords.slice(start, end); // Get the slice for the current batch
+
+                            // Prepare the 'LinesToUpdate' for the current batch
+                            var linesToUpdateBatch = currentBatchOfLines.map(line => ({
+                                LineId: line.Id,
+                                NewApprovedQuantity: line.ApprovedQuantityNew
+                            }));
+
+                            // Create the payload for the current batch by merging common details with current batch lines
+                            var payload = { ...commonPayloadDetails, LinesToUpdate: linesToUpdateBatch };
+
+                            $.ajax({
+                                url: '@Url.Action("ApplyPercentageReduction", "BOM")', // Your C# Controller action
+                                type: 'POST',
+                                contentType: 'application/json; charset=utf-8', // Data is JSON
+                                dataType: 'json', // Expect JSON response
+                                data: JSON.stringify(payload), // Stringify the batch payload
+                                success: function (response) {
+                                    if (response.success) {
+                                        currentBatchIndex++; // Increment batch counter
+                                        let processedCount = currentBatchIndex * BATCH_SIZE;
+                                        if (processedCount > totalRecords) processedCount = totalRecords; // Cap for the last batch
+
+                                        toastr.success(`Batch ${currentBatchIndex}/${totalBatches} processed. (${processedCount}/${totalRecords} records updated).`, "Batch Successful");
+                                        $('#applyReductionBtn').text(`Applying... (${processedCount}/${totalRecords} records)`); // Update button text with progress
+
+                                        // Process the next batch recursively
+                                        processNextBatch();
+                                    } else {
+                                        // If a batch fails, show error and re-enable button (stop further processing)
+                                        toastr.error(`Batch ${currentBatchIndex + 1}/${totalBatches} failed: ${response.message}`, "Update Failed");
+                                        $('#applyReductionBtn').prop('disabled', false).text('Apply Reduction');
+                                    }
+                                },
+                                error: function (xhr, status, error) {
+                                    // Handle AJAX errors for individual batches
+                                    console.error("Error applying reduction (Batch " + (currentBatchIndex + 1) + "):", status, error, xhr.responseText);
+                                    toastr.error(`An error occurred during batch update ${currentBatchIndex + 1}.`, "Error");
+                                    $('#applyReductionBtn').prop('disabled', false).text('Apply Reduction'); // Re-enable on error
+                                },
+                                complete: function () {
+                                    // This 'complete' function executes after each individual AJAX batch.
+                                    // The final 'complete' logic for the entire operation is in the 'else' block of processNextBatch().
+                                }
+                            });
+                        } else {
+                            // --- All batches processed successfully ---
+                            toastr.success(`All ${totalRecords} records updated successfully in ${totalBatches} batches.`, "All Updates Complete");
+                            $('#applyReductionBtn').prop('disabled', false).text('Apply Reduction'); // Re-enable button
+                            clearRecordsTable(); // Clear the table and reset the form after complete success
+                        }
+                    }
+
+                    // --- Start processing the first batch ---
+                    processNextBatch();
+                 }
+        });
+    </script>
+}
+

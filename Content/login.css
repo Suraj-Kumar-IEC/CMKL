@@ -1,0 +1,103 @@
+﻿/* Global Styles */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    color: #333;
+    background-color: #f7f7f7;
+}
+
+/* Login Container */
+
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-image: linear-gradient(to bottom, #333, #444);
+    background-size: 100% 300px;
+    background-position: 0% 100%;
+}
+
+/* Login Box */
+
+.login-box {
+    background-color: #fff;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    width: 300px;
+}
+
+/* Login Logo */
+
+.login-logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Login Form */
+
+.login-form {
+    padding: 20px;
+}
+
+/* Input Fields */
+
+.industrial-input {
+    background-color: #f7f7f7;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 16px;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+    .industrial-input:focus {
+        border-color: #337ab7;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+
+/* Button */
+
+.industrial-button {
+    background-color: #337ab7;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    width: 100%;
+}
+
+    .industrial-button:hover {
+        background-color: #23527c;
+    }
+
+/* Error Messages */
+
+.error-message {
+    color: #red;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+/* Success Messages */
+
+.success-message {
+    color: #green;
+    font-size: 14px;
+    margin-bottom: 10px;
+}

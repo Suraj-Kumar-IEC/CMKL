@@ -1,0 +1,353 @@
+﻿@*@{
+        ViewBag.Title = "PackingSlip";
+        Layout = null;
+    }
+*@
+<title>Packing Slip</title>
+<style>
+    /* Reset and Box Sizing */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    @@page {
+        size: A4;
+        margin: 0;
+    }
+
+    @@media print {
+        body {
+            border: 2px solid black;
+            margin: 10mm;
+        }
+    }
+
+    @@media print {
+        #printButton {
+            display: none;
+        }
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        font-size: 10px;
+    }
+
+    .packing-slip-container {
+        width: 100%;
+        height: auto;
+        margin: 0;
+        padding: 10px;
+        box-sizing: border-box;
+    }
+
+    .header {
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+        .header h2 {
+            font-size: 1.5em;
+        }
+
+    .customer-info {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .table-section {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .packing-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .packing-table th,
+        .packing-table td {
+            border: 1px solid black;
+            padding: 4px;
+            text-align: left;
+        }
+
+    .bottom-info {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .make-label {
+        display: inline-block;
+        width: 80px; /* Set your desired fixed width here */
+        font-weight: bold; /* Optional: Make the label bold */
+    }
+
+    .data-value {
+        display: inline-block;
+        /* width: auto;  You can set a width if needed, or let it flow */
+    }
+</style>
+<div class="packing-slip-container">
+    <h4 style="text-align: center;">DG SET PACKING SLIP</h4>
+    <p style="text-align:center">COMPLYING CPCB IV NORMS</p>
+    @*<p style="text-align:center">IEC ELECTRIC POWER LTD, KATHUA</p>*@
+    <div class="row">
+        <div class="col-6" style="text-align:left">
+            <p style="margin-bottom: 0.1em;"><strong>Packing Slip No.:</strong> <span id="packingno"></span></p>
+            <p style="margin-bottom: 0.1em;"><strong>NAME OF CUSTOMER:</strong> <span id="customerName"></span></p>
+            <p style="margin-bottom: 0.1em;"><strong>SHIPPING ADDRESS:</strong> <span id="shippingaddress"></span></p>
+            <p style="margin-bottom: 0.1em;"><strong>INVOICE NO:</strong> <span id="invoiceNo"></span></p>
+            <p style="margin-bottom: 0.1em;"><strong>DATE:</strong> <span id="date"></span></p>
+            <p style="margin-bottom: 0.1em;"><strong>DG SET:</strong> <span id="dgSet"></span><span> KVA</span></p>
+            <p style="margin-bottom: 0.1em;"><strong>Eway Bill:</strong> <span id="eway"></span></p>
+        </div>
+        <div class="col-6" style="text-align:right">
+            <p style="margin-bottom: 0.1em;"><strong><span id="CompanyName">Company Name:</span></strong></p>
+            <p style="margin-bottom: 0.1em;"><strong><span id="CAddress">Address :</span></strong></p>
+            <p style="margin-bottom: 0.1em;"><strong><span id="CAddress1"></span></strong></p>
+            <p style="margin-bottom: 0.1em;"><strong>GST :<span id="CGST"></span></strong></p>
+            <p style="margin-bottom: 0.1em;"><strong>PAN :<span id="CPAN"></span></strong></p>
+        </div>
+    </div>
+    <div class="customer-info">
+
+    </div>
+
+    <div class="table-section">
+        <h6 style="text-align: center;">ENGINE DETAILS & DOCUMENTS</h6>
+        <table class="packing-table">
+            <tr>
+                <td><span class="make-label">Make - </span><span id="Make"></span></td>
+                <td><span class="make-label">Model -</span><span id="enginemodel"></span></td>
+                <td><span class="make-label">Engine Sr. No. -</span><span id="engineSerialNo"></span></td>
+            </tr>
+            <tr>
+                <td><span class="make-label">Test Certificate -</span><span id="testCertificate"></span></td>
+                <td colspan="2"><span span class="make-label">Other Detail - <span id="engineotherdetail"></span></span></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="table-section">
+        <h6 style="text-align: center;">ALTERNATOR DETAILS & DOCUMENTS</h6>
+        <table class="packing-table">
+            <tr>
+                <td><span class="make-label">Make- </span><span id="altmake"></span></td>
+                <td><span class="make-label">Frame -</span><span id="altframe"></span></td>
+                <td><span class="make-label">MC No. -</span><span id="altSerialNo"></span></td>
+                <td><span class="make-label">Rating -</span><span id="arating"></span><span> KVA</span></td>
+            </tr>
+            <tr>
+                <td><span class="make-label">Phase -</span><span id="aphase"></span></td>
+                <td><span class="make-label">Test Certificate -</span><span id="altTestCertificate"></span></td>
+                <td><span class="make-label">Warranty Card -</span><span id="altWarrantyCard"></span></td>
+                <td><span class="make-label">Other Detail -</span><span id="Alterotherdetail"></span></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="table-section">
+        <h6 style="text-align: center;">CONTROL PANEL</h6>
+        <table class="packing-table">
+            <tr>
+                <td><span class="make-label">Type- </span><span id="cptype"></span></td>
+                <td><span class="make-label">Rating -</span><span id="cprating"></span></td>
+                <td><span class="make-label">Panel S.No -</span><span id="cpsno"></span></td>
+            </tr>
+            <tr>
+                <td colspan="3"><span class="make-label">Other Detail -</span><span id="cpotherdetail"></span></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="table-section">
+        <h6 style="text-align: center;">BATTERIES WITH BATTERY LEADS ( FITTED )</h6>
+        <table class="packing-table" style="margin-bottom:5px">
+            <tr>
+                <td><span class="make-label">Make - </span><span id="btmake"></span></td>
+                <td><span class="make-label">Rating - </span><span id="btrate"></span></td>
+                <td><span class="make-label">Quantity -</span><span id="btqty"></span></td>
+                <td><span class="make-label">S. No. -</span><span id="btsn"></span></td>
+            </tr>
+            <tr>
+                <td><span class="make-label">Erection Material - </span><span id="ermat"></span></td>
+                <td colspan="3"><span id="erectionDetail"></span></td>
+            </tr>
+        </table>        
+    </div>
+    <div class="table-section">
+        <table class="packing-table">
+            <tr>
+                <td><span class="make-label">Canopy - </span><span id="canopy">1</span><span> Nos.</span></td>
+                <td><span class="make-label">Fuel Tank - </span><span id="fueltank">In Built in the Canopy Base</span><span id="ftcapacity"></span></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="table-section">
+        <h6 style="text-align: center;">MATERIAL</h6>
+        <table class="packing-table">
+            <tr>
+                <td><span class="make-label">Exhaust Pipe - </span><span id="expipe"></span><span> Nos</span></td>
+                <td><span class="make-label">Lube Oil - </span><span id="lubeoil"></span></td>
+                <td><span class="make-label">KG Stickers - </span><span id="kgsticker"></span></td>
+            </tr>
+            <tr>
+                <td><span class="make-label">K Cool - </span><span id="kcool"></span></td>
+                <td><span class="make-label">KRM - </span><span id="KRM"></span></td>
+                <td><span class="make-label">AVM Pads - </span><span id="avmpd"></span></td>
+            </tr>
+            <tr>
+                <td><span class="make-label">Fuel Spout - </span><span id="FSpout"></span><span> No Fitted</span></td>
+                <td><span class="make-label">Flexible Bellow- </span><span id="flexibleBellow"></span><span> Fitted</span></td>
+                <td><span class="make-label">AD Blue -</span><span id="adblue">First Fill</span></td>
+            </tr>
+            <tr>                
+                <td colspan="3"><span class="make-label">Other Detail -</span><span @*id="adblue"*@ id="adblueOtherDetail"></span></td>
+            </tr>
+        </table>
+    </div>
+
+
+    <div class="table-section">
+        <h6 style="text-align: center;">LOGISTICS</h6>
+        <table class="packing-table">
+            <tr>
+                <td><span class="make-label">Transporter - </span><span id="transporter"></span></td>
+                <td><span class="make-label">LR No - </span><span id="lrno"></span></td>
+            </tr>
+            <tr>
+                <td><span class="make-label">LR Date - </span><span id="lrdate"></span></td>
+                <td><span class="make-label">Lorry No- </span><span id="lorry"></span></td>
+            </tr>
+        </table>
+    </div>
+    <div class="row inrow" style="display: flex;">
+        <div style="text-align:left; width: 33.3%; font-size:10px;">
+            <p style="margin-bottom:1px;"><strong>Checked By</strong></p>
+            <img id="preparedbysig" alt="Signature" style="width: 80px; height: 60px;" />
+            <p>Signature</p>
+        </div>
+        <div style="text-align:center;width: 33.3%; font-size:10px;">
+            <p style="margin-bottom:1px;"><strong>Accounts/Logistics</strong></p>
+            <img id="Accsig" alt="Signature" style="width: 80px; height: 60px;" />
+            <p>Signature</p>
+        </div>
+        <div style="text-align:right; width: 33.3%; font-size:10px;">
+            <p style="margin-bottom: 60px;"><strong>Reciever Signature and Seal</strong></p>
+            <p style="margin-bottom:2px;">Name.........................................</p>
+            <p>Mobile........................................</p>
+        </div>
+    </div>
+</div>
+
+<button id="printButton" onclick="printPackingSlip()">Print</button>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script>
+    // Function to trigger the browser's print dialog
+    function printPackingSlip() {
+        window.print();
+    }
+
+    $(document).ready(function () {
+        debugger;
+        var BOMID = @ViewBag.BOMID;
+        // IMPORTANT: Ensure this URL matches your actual API endpoint to fetch packing slip details
+        $.ajax({
+            url: '@Url.Action("GetBOMPrintData", "Production")', // Assuming 'GetBOMPrintData' is your API action
+            type: 'GET', // Data is sent via GET in the URL
+           // dataType: 'json',
+            data: { BOMID: BOMID }, // Send the BOMID to the server
+            success: function(packingSlipData) {
+                //console.log('Data received for printing:', packingSlipData);
+                //var InvoiceDate = (moment(data.DispatchDetail.InvoiceDate).format("DD-MM-YYYY"));
+                var Invoicedt = new Date(parseInt(packingSlipData.DispatchDetail.InvoiceDate.substr(6))); // Extract milliseconds
+                var formattedInvoiceDate = moment(Invoicedt).format('DD/MM/YYYY');
+                var LRdt = new Date(parseInt(packingSlipData.DispatchDetail.LRdate.substr(6))); // Extract milliseconds
+                var formattedLRDate = moment(LRdt).format('DD/MM/YYYY');
+                debugger
+
+                $("#packingno").text(packingSlipData.DispatchDetail.VoucherNo || 'N/A');
+                $("#customerName").text(packingSlipData.DispatchDetail.CustomerName || 'N/A');
+                $("#invoiceNo").text(packingSlipData.DispatchDetail.InvoiceNo || 'N/A');
+                $('#date').text(formattedInvoiceDate);
+                $('#shippingaddress').text(packingSlipData.DispatchDetail.customerAddress || 'N/A');
+                // Format date if it's coming as a string that moment can parse or a .NET JSON date
+                $("#dgSet").text(packingSlipData.TestingData.ratingOfGenset || 'N/A');
+                $("#eway").text(packingSlipData.DispatchDetail.Eway || 'N/A');
+                // Company Info
+                $("#CompanyName").text(packingSlipData.Company.CompanyName || 'N/A');
+                $("#CAddress").text(packingSlipData.Company.Address || 'Address : N/A');
+                $("#CAddress1").text(packingSlipData.Company.Address1 || '');
+                $("#CGST").text(packingSlipData.Company.CompanyGST || 'N/A');
+                $("#CPAN").text(packingSlipData.Company.CompanyPAN || 'N/A');
+                // Engine Details
+                $("#Make").text(packingSlipData.ProductionData.emake || 'N/A');
+                $("#enginemodel").text(packingSlipData.ProductionData.emodel || 'N/A');
+                $("#engineSerialNo").text(packingSlipData.ProductionData.engineSerialNo || 'N/A');
+                $("#testCertificate").text(packingSlipData.ProductionData.etestcert || 'N/A');
+                $("#engineotherdetail").text(packingSlipData.ProductionData.eremarks || 'N/A');
+                // Alternator Details
+                $("#altmake").text(packingSlipData.ProductionData.amake || 'N/A');
+                $("#altframe").text(packingSlipData.ProductionData.aframe || 'N/A');
+                $("#altSerialNo").text(packingSlipData.ProductionData.alternatorSerialNo || 'N/A');
+                $("#aphase").text(packingSlipData.ProductionData.aphase || 'N/A');
+                $("#arating").text(packingSlipData.ProductionData.arating || 'N/A');
+                $("#altTestCertificate").text(packingSlipData.ProductionData.atestcert || 'N/A');
+                $("#altWarrantyCard").text(packingSlipData.ProductionData.awarranty || 'N/A');
+                $("#Alterotherdetail").text(packingSlipData.ProductionData.aremarks || 'N/A');
+                // Control Panel Details
+                $("#cptype").text(packingSlipData.TestingData.CPtype || 'N/A');
+                $("#cprating").text(packingSlipData.TestingData.cprating || 'N/A');
+                $("#cpsno").text(packingSlipData.TestingData.PanelSerialNo || 'N/A');
+                $("#cpotherdetail").text(packingSlipData.TestingData.cpotherdetail || 'N/A');
+                // Batteries Details
+                $("#btmake").text(packingSlipData.TestingData.bmake || 'N/A');
+                $("#btrate").text(packingSlipData.TestingData.BatteryRating || 'N/A');
+                $("#btqty").text(packingSlipData.TestingData.Batteryqty || 'N/A');
+                $("#btsn").text(packingSlipData.TestingData.BatterySerialNo || 'N/A');
+                $("#ermat").text(packingSlipData.DispatchDetail.Erection || 'N/A');
+                $("#erectionDetail").text(packingSlipData.DispatchDetail.ErectionDetail || 'N/A');
+                // Canopy & Fuel Tank
+                $("#canopy").text(packingSlipData.TestingData.canopy || 'N/A');
+                //$("#fueltank").text(packingSlipData.TestingData.fuelspout || 'N/A');
+                $("#ftcapacity").text(packingSlipData.FuelTankCapacity || '');
+                // Material Details
+                $("#expipe").text(packingSlipData.ProductionData.exhaust || 'N/A');
+                $("#lubeoil").text(packingSlipData.TestingData.lube || 'N/A');
+                $("#kgsticker").text(packingSlipData.ProductionData.kgsticker || 'N/A');
+                $("#kcool").text(packingSlipData.TestingData.kcool || 'N/A');
+                $("#KRM").text(packingSlipData.TestingData.KRMNo || 'N/A');
+                $("#avmpd").text(packingSlipData.ProductionData.AVM || 'N/A');
+                //$("#silencer").text(packingSlipData.SilencerStatus || 'N/A');
+                $("#FSpout").text(packingSlipData.ProductionData.fuelspout || 'N/A');
+                $("#flexibleBellow").text(packingSlipData.ProductionData.flexbel || 'N/A');
+                $("#adblue").text(packingSlipData.TestingData.adblue || 'N/A');
+                $("#adblueOtherDetail").text(packingSlipData.TestingData.specialRemarks  || 'N/A');
+                // Logistics Details
+                $("#transporter").text(packingSlipData.DispatchDetail.Transport || 'N/A');
+                $("#lrno").text(packingSlipData.DispatchDetail.LR || 'N/A');
+                $("#lorry").text(packingSlipData.DispatchDetail.Lorry || 'N/A');
+                $('#lrdate').text(formattedLRDate);
+                var PDISig = '@Url.Content("~/")' + packingSlipData.PDISignature.substring(2);
+                $('#preparedbysig').attr('src', PDISig);
+                var AccSig = '@Url.Content("~/")' + packingSlipData.AccSignature.substring(2);
+                $('#Accsig').attr('src', AccSig);
+                setTimeout(function () {
+                    $('#printButton').click();
+                }, 2000);
+                
+            },
+            error: function(xhr, status, error) {
+                console.error('Error fetching print data:', status, error);
+                alert('Failed to get print data. Please try again.');
+            }
+        });
+
+    });
+</script>

@@ -1,0 +1,412 @@
+E:\Application Code\CMKLMVC\bin\grpc_csharp_ext.x86.dll
+E:\Application Code\CMKLMVC\bin\grpc_csharp_ext.x64.dll
+E:\Application Code\CMKLMVC\bin\libgrpc_csharp_ext.x64.so
+E:\Application Code\CMKLMVC\bin\libgrpc_csharp_ext.x64.dylib
+E:\Application Code\CMKLMVC\bin\CMKL.dll.config
+E:\Application Code\CMKLMVC\bin\CMKL.dll
+E:\Application Code\CMKLMVC\bin\CMKL.pdb
+E:\Application Code\CMKLMVC\bin\roslyn\csc.exe
+E:\Application Code\CMKLMVC\bin\roslyn\csc.exe.config
+E:\Application Code\CMKLMVC\bin\roslyn\csc.rsp
+E:\Application Code\CMKLMVC\bin\roslyn\csi.exe
+E:\Application Code\CMKLMVC\bin\roslyn\csi.exe.config
+E:\Application Code\CMKLMVC\bin\roslyn\csi.rsp
+E:\Application Code\CMKLMVC\bin\roslyn\Microsoft.Build.Tasks.CodeAnalysis.dll
+E:\Application Code\CMKLMVC\bin\roslyn\Microsoft.CodeAnalysis.CSharp.dll
+E:\Application Code\CMKLMVC\bin\roslyn\Microsoft.CodeAnalysis.CSharp.Scripting.dll
+E:\Application Code\CMKLMVC\bin\roslyn\Microsoft.CodeAnalysis.dll
+E:\Application Code\CMKLMVC\bin\roslyn\Microsoft.CodeAnalysis.Scripting.dll
+E:\Application Code\CMKLMVC\bin\roslyn\Microsoft.CodeAnalysis.VisualBasic.dll
+E:\Application Code\CMKLMVC\bin\roslyn\Microsoft.CSharp.Core.targets
+E:\Application Code\CMKLMVC\bin\roslyn\Microsoft.DiaSymReader.Native.amd64.dll
+E:\Application Code\CMKLMVC\bin\roslyn\Microsoft.DiaSymReader.Native.x86.dll
+E:\Application Code\CMKLMVC\bin\roslyn\Microsoft.Managed.Core.CurrentVersions.targets
+E:\Application Code\CMKLMVC\bin\roslyn\Microsoft.Managed.Core.targets
+E:\Application Code\CMKLMVC\bin\roslyn\Microsoft.VisualBasic.Core.targets
+E:\Application Code\CMKLMVC\bin\roslyn\System.Buffers.dll
+E:\Application Code\CMKLMVC\bin\roslyn\System.Collections.Immutable.dll
+E:\Application Code\CMKLMVC\bin\roslyn\System.Memory.dll
+E:\Application Code\CMKLMVC\bin\roslyn\System.Numerics.Vectors.dll
+E:\Application Code\CMKLMVC\bin\roslyn\System.Reflection.Metadata.dll
+E:\Application Code\CMKLMVC\bin\roslyn\System.Runtime.CompilerServices.Unsafe.dll
+E:\Application Code\CMKLMVC\bin\roslyn\System.Text.Encoding.CodePages.dll
+E:\Application Code\CMKLMVC\bin\roslyn\System.Threading.Tasks.Extensions.dll
+E:\Application Code\CMKLMVC\bin\roslyn\vbc.exe
+E:\Application Code\CMKLMVC\bin\roslyn\vbc.exe.config
+E:\Application Code\CMKLMVC\bin\roslyn\vbc.rsp
+E:\Application Code\CMKLMVC\bin\roslyn\VBCSCompiler.exe
+E:\Application Code\CMKLMVC\bin\roslyn\VBCSCompiler.exe.config
+E:\Application Code\CMKLMVC\bin\AjaxMin.dll
+E:\Application Code\CMKLMVC\bin\Antlr3.Runtime.dll
+E:\Application Code\CMKLMVC\bin\BouncyCastle.Cryptography.dll
+E:\Application Code\CMKLMVC\bin\ClosedXML.dll
+E:\Application Code\CMKLMVC\bin\DocumentFormat.OpenXml.dll
+E:\Application Code\CMKLMVC\bin\EntityFramework.dll
+E:\Application Code\CMKLMVC\bin\EntityFramework.SqlServer.dll
+E:\Application Code\CMKLMVC\bin\EPPlus.Interfaces.dll
+E:\Application Code\CMKLMVC\bin\EPPlus.System.Drawing.dll
+E:\Application Code\CMKLMVC\bin\ExcelNumberFormat.dll
+E:\Application Code\CMKLMVC\bin\GridMvc.dll
+E:\Application Code\CMKLMVC\bin\Grpc.Core.Api.dll
+E:\Application Code\CMKLMVC\bin\Grpc.Core.dll
+E:\Application Code\CMKLMVC\bin\Grpc.Net.Client.dll
+E:\Application Code\CMKLMVC\bin\Grpc.Net.Common.dll
+E:\Application Code\CMKLMVC\bin\Hangfire.Core.dll
+E:\Application Code\CMKLMVC\bin\Hangfire.SqlServer.dll
+E:\Application Code\CMKLMVC\bin\Irony.dll
+E:\Application Code\CMKLMVC\bin\MessagingToolkit.QRCode.dll
+E:\Application Code\CMKLMVC\bin\Microsoft.Bcl.AsyncInterfaces.dll
+E:\Application Code\CMKLMVC\bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll
+E:\Application Code\CMKLMVC\bin\Microsoft.Extensions.Configuration.Abstractions.dll
+E:\Application Code\CMKLMVC\bin\Microsoft.Extensions.Configuration.Binder.dll
+E:\Application Code\CMKLMVC\bin\Microsoft.Extensions.Configuration.dll
+E:\Application Code\CMKLMVC\bin\Microsoft.Extensions.Configuration.FileExtensions.dll
+E:\Application Code\CMKLMVC\bin\Microsoft.Extensions.Configuration.Json.dll
+E:\Application Code\CMKLMVC\bin\Microsoft.Extensions.Configuration.UserSecrets.dll
+E:\Application Code\CMKLMVC\bin\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+E:\Application Code\CMKLMVC\bin\Microsoft.Extensions.DependencyInjection.dll
+E:\Application Code\CMKLMVC\bin\Microsoft.Extensions.FileProviders.Abstractions.dll
+E:\Application Code\CMKLMVC\bin\Microsoft.Extensions.FileProviders.Physical.dll
+E:\Application Code\CMKLMVC\bin\Microsoft.Extensions.FileSystemGlobbing.dll
+E:\Application Code\CMKLMVC\bin\Microsoft.Extensions.Logging.Abstractions.dll
+E:\Application Code\CMKLMVC\bin\Microsoft.Extensions.Logging.dll
+E:\Application Code\CMKLMVC\bin\Microsoft.Extensions.Options.dll
+E:\Application Code\CMKLMVC\bin\Microsoft.Extensions.Primitives.dll
+E:\Application Code\CMKLMVC\bin\Microsoft.IO.RecyclableMemoryStream.dll
+E:\Application Code\CMKLMVC\bin\Microsoft.Owin.dll
+E:\Application Code\CMKLMVC\bin\Microsoft.Owin.Host.SystemWeb.dll
+E:\Application Code\CMKLMVC\bin\Microsoft.Web.Infrastructure.dll
+E:\Application Code\CMKLMVC\bin\MimeKit.dll
+E:\Application Code\CMKLMVC\bin\Newtonsoft.Json.dll
+E:\Application Code\CMKLMVC\bin\Owin.dll
+E:\Application Code\CMKLMVC\bin\RazorEngine.dll
+E:\Application Code\CMKLMVC\bin\Rotativa.dll
+E:\Application Code\CMKLMVC\bin\SixLabors.Fonts.dll
+E:\Application Code\CMKLMVC\bin\SixLabors.ImageSharp.dll
+E:\Application Code\CMKLMVC\bin\SixLabors.ImageSharp.Drawing.dll
+E:\Application Code\CMKLMVC\bin\System.Buffers.dll
+E:\Application Code\CMKLMVC\bin\System.ComponentModel.Annotations.dll
+E:\Application Code\CMKLMVC\bin\System.Configuration.ConfigurationManager.dll
+E:\Application Code\CMKLMVC\bin\System.Diagnostics.DiagnosticSource.dll
+E:\Application Code\CMKLMVC\bin\System.Drawing.Common.dll
+E:\Application Code\CMKLMVC\bin\System.Formats.Asn1.dll
+E:\Application Code\CMKLMVC\bin\System.IO.Packaging.dll
+E:\Application Code\CMKLMVC\bin\System.Memory.dll
+E:\Application Code\CMKLMVC\bin\System.Net.Http.WinHttpHandler.dll
+E:\Application Code\CMKLMVC\bin\System.Numerics.Vectors.dll
+E:\Application Code\CMKLMVC\bin\System.Runtime.CompilerServices.Unsafe.dll
+E:\Application Code\CMKLMVC\bin\System.Security.AccessControl.dll
+E:\Application Code\CMKLMVC\bin\System.Security.Cryptography.Pkcs.dll
+E:\Application Code\CMKLMVC\bin\System.Security.Permissions.dll
+E:\Application Code\CMKLMVC\bin\System.Security.Principal.Windows.dll
+E:\Application Code\CMKLMVC\bin\System.Text.Encoding.CodePages.dll
+E:\Application Code\CMKLMVC\bin\System.Text.Encodings.Web.dll
+E:\Application Code\CMKLMVC\bin\System.Text.Json.dll
+E:\Application Code\CMKLMVC\bin\System.Threading.Tasks.Extensions.dll
+E:\Application Code\CMKLMVC\bin\System.ValueTuple.dll
+E:\Application Code\CMKLMVC\bin\System.Web.Helpers.dll
+E:\Application Code\CMKLMVC\bin\System.Web.Mvc.dll
+E:\Application Code\CMKLMVC\bin\System.Web.Optimization.dll
+E:\Application Code\CMKLMVC\bin\System.Web.Razor.dll
+E:\Application Code\CMKLMVC\bin\System.Web.WebPages.Deployment.dll
+E:\Application Code\CMKLMVC\bin\System.Web.WebPages.dll
+E:\Application Code\CMKLMVC\bin\System.Web.WebPages.Razor.dll
+E:\Application Code\CMKLMVC\bin\WebGrease.dll
+E:\Application Code\CMKLMVC\bin\WkHtmlToPdf.dll
+E:\Application Code\CMKLMVC\bin\XLParser.dll
+E:\Application Code\CMKLMVC\bin\Antlr3.Runtime.pdb
+E:\Application Code\CMKLMVC\bin\BouncyCastle.Cryptography.xml
+E:\Application Code\CMKLMVC\bin\ClosedXML.xml
+E:\Application Code\CMKLMVC\bin\DocumentFormat.OpenXml.xml
+E:\Application Code\CMKLMVC\bin\EntityFramework.xml
+E:\Application Code\CMKLMVC\bin\EntityFramework.SqlServer.xml
+E:\Application Code\CMKLMVC\bin\ExcelNumberFormat.xml
+E:\Application Code\CMKLMVC\bin\Grpc.Core.pdb
+E:\Application Code\CMKLMVC\bin\Grpc.Core.xml
+E:\Application Code\CMKLMVC\bin\Grpc.Core.Api.pdb
+E:\Application Code\CMKLMVC\bin\Grpc.Core.Api.xml
+E:\Application Code\CMKLMVC\bin\Grpc.Net.Client.pdb
+E:\Application Code\CMKLMVC\bin\Grpc.Net.Client.xml
+E:\Application Code\CMKLMVC\bin\Grpc.Net.Common.pdb
+E:\Application Code\CMKLMVC\bin\Grpc.Net.Common.xml
+E:\Application Code\CMKLMVC\bin\Hangfire.Core.xml
+E:\Application Code\CMKLMVC\bin\Hangfire.SqlServer.xml
+E:\Application Code\CMKLMVC\bin\Microsoft.Bcl.AsyncInterfaces.xml
+E:\Application Code\CMKLMVC\bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.xml
+E:\Application Code\CMKLMVC\bin\Microsoft.Extensions.Configuration.xml
+E:\Application Code\CMKLMVC\bin\Microsoft.Extensions.Configuration.Abstractions.xml
+E:\Application Code\CMKLMVC\bin\Microsoft.Extensions.Configuration.Binder.xml
+E:\Application Code\CMKLMVC\bin\Microsoft.Extensions.Configuration.FileExtensions.xml
+E:\Application Code\CMKLMVC\bin\Microsoft.Extensions.Configuration.Json.xml
+E:\Application Code\CMKLMVC\bin\Microsoft.Extensions.Configuration.UserSecrets.xml
+E:\Application Code\CMKLMVC\bin\Microsoft.Extensions.DependencyInjection.xml
+E:\Application Code\CMKLMVC\bin\Microsoft.Extensions.DependencyInjection.Abstractions.xml
+E:\Application Code\CMKLMVC\bin\Microsoft.Extensions.FileProviders.Abstractions.xml
+E:\Application Code\CMKLMVC\bin\Microsoft.Extensions.FileProviders.Physical.xml
+E:\Application Code\CMKLMVC\bin\Microsoft.Extensions.FileSystemGlobbing.xml
+E:\Application Code\CMKLMVC\bin\Microsoft.Extensions.Logging.xml
+E:\Application Code\CMKLMVC\bin\Microsoft.Extensions.Logging.Abstractions.xml
+E:\Application Code\CMKLMVC\bin\Microsoft.Extensions.Options.xml
+E:\Application Code\CMKLMVC\bin\Microsoft.Extensions.Primitives.xml
+E:\Application Code\CMKLMVC\bin\Microsoft.IO.RecyclableMemoryStream.xml
+E:\Application Code\CMKLMVC\bin\Microsoft.Owin.xml
+E:\Application Code\CMKLMVC\bin\Microsoft.Owin.Host.SystemWeb.xml
+E:\Application Code\CMKLMVC\bin\MimeKit.pdb
+E:\Application Code\CMKLMVC\bin\MimeKit.xml
+E:\Application Code\CMKLMVC\bin\MimeKit.dll.config
+E:\Application Code\CMKLMVC\bin\Newtonsoft.Json.xml
+E:\Application Code\CMKLMVC\bin\RazorEngine.xml
+E:\Application Code\CMKLMVC\bin\SixLabors.Fonts.xml
+E:\Application Code\CMKLMVC\bin\SixLabors.ImageSharp.xml
+E:\Application Code\CMKLMVC\bin\SixLabors.ImageSharp.Drawing.xml
+E:\Application Code\CMKLMVC\bin\System.Buffers.xml
+E:\Application Code\CMKLMVC\bin\System.Configuration.ConfigurationManager.xml
+E:\Application Code\CMKLMVC\bin\System.Diagnostics.DiagnosticSource.xml
+E:\Application Code\CMKLMVC\bin\System.Drawing.Common.xml
+E:\Application Code\CMKLMVC\bin\System.Formats.Asn1.xml
+E:\Application Code\CMKLMVC\bin\System.IO.Packaging.xml
+E:\Application Code\CMKLMVC\bin\System.Memory.xml
+E:\Application Code\CMKLMVC\bin\System.Net.Http.WinHttpHandler.xml
+E:\Application Code\CMKLMVC\bin\System.Numerics.Vectors.xml
+E:\Application Code\CMKLMVC\bin\System.Runtime.CompilerServices.Unsafe.xml
+E:\Application Code\CMKLMVC\bin\System.Security.AccessControl.xml
+E:\Application Code\CMKLMVC\bin\System.Security.Cryptography.Pkcs.xml
+E:\Application Code\CMKLMVC\bin\System.Security.Permissions.xml
+E:\Application Code\CMKLMVC\bin\System.Security.Principal.Windows.xml
+E:\Application Code\CMKLMVC\bin\System.Text.Encoding.CodePages.xml
+E:\Application Code\CMKLMVC\bin\System.Text.Encodings.Web.xml
+E:\Application Code\CMKLMVC\bin\System.Text.Json.xml
+E:\Application Code\CMKLMVC\bin\System.Threading.Tasks.Extensions.xml
+E:\Application Code\CMKLMVC\bin\System.ValueTuple.xml
+E:\Application Code\CMKLMVC\bin\System.Web.Helpers.xml
+E:\Application Code\CMKLMVC\bin\System.Web.Mvc.xml
+E:\Application Code\CMKLMVC\bin\System.Web.Optimization.xml
+E:\Application Code\CMKLMVC\bin\System.Web.Razor.xml
+E:\Application Code\CMKLMVC\bin\System.Web.WebPages.xml
+E:\Application Code\CMKLMVC\bin\System.Web.WebPages.Deployment.xml
+E:\Application Code\CMKLMVC\bin\System.Web.WebPages.Razor.xml
+E:\Application Code\CMKLMVC\bin\ca\Hangfire.Core.resources.dll
+E:\Application Code\CMKLMVC\bin\de\Hangfire.Core.resources.dll
+E:\Application Code\CMKLMVC\bin\es\Hangfire.Core.resources.dll
+E:\Application Code\CMKLMVC\bin\fa\Hangfire.Core.resources.dll
+E:\Application Code\CMKLMVC\bin\fr\Hangfire.Core.resources.dll
+E:\Application Code\CMKLMVC\bin\nb\Hangfire.Core.resources.dll
+E:\Application Code\CMKLMVC\bin\nl\Hangfire.Core.resources.dll
+E:\Application Code\CMKLMVC\bin\pt\Hangfire.Core.resources.dll
+E:\Application Code\CMKLMVC\bin\pt-BR\Hangfire.Core.resources.dll
+E:\Application Code\CMKLMVC\bin\pt-PT\Hangfire.Core.resources.dll
+E:\Application Code\CMKLMVC\bin\sv\Hangfire.Core.resources.dll
+E:\Application Code\CMKLMVC\bin\tr-TR\Hangfire.Core.resources.dll
+E:\Application Code\CMKLMVC\bin\zh\Hangfire.Core.resources.dll
+E:\Application Code\CMKLMVC\bin\zh-TW\Hangfire.Core.resources.dll
+E:\Application Code\CMKLMVC\obj\Debug\CMKL.csproj.AssemblyReference.cache
+E:\Application Code\CMKLMVC\obj\Debug\CMKL.csproj.CoreCompileInputs.cache
+E:\Application Code\CMKLMVC\obj\Debug\CMKL.csproj.Up2Date
+E:\Application Code\CMKLMVC\obj\Debug\CMKL.dll
+E:\Application Code\CMKLMVC\obj\Debug\CMKL.pdb
+F:\IEC\Proj\CMKLMVC\bin\grpc_csharp_ext.x86.dll
+F:\IEC\Proj\CMKLMVC\bin\grpc_csharp_ext.x64.dll
+F:\IEC\Proj\CMKLMVC\bin\libgrpc_csharp_ext.x64.so
+F:\IEC\Proj\CMKLMVC\bin\libgrpc_csharp_ext.x64.dylib
+F:\IEC\Proj\CMKLMVC\bin\CMKL.dll.config
+F:\IEC\Proj\CMKLMVC\bin\CMKL.dll
+F:\IEC\Proj\CMKLMVC\bin\CMKL.pdb
+F:\IEC\Proj\CMKLMVC\bin\roslyn\csc.exe
+F:\IEC\Proj\CMKLMVC\bin\roslyn\csc.exe.config
+F:\IEC\Proj\CMKLMVC\bin\roslyn\csc.rsp
+F:\IEC\Proj\CMKLMVC\bin\roslyn\csi.exe
+F:\IEC\Proj\CMKLMVC\bin\roslyn\csi.exe.config
+F:\IEC\Proj\CMKLMVC\bin\roslyn\csi.rsp
+F:\IEC\Proj\CMKLMVC\bin\roslyn\Microsoft.Build.Tasks.CodeAnalysis.dll
+F:\IEC\Proj\CMKLMVC\bin\roslyn\Microsoft.CodeAnalysis.CSharp.dll
+F:\IEC\Proj\CMKLMVC\bin\roslyn\Microsoft.CodeAnalysis.CSharp.Scripting.dll
+F:\IEC\Proj\CMKLMVC\bin\roslyn\Microsoft.CodeAnalysis.dll
+F:\IEC\Proj\CMKLMVC\bin\roslyn\Microsoft.CodeAnalysis.Scripting.dll
+F:\IEC\Proj\CMKLMVC\bin\roslyn\Microsoft.CodeAnalysis.VisualBasic.dll
+F:\IEC\Proj\CMKLMVC\bin\roslyn\Microsoft.CSharp.Core.targets
+F:\IEC\Proj\CMKLMVC\bin\roslyn\Microsoft.DiaSymReader.Native.amd64.dll
+F:\IEC\Proj\CMKLMVC\bin\roslyn\Microsoft.DiaSymReader.Native.x86.dll
+F:\IEC\Proj\CMKLMVC\bin\roslyn\Microsoft.Managed.Core.CurrentVersions.targets
+F:\IEC\Proj\CMKLMVC\bin\roslyn\Microsoft.Managed.Core.targets
+F:\IEC\Proj\CMKLMVC\bin\roslyn\Microsoft.VisualBasic.Core.targets
+F:\IEC\Proj\CMKLMVC\bin\roslyn\System.Buffers.dll
+F:\IEC\Proj\CMKLMVC\bin\roslyn\System.Collections.Immutable.dll
+F:\IEC\Proj\CMKLMVC\bin\roslyn\System.Memory.dll
+F:\IEC\Proj\CMKLMVC\bin\roslyn\System.Numerics.Vectors.dll
+F:\IEC\Proj\CMKLMVC\bin\roslyn\System.Reflection.Metadata.dll
+F:\IEC\Proj\CMKLMVC\bin\roslyn\System.Runtime.CompilerServices.Unsafe.dll
+F:\IEC\Proj\CMKLMVC\bin\roslyn\System.Text.Encoding.CodePages.dll
+F:\IEC\Proj\CMKLMVC\bin\roslyn\System.Threading.Tasks.Extensions.dll
+F:\IEC\Proj\CMKLMVC\bin\roslyn\vbc.exe
+F:\IEC\Proj\CMKLMVC\bin\roslyn\vbc.exe.config
+F:\IEC\Proj\CMKLMVC\bin\roslyn\vbc.rsp
+F:\IEC\Proj\CMKLMVC\bin\roslyn\VBCSCompiler.exe
+F:\IEC\Proj\CMKLMVC\bin\roslyn\VBCSCompiler.exe.config
+F:\IEC\Proj\CMKLMVC\bin\AjaxMin.dll
+F:\IEC\Proj\CMKLMVC\bin\Antlr3.Runtime.dll
+F:\IEC\Proj\CMKLMVC\bin\BouncyCastle.Cryptography.dll
+F:\IEC\Proj\CMKLMVC\bin\ClosedXML.dll
+F:\IEC\Proj\CMKLMVC\bin\DocumentFormat.OpenXml.dll
+F:\IEC\Proj\CMKLMVC\bin\EntityFramework.dll
+F:\IEC\Proj\CMKLMVC\bin\EntityFramework.SqlServer.dll
+F:\IEC\Proj\CMKLMVC\bin\EPPlus.Interfaces.dll
+F:\IEC\Proj\CMKLMVC\bin\EPPlus.System.Drawing.dll
+F:\IEC\Proj\CMKLMVC\bin\ExcelNumberFormat.dll
+F:\IEC\Proj\CMKLMVC\bin\GridMvc.dll
+F:\IEC\Proj\CMKLMVC\bin\Grpc.Core.Api.dll
+F:\IEC\Proj\CMKLMVC\bin\Grpc.Core.dll
+F:\IEC\Proj\CMKLMVC\bin\Grpc.Net.Client.dll
+F:\IEC\Proj\CMKLMVC\bin\Grpc.Net.Common.dll
+F:\IEC\Proj\CMKLMVC\bin\Hangfire.Core.dll
+F:\IEC\Proj\CMKLMVC\bin\Hangfire.SqlServer.dll
+F:\IEC\Proj\CMKLMVC\bin\Irony.dll
+F:\IEC\Proj\CMKLMVC\bin\MessagingToolkit.QRCode.dll
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Bcl.AsyncInterfaces.dll
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Extensions.Configuration.Abstractions.dll
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Extensions.Configuration.Binder.dll
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Extensions.Configuration.dll
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Extensions.Configuration.FileExtensions.dll
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Extensions.Configuration.Json.dll
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Extensions.Configuration.UserSecrets.dll
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Extensions.DependencyInjection.dll
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Extensions.FileProviders.Abstractions.dll
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Extensions.FileProviders.Physical.dll
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Extensions.FileSystemGlobbing.dll
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Extensions.Logging.Abstractions.dll
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Extensions.Logging.dll
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Extensions.Options.dll
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Extensions.Primitives.dll
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.IO.RecyclableMemoryStream.dll
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Owin.dll
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Owin.Host.SystemWeb.dll
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Web.Infrastructure.dll
+F:\IEC\Proj\CMKLMVC\bin\MimeKit.dll
+F:\IEC\Proj\CMKLMVC\bin\Newtonsoft.Json.dll
+F:\IEC\Proj\CMKLMVC\bin\Owin.dll
+F:\IEC\Proj\CMKLMVC\bin\RazorEngine.dll
+F:\IEC\Proj\CMKLMVC\bin\Rotativa.dll
+F:\IEC\Proj\CMKLMVC\bin\SixLabors.Fonts.dll
+F:\IEC\Proj\CMKLMVC\bin\SixLabors.ImageSharp.dll
+F:\IEC\Proj\CMKLMVC\bin\SixLabors.ImageSharp.Drawing.dll
+F:\IEC\Proj\CMKLMVC\bin\System.Buffers.dll
+F:\IEC\Proj\CMKLMVC\bin\System.ComponentModel.Annotations.dll
+F:\IEC\Proj\CMKLMVC\bin\System.Configuration.ConfigurationManager.dll
+F:\IEC\Proj\CMKLMVC\bin\System.Diagnostics.DiagnosticSource.dll
+F:\IEC\Proj\CMKLMVC\bin\System.Drawing.Common.dll
+F:\IEC\Proj\CMKLMVC\bin\System.Formats.Asn1.dll
+F:\IEC\Proj\CMKLMVC\bin\System.IO.Packaging.dll
+F:\IEC\Proj\CMKLMVC\bin\System.Memory.dll
+F:\IEC\Proj\CMKLMVC\bin\System.Net.Http.WinHttpHandler.dll
+F:\IEC\Proj\CMKLMVC\bin\System.Numerics.Vectors.dll
+F:\IEC\Proj\CMKLMVC\bin\System.Runtime.CompilerServices.Unsafe.dll
+F:\IEC\Proj\CMKLMVC\bin\System.Security.AccessControl.dll
+F:\IEC\Proj\CMKLMVC\bin\System.Security.Cryptography.Pkcs.dll
+F:\IEC\Proj\CMKLMVC\bin\System.Security.Permissions.dll
+F:\IEC\Proj\CMKLMVC\bin\System.Security.Principal.Windows.dll
+F:\IEC\Proj\CMKLMVC\bin\System.Text.Encoding.CodePages.dll
+F:\IEC\Proj\CMKLMVC\bin\System.Text.Encodings.Web.dll
+F:\IEC\Proj\CMKLMVC\bin\System.Text.Json.dll
+F:\IEC\Proj\CMKLMVC\bin\System.Threading.Tasks.Extensions.dll
+F:\IEC\Proj\CMKLMVC\bin\System.ValueTuple.dll
+F:\IEC\Proj\CMKLMVC\bin\System.Web.Helpers.dll
+F:\IEC\Proj\CMKLMVC\bin\System.Web.Mvc.dll
+F:\IEC\Proj\CMKLMVC\bin\System.Web.Optimization.dll
+F:\IEC\Proj\CMKLMVC\bin\System.Web.Razor.dll
+F:\IEC\Proj\CMKLMVC\bin\System.Web.WebPages.Deployment.dll
+F:\IEC\Proj\CMKLMVC\bin\System.Web.WebPages.dll
+F:\IEC\Proj\CMKLMVC\bin\System.Web.WebPages.Razor.dll
+F:\IEC\Proj\CMKLMVC\bin\WebGrease.dll
+F:\IEC\Proj\CMKLMVC\bin\WkHtmlToPdf.dll
+F:\IEC\Proj\CMKLMVC\bin\XLParser.dll
+F:\IEC\Proj\CMKLMVC\bin\Antlr3.Runtime.pdb
+F:\IEC\Proj\CMKLMVC\bin\BouncyCastle.Cryptography.xml
+F:\IEC\Proj\CMKLMVC\bin\ClosedXML.xml
+F:\IEC\Proj\CMKLMVC\bin\DocumentFormat.OpenXml.xml
+F:\IEC\Proj\CMKLMVC\bin\EntityFramework.xml
+F:\IEC\Proj\CMKLMVC\bin\EntityFramework.SqlServer.xml
+F:\IEC\Proj\CMKLMVC\bin\ExcelNumberFormat.xml
+F:\IEC\Proj\CMKLMVC\bin\Grpc.Core.pdb
+F:\IEC\Proj\CMKLMVC\bin\Grpc.Core.xml
+F:\IEC\Proj\CMKLMVC\bin\Grpc.Core.Api.pdb
+F:\IEC\Proj\CMKLMVC\bin\Grpc.Core.Api.xml
+F:\IEC\Proj\CMKLMVC\bin\Grpc.Net.Client.pdb
+F:\IEC\Proj\CMKLMVC\bin\Grpc.Net.Client.xml
+F:\IEC\Proj\CMKLMVC\bin\Grpc.Net.Common.pdb
+F:\IEC\Proj\CMKLMVC\bin\Grpc.Net.Common.xml
+F:\IEC\Proj\CMKLMVC\bin\Hangfire.Core.xml
+F:\IEC\Proj\CMKLMVC\bin\Hangfire.SqlServer.xml
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Bcl.AsyncInterfaces.xml
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.xml
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Extensions.Configuration.xml
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Extensions.Configuration.Abstractions.xml
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Extensions.Configuration.Binder.xml
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Extensions.Configuration.FileExtensions.xml
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Extensions.Configuration.Json.xml
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Extensions.Configuration.UserSecrets.xml
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Extensions.DependencyInjection.xml
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Extensions.DependencyInjection.Abstractions.xml
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Extensions.FileProviders.Abstractions.xml
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Extensions.FileProviders.Physical.xml
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Extensions.FileSystemGlobbing.xml
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Extensions.Logging.xml
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Extensions.Logging.Abstractions.xml
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Extensions.Options.xml
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Extensions.Primitives.xml
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.IO.RecyclableMemoryStream.xml
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Owin.xml
+F:\IEC\Proj\CMKLMVC\bin\Microsoft.Owin.Host.SystemWeb.xml
+F:\IEC\Proj\CMKLMVC\bin\MimeKit.pdb
+F:\IEC\Proj\CMKLMVC\bin\MimeKit.xml
+F:\IEC\Proj\CMKLMVC\bin\MimeKit.dll.config
+F:\IEC\Proj\CMKLMVC\bin\Newtonsoft.Json.xml
+F:\IEC\Proj\CMKLMVC\bin\RazorEngine.xml
+F:\IEC\Proj\CMKLMVC\bin\SixLabors.Fonts.xml
+F:\IEC\Proj\CMKLMVC\bin\SixLabors.ImageSharp.xml
+F:\IEC\Proj\CMKLMVC\bin\SixLabors.ImageSharp.Drawing.xml
+F:\IEC\Proj\CMKLMVC\bin\System.Buffers.xml
+F:\IEC\Proj\CMKLMVC\bin\System.Configuration.ConfigurationManager.xml
+F:\IEC\Proj\CMKLMVC\bin\System.Diagnostics.DiagnosticSource.xml
+F:\IEC\Proj\CMKLMVC\bin\System.Drawing.Common.xml
+F:\IEC\Proj\CMKLMVC\bin\System.Formats.Asn1.xml
+F:\IEC\Proj\CMKLMVC\bin\System.IO.Packaging.xml
+F:\IEC\Proj\CMKLMVC\bin\System.Memory.xml
+F:\IEC\Proj\CMKLMVC\bin\System.Net.Http.WinHttpHandler.xml
+F:\IEC\Proj\CMKLMVC\bin\System.Numerics.Vectors.xml
+F:\IEC\Proj\CMKLMVC\bin\System.Runtime.CompilerServices.Unsafe.xml
+F:\IEC\Proj\CMKLMVC\bin\System.Security.AccessControl.xml
+F:\IEC\Proj\CMKLMVC\bin\System.Security.Cryptography.Pkcs.xml
+F:\IEC\Proj\CMKLMVC\bin\System.Security.Permissions.xml
+F:\IEC\Proj\CMKLMVC\bin\System.Security.Principal.Windows.xml
+F:\IEC\Proj\CMKLMVC\bin\System.Text.Encoding.CodePages.xml
+F:\IEC\Proj\CMKLMVC\bin\System.Text.Encodings.Web.xml
+F:\IEC\Proj\CMKLMVC\bin\System.Text.Json.xml
+F:\IEC\Proj\CMKLMVC\bin\System.Threading.Tasks.Extensions.xml
+F:\IEC\Proj\CMKLMVC\bin\System.ValueTuple.xml
+F:\IEC\Proj\CMKLMVC\bin\System.Web.Helpers.xml
+F:\IEC\Proj\CMKLMVC\bin\System.Web.Mvc.xml
+F:\IEC\Proj\CMKLMVC\bin\System.Web.Optimization.xml
+F:\IEC\Proj\CMKLMVC\bin\System.Web.Razor.xml
+F:\IEC\Proj\CMKLMVC\bin\System.Web.WebPages.xml
+F:\IEC\Proj\CMKLMVC\bin\System.Web.WebPages.Deployment.xml
+F:\IEC\Proj\CMKLMVC\bin\System.Web.WebPages.Razor.xml
+F:\IEC\Proj\CMKLMVC\bin\ca\Hangfire.Core.resources.dll
+F:\IEC\Proj\CMKLMVC\bin\de\Hangfire.Core.resources.dll
+F:\IEC\Proj\CMKLMVC\bin\es\Hangfire.Core.resources.dll
+F:\IEC\Proj\CMKLMVC\bin\fa\Hangfire.Core.resources.dll
+F:\IEC\Proj\CMKLMVC\bin\fr\Hangfire.Core.resources.dll
+F:\IEC\Proj\CMKLMVC\bin\nb\Hangfire.Core.resources.dll
+F:\IEC\Proj\CMKLMVC\bin\nl\Hangfire.Core.resources.dll
+F:\IEC\Proj\CMKLMVC\bin\pt\Hangfire.Core.resources.dll
+F:\IEC\Proj\CMKLMVC\bin\pt-BR\Hangfire.Core.resources.dll
+F:\IEC\Proj\CMKLMVC\bin\pt-PT\Hangfire.Core.resources.dll
+F:\IEC\Proj\CMKLMVC\bin\sv\Hangfire.Core.resources.dll
+F:\IEC\Proj\CMKLMVC\bin\tr-TR\Hangfire.Core.resources.dll
+F:\IEC\Proj\CMKLMVC\bin\zh\Hangfire.Core.resources.dll
+F:\IEC\Proj\CMKLMVC\bin\zh-TW\Hangfire.Core.resources.dll
+F:\IEC\Proj\CMKLMVC\obj\Debug\CMKL.csproj.AssemblyReference.cache
+F:\IEC\Proj\CMKLMVC\obj\Debug\CMKL.csproj.CoreCompileInputs.cache
+F:\IEC\Proj\CMKLMVC\obj\Debug\CMKL.csproj.Up2Date
+F:\IEC\Proj\CMKLMVC\obj\Debug\CMKL.dll
+F:\IEC\Proj\CMKLMVC\obj\Debug\CMKL.pdb

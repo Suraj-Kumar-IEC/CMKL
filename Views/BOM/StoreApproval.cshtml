@@ -1,0 +1,223 @@
+﻿@{
+    ViewBag.Title = "StoreApproval";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if the current context is inside a Bootstrap modal
+            const isInModal = !!(document.querySelector('.modal.show'));
+
+            if (isInModal) {
+                // If inside a modal, wait for a short delay
+                setTimeout(() => {
+                    handleInvalidUser();
+                }, 500); // Adjust the delay as needed
+            } else {
+                // If not in a modal, proceed immediately
+                handleInvalidUser();
+            }
+
+            function handleInvalidUser() {
+                toastr.error("Invalid User");
+
+                setTimeout(function () {
+                    window.location.href = "@Url.Action("Index", "Login")";
+                }, 2000); // Redirect after 2 seconds
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<h3 style="background-color: #00698f; color: #ffffff; padding: 5px 10px; border-radius: 5px; text-align: center;">Store Approval (BOM)</h3>
+<style>
+    .highlight td {
+        background-color: #ffff99; /* yellow background */
+    }
+</style>
+<table id="bom-voucher-lines" class="table table-bordered">
+    <thead>
+        <tr>
+            <th style="background-color: #f7f7f7; font-weight: bold; padding: 8px; border-bottom: 1px solid #ddd;">Line ID</th>
+            <th style="background-color: #f7f7f7; font-weight: bold; padding: 8px; border-bottom: 1px solid #ddd;">Voucher Number</th>
+            <th style="background-color: #f7f7f7; font-weight: bold; padding: 8px; border-bottom: 1px solid #ddd;">Voucher Date</th>
+            <th style="background-color: #f7f7f7; font-weight: bold; padding: 8px; border-bottom: 1px solid #ddd;">Category</th>
+            <th style="background-color: #f7f7f7; font-weight: bold; padding: 8px; border-bottom: 1px solid #ddd;">Subcategory</th>
+            <th style="background-color: #f7f7f7; font-weight: bold; padding: 8px; border-bottom: 1px solid #ddd;">Master Item Code</th>
+            <th style="background-color: #f7f7f7; font-weight: bold; padding: 8px; border-bottom: 1px solid #ddd;">Raw Item Code</th>
+            <th style="background-color: #f7f7f7; font-weight: bold; padding: 8px; border-bottom: 1px solid #ddd;">Quantity Required</th>
+            <th style="background-color: #f7f7f7; font-weight: bold; padding: 8px; border-bottom: 1px solid #ddd;">Approved Quantity</th>
+            <th style="background-color: #f7f7f7; font-weight: bold; padding: 8px; border-bottom: 1px solid #ddd;">Available Stock</th>
+            <th style="background-color: #f7f7f7; font-weight: bold; padding: 8px; border-bottom: 1px solid #ddd;">Less Quantity</th>
+            <th style="background-color: #f7f7f7; font-weight: bold; padding: 8px; border-bottom: 1px solid #ddd;">UOM</th>
+            <th style="background-color: #f7f7f7; font-weight: bold; padding: 8px; border-bottom: 1px solid #ddd;">Issue Quantity</th>
+        </tr>
+    </thead>
+    <tbody id="bom-voucher-lines-tbody">
+        <!-- data will be loaded here using  AJAX -->
+    </tbody>
+</table>
+
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.16.2/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+
+<script>
+$(document).ready(function () {
+    // load data using AJAX
+    $.ajax({
+        type: "GET",
+        url: '@Url.Action("GetBomLineDetails", "BOM")',
+        dataType: "json",
+        success: function (data) {
+            var audio = new Audio('/Sound/Save.mp3');
+            audio.play();
+            $.each(data, function (index, item) {
+                const voucherDate = new Date(parseInt(item.VoucherDate.replace(/\/Date\((\d+)\)\//, "$1")));
+                const formattedVoucherDate = `${padZero(voucherDate.getDate())}/${padZero(voucherDate.getMonth() + 1)}/${voucherDate.getFullYear()} ${padZero(voucherDate.getHours())}:${padZero(voucherDate.getMinutes())}:${padZero(voucherDate.getSeconds())}`;
+
+                let rowClass = '';
+                if (item.QuantityRequired > item.StockAvailable) {
+                    rowClass = 'highlight';
+                }
+
+                const quantityDifference = ((item.ApprovedQuantity != null ? item.ApprovedQuantity : 0) + item.StockAvailable) - item.QuantityRequired;
+                let differenceToDisplay = quantityDifference < 0? quantityDifference : 0;
+
+                $("#bom-voucher-lines-tbody").append(`
+                  <tr class="${rowClass}">
+                    <td>${item.lineid}</td>
+                    <td>${item.Vouchernumber}</td>
+                    <td>${formattedVoucherDate}</td>
+                    <td>${item.Category}</td>
+                    <td>${item.Subcategory}</td>
+                    <td>${item.FinalItemCode}</td>
+                    <td>${item.RawItemCode}</td>
+                    <td>${item.QuantityRequired}</td>
+                    <td>${item.ApprovedQuantity!= null? item.ApprovedQuantity : 0}</td>
+                    <td>${item.StockAvailable}</td>
+                    <td>${differenceToDisplay}</td> <!-- new column -->
+                    <td>${item.UOM}</td>
+                    <td><input type="number" value="0" data-id="123" class="quantityupdate" style="width: 80px;" /></td>
+                    <td><button class="btn btn-primary" id="save" data-lineid="${item.lineid}" onclick="saveLineIssueStock(this)">Issue Stock</button></td>
+
+                  </tr>
+                `);
+            });
+
+        }
+    });
+});
+</script>
+
+<script>
+    function padZero(value) {
+        return (value < 10 ? '0' : '') + value;
+    }
+
+        function saveLineIssueStock(button) {
+            debugger;
+        var rawItemCode = $(button).closest('tr').find('td:eq(6)').text();
+        var quantityrequired = $(button).closest('tr').find('td:eq(7)').text();
+            var uom = $(button).closest('tr').find('td:eq(10)').text();
+            var approvedstock = $(button).closest('tr').find('td:eq(8)').text();
+        var currentstock = $(button).closest('tr').find('td:eq(9)').text();
+        const lineId = $(button).data("lineid");
+            const quantity = $(button).closest('tr').find('input.quantityupdate').val();
+            const totalAllocated = +approvedstock + +quantity;
+            if (+currentstock < +quantity) {
+                toastr.error("Available Stock For This Item is: " + currentstock + " " + uom + " And you are trying to Allocate :" + quantity + " " + uom + " to this Item");
+                var audio = new Audio('/Sound/Error.mp3');
+                audio.play();
+                return; // exit the function and prevent the AJAX request
+            }
+            if (+quantityrequired < +quantity) {
+                toastr.error("You Are Trying To Allocate More Quantity than the Required Quantity " + "<br/>  Required Quantity : " + quantityrequired + " <br/> Allocating :" + quantity + "<br/> Stock Available :" + currentstock);
+            var audio = new Audio('/Sound/Error.mp3');
+            audio.play();
+            return; // exit the function and prevent the AJAX request
+            }
+            if (quantity==0)
+            {
+            toastr.error("Stock Issue Can't be 0");
+            var audio = new Audio('/Sound/Error.mp3');
+            audio.play();
+            return; // exit the function and prevent the AJAX request
+            }
+
+            if (+totalAllocated > +quantityrequired) {
+                toastr.error("You Are Trying To Allocate More Quantity than the Required Quantity " + "<br/>  Required Quantity : " + quantityrequired + " <br/> Allocating :" + quantity + "<br/> Already Allocated :" + approvedstock);
+                var audio = new Audio('/Sound/Error.mp3');
+                audio.play();
+                return; // exit the function and prevent the AJAX request
+            }
+
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("SaveLineIssueStock", "BOM")',
+            //url: "/BOM/SaveLineIssueStock",
+            data: { lineId: lineId, quantity: quantity, rawItemCode: rawItemCode, currentstock: currentstock, approvedstock: approvedstock },
+            success: function (data) {
+                if (data.success) {
+                    toastr.success("Line issue stock saved successfully!");
+                    // Reload data
+                    $.ajax({
+                        type: "GET",
+                        url: '@Url.Action("GetBomLineDetails", "BOM")',
+                        dataType: "json",
+                        success: function (data) {
+                            var audio = new Audio('/Sound/Save.mp3');
+                            audio.play();
+                            $("#bom-voucher-lines-tbody").empty();
+                            $.each(data, function (index, item) {
+                                const voucherDate = new Date(parseInt(item.VoucherDate.replace(/\/Date\((\d+)\)\//, "$1")));
+                                const formattedVoucherDate = `${padZero(voucherDate.getDate())}/${padZero(voucherDate.getMonth() + 1)}/${voucherDate.getFullYear()} ${padZero(voucherDate.getHours())}:${padZero(voucherDate.getMinutes())}:${padZero(voucherDate.getSeconds())}`;
+
+                                let rowClass = '';
+                                if (item.QuantityRequired > item.StockAvailable) {
+                                    rowClass = 'highlight';
+                                }
+                                const quantityDifference = ((item.ApprovedQuantity != null ? item.ApprovedQuantity : 0) + item.StockAvailable) - item.QuantityRequired;
+                                let differenceToDisplay = quantityDifference < 0 ? quantityDifference : 0;
+
+                                $("#bom-voucher-lines-tbody").append(`
+                                  <tr class="${rowClass}">
+                                    <td>${item.lineid}</td>
+                                    <td>${item.Vouchernumber}</td>
+                                    <td>${formattedVoucherDate}</td>
+                                    <td>${item.Category}</td>
+                                    <td>${item.Subcategory}</td>
+                                    <td>${item.FinalItemCode}</td>
+                                    <td>${item.RawItemCode}</td>
+                                    <td>${item.QuantityRequired}</td>
+                                    <td>${item.ApprovedQuantity != null ? item.ApprovedQuantity : 0}</td>
+                                    <td>${item.StockAvailable}</td>
+                                    <td>${differenceToDisplay}</td> <!-- new column -->
+                                    <td>${item.UOM}</td>
+                                    <td><input type="number" value="0" data-id="123" class="quantityupdate" style="width: 80px;" /></td>
+                                    <td><button class="btn btn-primary" data-lineid="${item.lineid}" onclick="saveLineIssueStock(this)">Issue Stock</button></td>
+                                  </tr>
+                                `);
+                            });
+                        }
+
+                    });
+                } else {
+                    toastr.error("Error saving line issue stock: " + data.error);
+                }
+
+            },
+            error: function (xhr, status, error) {
+                toastr.error("Error saving line issue stock: " + error);
+            }
+
+        });
+    }
+</script>

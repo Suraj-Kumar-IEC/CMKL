@@ -1,0 +1,105 @@
+﻿
+
+<h4 class="card-title text-center" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Material Reciept Status</h4>
+
+<div id="dataContainer">
+    @* Data will be dynamically added here *@
+</div>
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+
+
+<script>
+    $(document).ready(function () {
+
+        $.ajax({
+            url: '@Url.Action("GetMRNStatus", "Purchase")',
+            type: 'GET',
+            success: function (result) {
+                var dataContainer = $('#dataContainer');
+                dataContainer.empty();
+
+                for (var i = 0; i < result.length; i++) {
+                    var record = result[i];
+
+                    // Create a container for each record
+                    var recordDiv = $('<div class="record-container mb-3"></div>');
+
+                    // Add record details first
+                    var recordDetails = $('<div></div>');
+                    recordDetails.append('<p style="margin-bottom: 0.5px;margin-top: 0.5px;">ID: ' + record.Id + '</p>');
+                    recordDetails.append('<p style="margin-bottom: 0.5px;">Bill Number: ' + record.BillNumber + '</p>');
+                    recordDetails.append('<p style="margin-bottom: 0.5px;">MRN Number: ' + record.Vouchernumber + '</p>');
+                    recordDetails.append('<p style="margin-bottom: 0.5px;">Gate Entry: ' + record.GateEntry + '</p>');
+                    // ... add other record details as needed
+
+                    recordDiv.append(recordDetails);
+
+                    // Add the line separator
+                    
+
+                    // Create the status bar
+                    var progressBar = $('<div class="progress custom-progress"></div>');
+                    progressBar.append(createProgressBarSegment(record.MRNStoreApproval, 'Store Approval'));
+                    progressBar.append(createProgressBarSegment(record.MRNQualityApproval, 'Quality Approval'));
+                    progressBar.append(createProgressBarSegment(record.MRNPlantHeadApproval, 'Plant Head Approval'));
+                    progressBar.append(createProgressBarSegment(record.MRNAccountApproval, 'Account Approval'));
+
+                    recordDiv.append(progressBar);
+
+
+                    dataContainer.append(recordDiv);
+                    var line = $('<hr>');
+                    recordDiv.append(line);
+                }
+            },
+            error: function (xhr, status, error) {
+                alert("An error occurred while fetching data.");
+            }
+        });
+
+
+        function createProgressBarSegment(isApproved, label) {
+            var segment = $('<div class="progress-bar" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>');
+
+            // Create a span to hold the label
+            var labelSpan = $('<span class="progress-label"></span>');
+            labelSpan.text(label);
+
+            if (isApproved === 1) {
+                segment.addClass('bg-success').attr('aria-label', label + ' - Approved');
+                // No need for checkmark-approved class anymore
+            } else {
+                segment.addClass('bg-secondary').attr('aria-label', label + ' - Pending');
+            }
+
+            // Append the label span to the segment
+            segment.append(labelSpan);
+
+            return segment;
+        }
+    });
+</script>
+
+<style>
+    .custom-progress .progress-bar.bg-success {
+        background-color: #00698f !important; /* Salesforce blue */
+    }
+
+        .custom-progress .progress-bar {
+            border-radius: 0;
+        }
+
+    .progress-label {
+        display: block;
+        width: 100%;
+        text-align: center;
+        color: white;
+        font-size: 12px;
+    }
+
+    /* Remove the checkmark styles */
+    .checkmark-approved::before, .checkmark-pending::before {
+        content: "";
+    }
+</style>

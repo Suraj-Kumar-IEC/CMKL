@@ -1,0 +1,25 @@
+﻿@model List<dynamic>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Final Item</th>
+            <th>Raw Item</th>
+            <th>Category</th>
+            <th>Quantity</th>
+            <th>UOM</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.FinalItem</td>
+                <td>@item.RawItemName</td>
+                <td>@item.Category</td>
+                <td>@item.Quantity</td>
+                <td>@item.UOM</td>
+            </tr>
+        }
+    </tbody>
+</table>

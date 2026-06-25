@@ -1,0 +1,364 @@
+﻿
+@{
+    ViewBag.Title = "GoodsReciept";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h3 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">Goods Reciept</h3>
+
+<div class="container" style="margin-bottom:20px">
+    <div class="row">
+        <div class="col-sm-6 col-md-2">
+            <label for="GateReciept">Gate Reciept Number</label>
+            <input type="text" id="GateReciept" class="form-control form-control-sm" disabled />
+        </div>
+        <div class="col-sm-6 col-md-2">
+            <label for="EntryDate">Entry Date</label>
+            <input type="date" id="EntryDate" class="form-control form-control-sm" />
+        </div>
+        <div class="col-sm-6 col-md-2">
+            <label>Entry Time</label>
+            <input type="time" id="Entrytime" class="form-control form-control-sm" />
+        </div>
+        <div class="col-sm-6 col-md-2">
+            <label for="Supplier">Select Supplier </label>
+            <select id="Supplier" class="form-control form-control-sm">
+            </select>
+        </div>        
+        <div class="col-sm-6 col-md-2">
+            <label for="PO Number">PO Number</label>
+            <input type="text" id="PONumber" class="form-control form-control-sm" />
+        </div>
+        <div class="col-sm-6 col-md-2">
+            <label for="PODate">PO Date</label>
+            <input type="date" id="PODate" class="form-control form-control-sm" />
+        </div>
+        <div class="col-sm-6 col-md-2">
+            <label>Transporter Name</label>
+            <input type="text" id="transportername" class="form-control form-control-sm" />
+        </div>
+        <div class="col-sm-6 col-md-2">
+            <label>Vehicle Number</label>
+            <input type="text" id="vehiclenumber" class="form-control form-control-sm" />
+        </div>
+        <div class="col-sm-6 col-md-2">
+            <label>GR Number</label>
+            <input type="text" id="grnumber" class="form-control form-control-sm" />
+        </div>
+        <div class="col-sm-6 col-md-2">
+            <label>GR Date</label>
+            <input type="date" id="grdate" class="form-control form-control-sm" />
+        </div>
+        <div class="col-sm-6 col-md-2">
+            <label>Bill Number</label>
+            <input type="text" id="billnumber" class="form-control form-control-sm" />
+        </div>
+        <div class="col-sm-6 col-md-2">
+            <label>Bill Date</label>
+            <input type="date" id="billdate" class="form-control form-control-sm" />
+        </div>
+        <div class="col-sm-6 col-md-2">
+            <label>Net Amount</label>
+            <input type="text" id="totalnetamount" class="form-control form-control-sm" disabled />
+        </div>
+        <div class="col-sm-6 col-md-2">
+            <label>Tax Amount</label>
+            <input type="text" id="taxamountamount" class="form-control form-control-sm" disabled />
+        </div>
+        <div class="col-sm-6 col-md-2">
+            <label>Bill Amount</label>
+            <input type="text" id="billamount" class="form-control form-control-sm" disabled />
+        </div>
+        <div class="col-sm-6 col-md-2">
+            <label>Bill Amount On Bill</label>
+            <input type="text" id="billamountbll" class="form-control form-control-sm" />
+        </div>
+        <div class="col-sm-6 col-md-2">
+            <label>Remarks</label>
+            <input type="text" id="remarks" class="form-control form-control-sm" />
+        </div>
+    </div>
+    <div class="row justify-content-center" style="margin-top:10px">
+        <div class="col-md-2">
+            <button type="button" id="poretrieve" class="btn btn-dark"><i class="fa fa-save"></i>View PO</button>
+        </div>
+        <div class="col-md-2">
+            <button type="button" id="othertaxbtn" class="btn btn-success"><i class="fa fa-save"></i>Other Tax</button>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" id="SaveReciept" class="btn btn-danger"><i class="fa fa-save"></i>Save GR</button>
+        </div>
+    </div>
+</div>
+<h5 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">Item Details</h5>
+<div class="container">
+    <div class="row">
+        <div class="col-sm-2 col-md-1">
+            <label>Item Code</label>
+            <input type="text" id="itemcode" class="form-control form-control-sm" />
+            <input type="text" id="itemid" class="form-control form-control-sm" style="display:none" />
+        </div>
+        <div class="col-sm-2 col-md-2">
+            <label>Item Name</label>
+            <input type="text" id="itemname" class="form-control form-control-sm" disabled />
+        </div>
+        <div class="col-sm-2 col-md-2">
+            <label>Item Desc</label>
+            <input type="text" id="itemdesc" class="form-control form-control-sm" disabled />
+        </div>
+        <div class="col-sm-2 col-md-1">
+            <label>UOM</label>
+            <input type="text" id="UOM" class="form-control form-control-sm" disabled />
+        </div>
+        <div class="col-sm-2 col-md-2">
+            <label>HSN Code</label>
+            <input type="text" id="HSN" class="form-control form-control-sm" disabled />
+        </div>        
+        <div class="col-sm-2 col-md-2">
+            <label>Bill Qty</label>
+            <input type="text" id="BQuantity" class="form-control form-control-sm" />
+        </div>
+        <div class="col-sm-2 col-md-2">
+            <label>Tax %</label>
+            <select id="itemtax" class="form-control form-control-sm"></select>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="otherTaxModal" tabindex="-1" aria-labelledby="otherTaxModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm" style="max-width: 400px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="otherTaxModalLabel">Add Other Tax</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="taxPercentage" class="form-label">Tax Percentage</label>
+                    <input type="number" class="form-control" id="othertaxPercentage" value="0.00" placeholder="Enter tax percentage">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="closeothertax" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveTaxBtn">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="POModal" tabindex="-1" aria-labelledby="otherTaxModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="otherTaxModalLabel">Retrive PO Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row align-content-center">
+                    <div class="mb-6">
+                        <label for="PO" class="form-label">Select PO Number</label>
+                        <select id="selectpo" class="form-control form-control-sm"></select>
+                    </div>
+                </div>
+                <div class="row justify-content-between">
+                    <h7 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">PO Detail</h7>
+                    <div class="row">
+                        <div class="col-md-2">
+                            <label>Supplier</label>
+                            <input type="text" id="SupplierPO" class="form-control form-control-sm" disabled />
+                        </div>
+                        <div class="col-md-2">
+                            <label>PO Number</label>
+                            <input type="text" id="PONumberPO" class="form-control form-control-sm" disabled />
+                        </div>
+                        <div class="col-md-2">
+                            <label>PO Date</label>
+                            <input type="text" id="PODatePO" class="form-control form-control-sm" disabled />
+                        </div>
+                        <div class="col-md-2">
+                            <label>Indent No</label>
+                            <input type="text" id="IndentPO" class="form-control form-control-sm" disabled />
+                        </div>
+                        <div class="col-md-2">
+                            <label>Indent Date</label>
+                            <input type="text" id="IndentDatePO" class="form-control form-control-sm" disabled />
+                        </div>
+                    </div>
+                </div>
+                <div class="row justify-content-center" style="margin-top:10px">
+                    <table id="POtable" class="table table-bordered table-sm">
+                        <thead>
+                            <tr>
+                                <th>Item Code </th>
+                                <th>Item Name</th>
+                                <th>UOM</th>
+                                <th>Basic Price</th>
+                                <th>Qty</th>
+                                <th>Total Basic</th>
+                                <th>Tax Amount</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="closepomodal" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="savepoBtn" style="display:none">Retrieve PO Detail</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script>
+    $(document).ready(function () {
+        loadvalues();
+
+        function loadvalues() {
+            $.ajax({
+              url: '@Url.Action("GetSupplier", "Purchase")',
+                type: 'GET',
+                datatype: 'JSON',
+                success: function (data) {
+                    $('#Supplier').empty(); // clear existing options
+                    $('#Supplier').append('<option value="' + '0' + '">' + 'Select Supplier' + '</option>');
+                    $.each(data, function (index, item) {
+                        $('#Supplier').append('<option value="' + item.value + '">' + item.text + '</option>');
+                    });                
+                  }
+            });
+            $.ajax({
+                type: 'get',
+                url: '/Purchase/NewGRNumber',
+                success: function (data) {                    
+                    $('#GateReciept').val(data.GRNumber);
+                }
+            }); 
+        }
+        $('#othertaxbtn').click(function () {
+            $('#otherTaxModal').modal('show');// Show the modal
+        });
+
+        $("#closeothertax").click(function () {
+            $('#otherTaxModal').modal('hide');
+        });
+        $('#itemcode').on('change', function () {
+            var itemcode = $('#itemcode').val();
+            $.ajax({
+                url: '/Purchase/getItemDetails',
+                type: 'GET',
+                data: { itemCode: itemcode },
+                success: function (data) {
+                    if (data.success) {
+                        $('#itemname').val(data.itemname);
+                        $('#itemid').val(data.itemid);
+                        $('#UOM').val(data.uomText);
+                        $('#itemdesc').val(data.itemdesc);
+                        $('#BasicPrice').val(data.Basic);
+                        $('#BQuantity').focus();
+                        toastr.success('Details Retrieved');
+                        var audio = new Audio('/Sound/Save.mp3');
+                        audio.play();
+                    } else {
+                        // Handle the "Item code not found" error
+                        toastr.error(data.error);
+                        $('#ItemCode').focus();
+                        // Display the error message using toastr
+                        // You might also want to clear the other item detail fields here
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('AJAX error:', error);
+                    // Display a generic error message to the user
+                    toastr.error('An error occurred while fetching item details.');
+                }
+            });
+        });
+
+        $('#poretrieve').click(function () {
+            //First We need to Get All PO Number
+            $.ajax({
+                type: 'GET',
+                url: '/Purchase/GetAvailablePONumbers',
+                success: function (data) {
+                    if (data && data.success && Array.isArray(data.data) && data.data.length > 0) { // Correct check
+                        toastr.success('PO Data Received..');
+                        $('#selectpo').empty();
+                        $('#selectpo').append('<option value="' + '0' + '">' + 'Select PO' + '</option>');
+                        $.each(data.data, function (index, item) {
+                            $('#selectpo').append('<option value="' + item.value + '">' + item.text + '</option>');
+                        });
+                        $('#POModal').modal('show');
+                    }
+                    else {
+                        toastr.error('No PO Available to Retrieve..');
+                    }
+                }
+            });
+            $('#POModal1').modal('show');
+        });
+
+        $('#closepomodal').click(function () {
+            $('#POModal1').modal('hide');
+        });
+
+        $('#selectpo').change(function () {
+            var selectedPO = $(this).val();
+            $.ajax({
+                url: '/Inventory/GetPurchaseLines',
+                type: 'GET',
+                data: { selectedPO: selectedPO },
+                success: function (data) {
+                    //Update Head Data
+                    $('#SupplierPO').val(data.head.Supplier);
+                    $('#PONumberPO').val(data.head.PO);
+                    $('#IndentPO').val(data.head.Indent);
+                    var PODate = new Date(parseInt(data.head.PODate.substr(6))); // Extract milliseconds
+                    FormattedPO = moment(PODate).format('DD/MM/YYYY');
+                    var IndentDate = new Date(parseInt(data.head.IndentDate.substr(6))); // Extract milliseconds
+                    FormattedIndentDate = moment(IndentDate).format('DD/MM/YYYY');
+                    $('#PODatePO').val(FormattedPO);
+                    $('#IndentDatePO').val(FormattedIndentDate);
+
+
+                    var table = $('#POtable tbody'); // Target the tbody for better performance
+                    table.empty();
+                    toastr.success('Data Received');
+                    $.each(data.lines, function (index, item) { // Use data.lines to access the array
+                        var row = '<tr>' +
+                            '<td>' + item.ItemCode + '</td>' +
+                            '<td>' + item.ItemName + '</td>' +
+                            '<td>' + item.UOM + '</td>' +
+                            '<td>' + item.NetBasic + '</td>' +
+                            '<td>' + item.Quantity + '</td>' +
+                            '<td>' + item.TotalBasic + '</td>' +
+                            '<td>' + item.TotalTax + '</td>' +
+                            '<td>' + item.GrossAmount + '</td>' +
+                            '</tr>';
+                        table.append(row);
+                    });
+                },
+                error: function (error) {
+                    toastr.error('Error receiving data.');
+                    console.error("Error fetching data:", error);
+                }
+            });
+            // $('#POModal1').modal('show');
+            //$('#POModal2').modal('show');// Use Bootstrap's modal('show') method
+        });
+        $('#savepoBtn').click(function () {
+            $('#PONumber').val($('#PONumberPO').val());
+            var cPODate = $('#PODatePO').val();
+            let momentDate = moment(cPODate, "DD-MM-YYYY");
+            let outputDate = momentDate.format("YYYY-MM-DD");
+            $('#PODate').val(outputDate);
+            $('#PONumber').prop('disabled', true);
+            $('#PODate').prop('disabled', true);
+            $('#POModal').modal('hide');
+
+        });
+
+    });
+</script>

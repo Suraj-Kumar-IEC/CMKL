@@ -1,0 +1,463 @@
+﻿@{
+    ViewBag.Title = "Quality Assurance Console";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const isInModal = !!(document.querySelector('.modal.show'));
+            if (isInModal) {
+                setTimeout(() => { handleInvalidUser(); }, 500);
+            } else {
+                handleInvalidUser();
+            }
+            function handleInvalidUser() {
+                toastr.error("Invalid User Session");
+                setTimeout(function () { window.location.href = "@Url.Action("Index", "Login")"; }, 2000);
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<style>
+    /* FIX: Scope all report styles to this container to prevent Layout Icons from shrinking */
+    .quality-approval-container {
+        background-color: #f8fafc;
+        font-family: 'Inter', sans-serif;
+        color: #334155;
+        font-size: 0.8rem; /* Applied locally only */
+        padding-bottom: 30px;
+    }
+
+    .quality-approval-container :root {
+        --brand-blue: #00698f;
+        --border-color: #e2e8f0;
+        --danger-red: #dc3545;
+        --success-green: #198754;
+    }
+
+    /* Layout Animations */
+    .quality-approval-container .animate-entrance {
+        animation: fadeInSlideQuality 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        opacity: 0;
+    }
+    @@keyframes fadeInSlideQuality {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Header & Summary Cards */
+    .quality-approval-container .report-header {
+        background: white; padding: 15px 30px; border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); margin-bottom: 20px;
+        display: flex; justify-content: space-between; align-items: center;
+        border: 1px solid #e2e8f0;
+    }
+
+    .quality-approval-container .stat-card {
+        background: white; border-radius: 10px; padding: 12px 20px;
+        border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        display: flex; flex-direction: column; height: 100%;
+        transition: transform 0.2s ease;
+    }
+    .quality-approval-container .stat-card:hover { transform: translateY(-3px); }
+    .quality-approval-container .stat-label { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; }
+    .quality-approval-container .stat-value { font-size: 1.25rem; font-weight: 800; color: #00698f; }
+
+    /* Main Table Design */
+    .quality-approval-container .section-card {
+        background: white; border-radius: 12px; padding: 20px;
+        border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+
+    .quality-approval-container .table thead th {
+        background-color: #f1f5f9; color: #00698f;
+        font-weight: 800; font-size: 0.65rem; text-transform: uppercase;
+        padding: 10px; border: none;
+    }
+    .quality-approval-container .table tbody td { vertical-align: middle; padding: 8px 10px; border-bottom: 1px solid #f1f5f9; }
+
+    /* Action Buttons */
+    .quality-approval-container .btn-action { border-radius: 6px; font-weight: 700; font-size: 0.7rem; padding: 5px 12px; transition: 0.2s; }
+    .quality-approval-container .btn-details { background: #00698f; color: white; border: none; }
+    .quality-approval-container .btn-details:hover { background: #005676; transform: scale(1.02); }
+
+    /* Modal Styling */
+    .modal-content-custom { border-radius: 16px; border: none; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
+    .modal-header-custom { background: #f8fafc; border-bottom: 1px solid #eef2f6; border-radius: 16px 16px 0 0; }
+
+    .quality-approval-container .input-qty { width: 85px; border-radius: 6px; border: 1.5px solid #cbd5e1; padding: 4px 8px; font-weight: 700; text-align: center; }
+    .quality-approval-container .input-remarks { width: 100%; border-radius: 6px; border: 1.5px solid #cbd5e1; padding: 4px 8px; font-size: 0.75rem; }
+
+    /* HIGH VISIBILITY DECISION BUTTONS */
+    .btn-decision {
+        font-size: 0.65rem;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        padding: 7px 16px;
+        border-radius: 8px;
+        text-transform: uppercase;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        border-width: 2px;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .btn-decision-accept {
+        background-color: #198754; color: white; border-color: #157347;
+    }
+    .btn-decision-accept:hover { background-color: #157347; transform: translateY(-1px); box-shadow: 0 4px 10px rgba(25, 135, 84, 0.2); }
+
+    .btn-decision-reject {
+        background-color: #dc3545; color: white; border-color: #bb2d3b;
+    }
+    .btn-decision-reject:hover { background-color: #bb2d3b; transform: translateY(-1px); box-shadow: 0 4px 10px rgba(220, 53, 69, 0.2); }
+
+    /* Loader */
+    .loader-overlay-quality { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.7); z-index: 10000; display: none; align-items: center; justify-content: center; }
+</style>
+
+<div class="quality-approval-container container-fluid py-4 px-lg-5 animate-entrance">
+
+    <!-- Page Header -->
+    <div class="report-header shadow-sm">
+        <div>
+            <h4 class="fw-bold m-0 text-dark">Quality Assurance Console</h4>
+            <p class="text-muted small m-0">Incoming Material Inspection & Technical Verification Hub.</p>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-light text-primary border px-3 py-2 rounded-pill fw-bold">
+                <i class="fas fa-microscope me-1"></i> Quality Control Module
+            </span>
+        </div>
+    </div>
+
+    <!-- Metrics Bar -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card" style="border-left: 5px solid #00698f;">
+                <span class="stat-label">Pending Bill Inspections</span>
+                <span class="stat-value" id="countPendingBills">0 Bills</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card" style="border-left: 5px solid #198754;">
+                <span class="stat-label">Active Supplier Queue</span>
+                <span class="stat-value" id="countActiveSuppliers">0 Entities</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card" style="border-left: 5px solid #dc3545;">
+                <span class="stat-label">Inspection Priority</span>
+                <span class="stat-value text-danger" id="inspectionStatus">Live Sync</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Queue Section -->
+    <div class="section-card shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-bold m-0 text-primary uppercase small"><i class="fas fa-list-ul me-2"></i>Bills Awaiting Quality Approval</h6>
+            <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="getQualityData()">
+                <i class="fas fa-sync-alt me-1"></i> Refresh Queue
+            </button>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover" id="head-table">
+                <thead>
+                    <tr>
+                        <th>Invoice / Bill Number</th>
+                        <th>Billing Date</th>
+                        <th>Vendor / Supplier Name</th>
+                        <th class="text-center">Inspection Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="head-tbody">
+                    <tr>
+                        <td colspan="4" class="text-center py-5 text-muted">
+                            <div class="spinner-border spinner-border-sm text-primary"></div>
+                            <div class="mt-2 small fw-bold">Fetching Quality Queue...</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: New Animated Line Items View -->
+<div class="modal fade animate-entrance" id="linesModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header modal-header-custom py-3 border-0">
+                <div>
+                    <h5 class="modal-title fw-bold text-primary m-0"><i class="fas fa-clipboard-check me-2"></i>Line Item Inspection</h5>
+                    <small class="text-muted">Bill Ref: <span id="modal-bill-no" class="fw-bold">---</span> | Supplier: <span id="modal-supplier" class="fw-bold">---</span></small>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="table-responsive" style="max-height: 60vh;">
+                    <table class="table table-hover mb-0" id="detail-table">
+                        <thead>
+                            <tr class="sticky-top bg-light">
+                                <th class="text-center">ID</th>
+                                <th>Code</th>
+                                <th>Item Description</th>
+                                <th class="text-center">UOM</th>
+                                <th class="text-end">Bill Qty</th>
+                                <th class="text-end text-success">Appr.</th>
+                                <th class="text-end text-danger">Rej.</th>
+                                <th class="text-center" style="width: 140px;">Enter Qty</th>
+                                <th class="text-center">Observations</th>
+                                <th class="text-center" style="width: 280px;">Confirm Decision</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detail-tbody" class="quality-approval-container">
+                            <!-- Lines populated via AJAX -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer bg-light border-0">
+                <span class="small text-muted me-auto"><i class="fas fa-info-circle me-1"></i> Partial inspections allowed. Decisions are final once the bill is closed.</span>
+                <button type="button" class="btn btn-secondary btn-sm px-4 rounded-pill" data-bs-dismiss="modal">Minimize View</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Close Bill Confirmation Modal -->
+<div class="modal fade" id="closeBillWarningModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content modal-content-custom border-0 shadow-lg">
+            <div class="modal-header bg-danger text-white py-3 border-0">
+                <h5 class="modal-title fw-bold m-0"><i class="fas fa-lock me-2"></i>Finalize Inspection</h5>
+            </div>
+            <div class="modal-body text-center p-4">
+                <div class="mb-3"><i class="fas fa-exclamation-triangle fa-3x text-danger opacity-25"></i></div>
+                <h6 class="fw-bold">Seal Bill #<span id="head-id-text">---</span>?</h6>
+                <p class="text-muted small">You are about to permanently lock this bill. No further Accept/Reject entries can be made for this material receipt.</p>
+            </div>
+            <div class="modal-footer border-0 justify-content-center pb-4">
+                <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Go Back</button>
+                <button type="button" class="btn btn-danger px-4 rounded-pill fw-bold shadow-sm" onclick="closeBillConfirm($('#head-id-text').text())">Confirm & Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="loader-overlay-quality" id="globalLoader">
+    <img src="~/images/wait.gif" style="width: 80px;" />
+</div>
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+
+@section Scripts {
+    <script>
+        var itemData = {};
+
+        $(document).ready(function () {
+            getQualityData();
+        });
+
+        function getQualityData() {
+            $.ajax({
+                type: "GET",
+                url: "@Url.Action("GetQualityData", "Inventory")",
+                success: function (data) {
+                    var tbody = $("#head-tbody");
+                    tbody.empty();
+
+                    let supplierSet = new Set();
+
+                    if (data && data.length > 0) {
+                        $.each(data, function (index, head) {
+                            supplierSet.add(head.SupplierName);
+                            const billDate = moment(head.BillDate).format('DD/MM/YYYY');
+
+                            tbody.append(`
+                                <tr id="head-row-${head.Id}">
+                                    <td class="fw-bold text-dark">${head.BillNumber}</td>
+                                    <td><span class="badge bg-light text-muted border py-1 px-3 rounded-pill">${billDate}</span></td>
+                                    <td class="fw-bold text-primary">${head.SupplierName}</td>
+                                    <td class="text-center">
+                                        <button class="btn btn-action btn-details me-1 shadow-sm" onclick="showDetails(${head.Id}, '${head.BillNumber}', '${head.SupplierName}')">
+                                            <i class="fas fa-search-plus me-1"></i> Inspect Lines
+                                        </button>
+                                        <button class="btn btn-action btn-outline-danger px-3 rounded-pill" onclick="openCloseBillWarningModal(${head.Id})">
+                                            <i class="fas fa-lock"></i> Close
+                                        </button>
+                                    </td>
+                                </tr>
+                            `);
+                        });
+
+                        $('#countPendingBills').text(data.length + " Bills");
+                        $('#countActiveSuppliers').text(supplierSet.size + " Entities");
+                    } else {
+                        tbody.append('<tr><td colspan="4" class="text-center py-5 text-muted italic">No pending bills in Quality queue.</td></tr>');
+                    }
+                }
+            });
+        }
+
+        function showDetails(headId, billNo, supplier) {
+            $('#globalLoader').css('display', 'flex');
+
+            $.ajax({
+                type: "GET",
+                url: "@Url.Action("GetQualityLines", "Inventory")",
+                data: { headId: headId },
+                success: function (data) {
+                    $('#globalLoader').hide();
+                    $("#modal-bill-no").text(billNo);
+                    $("#modal-supplier").text(supplier);
+
+                    var detailTbody = $("#detail-tbody");
+                    detailTbody.empty();
+
+                    $.each(data, function (index, item) {
+                        itemData[item.Id] = {
+                            "ItemCode": item.ItemCode,
+                            "QualityApprovedQty": item.QualityApprovedQty,
+                            "Quantity": item.Quantity,
+                            "RejectedQty": item.RejectedQty
+                        };
+
+                        detailTbody.append(`
+                            <tr id="line-row-${item.Id}">
+                                <td class="text-center small text-muted">#${item.ItemCode}</td>
+                                <td class="fw-bold text-primary">${item.ItemCodeA}</td>
+                                <td class="small fw-bold text-dark">${item.ItemName}</td>
+                                <td class="text-center"><span class="badge bg-light text-dark border">${item.UOM}</span></td>
+                                <td class="text-end fw-bold">${item.Quantity}</td>
+                                <td class="text-end text-success fw-bold">${item.QualityApprovedQty}</td>
+                                <td class="text-end text-danger fw-bold">${item.RejectedQty}</td>
+                                <td>
+                                    <input type="number" class="form-control input-qty shadow-sm mx-auto" id="quality-pass-qty-${item.Id}" placeholder="0.00" />
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control input-remarks shadow-sm" id="remarks-${item.Id}" placeholder="Inspection notes..." />
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex gap-2 justify-content-center">
+                                        <button class="btn btn-success btn-decision btn-decision-accept" onclick="approveQuantity(${item.Id}, ${headId})">
+                                            <i class="fas fa-check-circle"></i> ACCEPT
+                                        </button>
+                                        <button class="btn btn-danger btn-decision btn-decision-reject" onclick="rejectQuantity(${item.Id}, ${headId})">
+                                            <i class="fas fa-times-circle"></i> REJECT
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `);
+                    });
+
+                    $("#head-tbody tr").removeClass("selected table-primary");
+                    $(`#head-row-${headId}`).addClass("selected table-primary");
+
+                    $('#linesModal').modal('show');
+                }
+            });
+        }
+
+        function approveQuantity(itemId, headId) {
+            const approvedQty = parseFloat($("#quality-pass-qty-" + itemId).val()) || 0;
+            const remarks = $("#remarks-" + itemId).val();
+            const cache = itemData[itemId];
+
+            if (approvedQty <= 0) {
+                toastr.warning('Enter a valid quantity to accept.');
+                return;
+            }
+
+            if (cache.QualityApprovedQty + approvedQty + cache.RejectedQty > cache.Quantity) {
+                toastr.error('Quantity exceeds remaining bill balance.');
+                return;
+            }
+
+            $('#globalLoader').css('display', 'flex');
+
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("ApproveQuantity", "Inventory")",
+                data: { itemId: itemId, approvedQty: approvedQty, ItemCode: cache.ItemCode, Remarks: remarks },
+                success: function (data) {
+                    $('#globalLoader').hide();
+                    if (data.success) {
+                        toastr.success(data.message);
+                        showDetails(headId, $("#modal-bill-no").text(), $("#modal-supplier").text());
+                    } else {
+                        toastr.error(data.message);
+                    }
+                }
+            });
+        }
+
+        function rejectQuantity(itemId, headId) {
+            const rejectedQty = parseFloat($("#quality-pass-qty-" + itemId).val()) || 0;
+            const remarks = $("#remarks-" + itemId).val();
+            const cache = itemData[itemId];
+
+            if (rejectedQty <= 0) {
+                toastr.warning('Enter quantity to reject.');
+                return;
+            }
+
+            if (cache.RejectedQty + cache.QualityApprovedQty + rejectedQty > cache.Quantity) {
+                toastr.error('Rejection quantity exceeds bill balance.');
+                return;
+            }
+
+            $('#globalLoader').css('display', 'flex');
+
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("RejectQuantity", "Inventory")",
+                data: { itemId: itemId, approvedQty: rejectedQty, ItemCode: cache.ItemCode, Remarks: remarks },
+                success: function (data) {
+                    $('#globalLoader').hide();
+                    if (data.success) {
+                        toastr.success(data.message);
+                        showDetails(headId, $("#modal-bill-no").text(), $("#modal-supplier").text());
+                    } else {
+                        toastr.error(data.message);
+                    }
+                }
+            });
+        }
+
+        function openCloseBillWarningModal(headId) {
+            $('#head-id-text').text(headId);
+            $('#closeBillWarningModal').modal('show');
+        }
+
+        function closeBillConfirm(headId) {
+            $('#globalLoader').css('display', 'flex');
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("CloseQuanlityBill", "Inventory")",
+                data: { headId: headId },
+                success: function (data) {
+                    $('#globalLoader').hide();
+                    $('#closeBillWarningModal').modal('hide');
+                    if (data.success) {
+                        toastr.success(data.message);
+                        getQualityData();
+                        $('#linesModal').modal('hide');
+                    } else {
+                        toastr.error(data.message);
+                    }
+                }
+            });
+        }
+    </script>
+}

@@ -1,0 +1,189 @@
+﻿
+@{
+    ViewBag.Title = "PurchaseDetailReport";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if the current context is inside a Bootstrap modal
+            const isInModal = !!(document.querySelector('.modal.show'));
+
+            if (isInModal) {
+                // If inside a modal, wait for a short delay
+                setTimeout(() => {
+                    handleInvalidUser();
+                }, 500); // Adjust the delay as needed
+            } else {
+                // If not in a modal, proceed immediately
+                handleInvalidUser();
+            }
+
+            function handleInvalidUser() {
+                toastr.error("Invalid User");
+
+                setTimeout(function () {
+                    window.location.href = "@Url.Action("Index", "Login")";
+                }, 2000); // Redirect after 2 seconds
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+@*<style>
+        #detailreport {
+            width: 100%; /* Or set a max-width */
+            table-layout: fixed; /* Optional, for even column distribution */
+        }
+
+            #detailreport .item-name { /* Target the 'item-name' class within the table */
+                width: 200px; /* Adjust the width as needed */
+                /* Or, you could increase the font-size if that's what you prefer */
+            }
+
+            #detailreport td {
+                word-wrap: break-word; /* Or overflow: hidden; text-overflow: ellipsis; */
+            }
+
+
+        /* Add scrollbars to the container if needed */
+        #detailreportdiv { /* Assuming your div has this ID */
+            overflow-x: auto;
+        }
+    </style>
+*@
+
+
+<div class="container-fluid">
+    <h3 style="background-color: #00698f; color: #ffffff; padding: 5px 10px; border-radius: 5px; text-align: center;">Material Reciept Item Wise</h3>
+
+    <div class="card mb-3 mx-auto" style="max-width: 900px;">
+        <div class="card-body">
+            <div class="row justify-content-center">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="fromDate">From Date:</label>
+                        <input type="date" id="fromDate" class="form-control form-control-sm" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="toDate">To Date:</label>
+                        <input type="date" id="toDate" class="form-control form-control-sm" />
+                    </div>
+                </div>
+                <div class="col-md-4 d-flex align-items-end justify-content-center">
+                    <button id="filterReportBtn" class="btn btn-primary">Filter Report</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="detailreportdiv">
+        <table id="detailreport" class="table table-sm table-bordered" width="100%">
+            <thead>
+                <tr>
+                    <th>Bill Number</th>
+                    <th>Bill Date</th>
+                    <th>GR No</th>
+                    <th>GR Date</th>
+                    <th>Gate Entry No</th>
+                    <th>Gate Entry</th>
+                    <th>Supplier Name</th>
+                    <th>Item Name</th>
+                    <th>item Code</th>
+                    <th>Lot/S.no</th>
+                    <th>UOM</th>
+                    <th>Basic Price</th>
+                    <th>Qty</th>
+                    <th>Approve (QA)</th>
+                    <th>Rejected (QA)</th>
+                    <th>Total Tax</th>
+                    <th>Amount With Tax</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+    <script src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script src="~/toastr/Js/toastr.js"></script>
+    <link href="~/toastr/toastr.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.16.2/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+
+    <script>
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            return moment(dateString).format('DD/MM/YYYY');
+        }
+        $(document).ready(function () {
+            $('#filterReportBtn').click(function () {
+                const from = $('#fromDate').val();
+                const to = $('#toDate').val();
+                debugger;
+
+                $.ajax({
+                    url: '/Purchase/PurchaseDetailData',
+                    type: 'GET',
+                    data: { from: from, to: to },
+                    success: function (Data) {
+                        var tablebody = $('#detailreport tbody');
+                        tablebody.empty();
+
+
+                        $.each(Data, function (index, bill) {
+                            var billDate = jsonDateToDate(bill.BillDate);
+                            var createdDate = jsonDateToDate(bill.VoucherDate);
+                            var gateentry = jsonDateToDate(bill.GateEntryDate);
+                            var poDate = (bill.PODate === null || bill.PODate === '') ? 'NA' : jsonDateToDate(bill.PODate);
+                            var pono = (bill.PONumber === null || bill.PONumber === '') ? 'NA' : bill.PONumber;
+                            var Gdt = new Date(bill.GateEntryDate);
+                            var GRDate = formatDate(bill.GRDate);
+                            var row = '<tr>' +
+                                '<td>' + bill.BillNumber + '</td>' +
+                                '<td>' + billDate + '</td>' +
+                                '<td>' + bill.GRNo + '</td>' +
+                                '<td>' + GRDate + '</td>' +
+                                '<td>' + bill.GateEntryNo + '</td>' +
+                                '<td>' + gateentry + '</td>' +
+                                '<td>' + bill.SupplierName + '</td>' +
+                                '<td>' + bill.ItemName + '</td>' +
+                                '<td>' + bill.ItemCode + '</td>' +
+                                '<td>' + bill.LotNo+ '</td>' +                                
+                                '<td>' + bill.UOM + '</td>' +
+                                '<td>' + bill.BasicPrice + '</td>' +
+                                '<td>' + bill.Quantity + '</td>' +
+                                '<td>' + bill.Approved + '</td>' +
+                                '<td>' + bill.Rejected + '</td>' +
+                                '<td>' + bill.TotalTax + '</td>' +
+                                '<td>' + bill.TotalAmount + '</td>' +
+                                '<tr>';
+
+                            tablebody.append(row);
+                        });
+                    },
+
+                });
+            })
+
+           
+
+            function jsonDateToDate(jsonDate) {
+                if (!jsonDate) return '';
+                var date = new Date(parseInt(jsonDate.replace(/\/Date\((\d+)\)\//, '$1')));
+                var day = date.getDate();
+                var month = date.getMonth() + 1; // months are 0-based, so add 1
+                var year = date.getFullYear();
+                return `${padZero(day)}/${padZero(month)}/${year}`;
+            }
+
+            function padZero(value) {
+                return (value < 10 ? '0' : '') + value;
+            }
+
+        });
+    </script>

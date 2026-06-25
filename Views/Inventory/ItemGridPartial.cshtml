@@ -1,0 +1,76 @@
+﻿@model IEnumerable<CMKL.Models.ItemMasterGFE>
+
+@ViewBag.data
+@*<p>
+        @Html.ActionLink("Create New", "Create")
+    </p>*@
+@{ 
+
+    WebGrid grid = new WebGrid(Model);
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+
+
+<table class="table">
+  
+
+
+    <tr  align="center">
+        <th>
+            @Html.DisplayName("Item Name")
+
+            @*@Html.DisplayNameFor(model => model.Itemname)*@
+        </th>
+        <th>
+            @Html.DisplayName("Item Description")
+            @* @Html.DisplayNameFor(model => model.itemdesc)*@
+        </th>
+        <th>
+            @Html.DisplayName("Item category")
+            @* @Html.DisplayNameFor(model => model.Itemcategory)*@
+        </th>
+        <th>
+            @Html.DisplayName("Phase")
+            @* @Html.DisplayNameFor(model => model.Itemcategory)*@
+        </th>
+        <th>
+            @Html.DisplayName("Unit of Measurment")
+            @* @* @Html.DisplayNameFor(model => model.unitofmeasurement)*@
+        </th>
+
+    </tr>
+
+    @foreach (var item in Model)
+    {
+<tr  align="center">
+    <td>
+        @Html.DisplayFor(modelItem => item.Itemname)
+
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.itemdesc)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.Itemcategory)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.Phase)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.unitofmeasurement)
+    </td>
+
+
+    @*<td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.id }) |
+            @Html.ActionLink("Details", "Details", new { id=item.id }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.id })
+        </td>
+    *@
+</tr>
+    }
+
+
+</table>      

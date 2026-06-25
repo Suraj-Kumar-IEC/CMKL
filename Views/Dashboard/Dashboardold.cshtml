@@ -1,0 +1,980 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+}
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if the current context is inside a Bootstrap modal
+            const isInModal = !!(document.querySelector('.modal.show'));
+
+            if (isInModal) {
+                // If inside a modal, wait for a short delay
+                setTimeout(() => {
+
+                    handleInvalidUser();
+                }, 500); // Adjust the delay as needed
+            } else {
+                // If not in a modal, proceed immediately
+                handleInvalidUser();
+            }
+
+            function handleInvalidUser() {
+                toastr.error("Invalid User");
+
+                setTimeout(function () {
+                    window.location.href = "@Url.Action("Index", "Login")";
+                }, 2000); // Redirect after 2 seconds
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<style>
+    /* Your existing styles */
+    .rating-button-container {
+        margin-bottom: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .rating-button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+        .rating-button:hover {
+            background-color: #0056b3;
+        }
+
+        .rating-button.active {
+            background-color: #28a745; /* Green for active/selected rating */
+            font-weight: bold;
+        }
+
+    .chart-container {
+        position: relative;
+        height: 50vh; /* Responsive height for the chart */
+        width: 100%;
+        margin: auto;
+    }
+
+    .spinner-border {
+        width: 3rem;
+        height: 3rem;
+    }
+
+    /* --- NEW STYLES FOR THE CLICKABLE CARD --- */
+    .trend-redirect-card {
+        background-color: #00698f; /* Match your existing header color */
+        color: #ffffff;
+        padding: 25px;
+        border-radius: 8px;
+        text-align: center;
+        cursor: pointer; /* Indicates it's clickable */
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+        margin-bottom: 20px; /* Space below the card */
+    }
+
+        .trend-redirect-card:hover {
+            background-color: #005a7a; /* Darken on hover */
+            transform: translateY(-3px); /* Slightly lift on hover */
+        }
+
+        .trend-redirect-card h3 {
+            color: #ffffff; /* Ensure title is white */
+            margin-bottom: 10px;
+        }
+
+        .trend-redirect-card p {
+            color: #e0e0e0; /* Lighter text */
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+
+        .trend-redirect-card .fas {
+            font-size: 3em; /* Large icon */
+            color: #FFD700; /* Gold color for icon */
+        }
+</style>
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.16.2/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+
+<h3 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">Dashboard</h3>
+<div class="row">
+    <div id="ww_fae9dd55dcf78" v='1.3' loc='auto' a='{"t":"responsive","lang":"en","sl_lpl":1,"ids":[],"font":"Arial","sl_ics":"one_a","sl_sot":"celsius","cl_bkg":"rgba(0,105,143,1)","cl_font":"#FFFFFF","cl_cloud":"#FFFFFF","cl_persp":"#81D4FA","cl_sun":"#FFC107","cl_moon":"#FFC107","cl_thund":"#FF5722","cl_odd":"#0000000a"}'><a href="https://weatherwidget.org/" id="ww_fae9dd55dcf78_u" target="_blank">Widget weather HTML</a></div>
+    <script async src="https://app3.weatherwidget.org/js/?id=ww_fae9dd55dcf78"></script>
+</div>
+
+@*<div>
+        <script src="https://static.elfsight.com/platform/platform.js" async></script>
+        <div class="elfsight-app-ef897b90-afec-42a5-b127-8d425386b7e4" data-elfsight-app-lazy></div>
+    </div>
+*@
+<p></p>
+<div class="row">
+    <div class="col-md-12">
+        <div id="ratingTrendRedirectCard" class="trend-redirect-card">
+            <h3>View Rating Wise Dispatch Trend Graphs</h3>
+            <p>Click here to analyze monthly dispatch trends for different Genset Ratings throughout the financial year.</p>
+            <i class="fas fa-chart-line"></i>
+        </div>
+    </div>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col-md-6">
+            <div id="monthly-dispatch-container" class="col-md-12" style="align-content:center; border: 1px solid #ccc; padding: 15px;">
+                <h4 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">Un-tested Finished Goods</h4>
+                <canvas id="ewapChart"></canvas>
+            </div>
+            <div id="dispatch-chart-container" class="col-md-12" style="align-content:center; border: 1px solid #ccc; padding: 15px;">
+                <h4 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">Monthly Dispatch</h4>
+                <canvas id="dispatchChart"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div id="item-stock-container" class="col-md-12" style="align-content:center; border: 1px solid #ccc; padding: 15px;">
+                <h4 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">Tested - Ready to Dispatch Finished Goods</h4>
+                <canvas id="item-stock-chart"></canvas>
+            </div>
+            <div id="Ratingwise-container" class="col-md-12" style="align-content:center; border: 1px solid #ccc; padding: 15px;">
+                <h4 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">Rating wise Dispatch</h4>
+                <canvas id="salesRatingChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div id="monthly-dispatch-container" class="col-md-12" style="align-content:center; border: 1px solid #ccc; padding: 15px;">
+            <h4 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">Yearly Dispatch</h4>
+            <canvas id="monthlyTotalChart"></canvas>
+        </div>
+    </div>
+    <div class="row">
+        <div id="purchase-stock-container" class="col-md-6" style="align-content:center; border: 1px solid #ccc; padding: 15px;">
+            <h4 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">Material Reciept</h4>
+            <canvas id="purchase-chart"></canvas>
+        </div>
+        <div id="PurchaseOrderStatus" class="col-md-3" style="align-content:center; border: 1px solid #ccc; padding: 15px;">
+            <h4 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">Purchase Orders Status (HOD)</h4>
+            <canvas id="poChart"></canvas>
+        </div>
+        <div id="PurchaseOrderStatus" class="col-md-3" style="align-content:center; border: 1px solid #ccc; padding: 15px;">
+            <h4 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">Purchase Orders Status (Director)</h4>
+            <canvas id="poChartdir"></canvas>
+        </div>
+    </div>
+    <div class="row">
+        <div id="quality-stock-container" class="col-md-3" style="align-content:center; border: 1px solid #ccc; padding: 15px;">
+            <h4 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">Material Reciept Quality</h4>
+            <canvas id="quality-chart"></canvas>
+        </div>
+        <div id="quality-rejection-container" class="col-md-3" style="align-content:center; border: 1px solid #ccc; padding: 15px;">
+            <h4 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">Quality Rejection vs Return</h4>
+            <canvas id="quality-rejection"></canvas>
+        </div>
+    </div>
+    <div class="row">
+        <div id="Stock-Issue" class="col-md-12" style="align-content:center; border: 1px solid #ccc; padding: 15px;">
+            <h4 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">Stock Issue (Today)</h4>
+            <canvas id="myLineChart"></canvas>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div id="low-stock-container" class="col-md-12" style="align-content:center; border: 1px solid #ccc; padding: 15px;">
+        <h4 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">Below Minimum Level</h4>
+        <canvas id="low-stock-graph" height="80"></canvas>
+    </div>
+</div>
+
+<br />
+<div class="row">
+    <div id="over-stock-container" class="col-md-12" style="align-content:center; border: 1px solid #ccc; padding: 15px;">
+        <h4 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">Above Maximum Level</h4>
+        <canvas id="over-stock-graph" height="80"></canvas>
+    </div>
+</div>
+
+
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script>
+        let monthlyTotalChart;
+        let monthlyDispatchDataForLabels;
+        let pendingEwapItems;
+        $(document).ready(function () {
+            var lowStockCtx = document.getElementById('low-stock-graph').getContext('2d');
+            var overStockCtx = document.getElementById('over-stock-graph').getContext('2d');
+            var purchaseChartCtx = document.getElementById('purchase-chart').getContext('2d'); // New canvas for the purchase chart
+            var qualityChartCtx = document.getElementById('quality-chart').getContext('2d');
+            var rejectionCtx = document.getElementById('quality-rejection').getContext('2d');
+            var poChart; // Declare the poChart variable
+            var poCtx = document.getElementById('poChart').getContext('2d');
+            var poCtxdir = document.getElementById('poChartdir').getContext('2d');
+            var issuectx = document.getElementById('myLineChart').getContext('2d');
+            var IssueChart;
+            var dispatchCtx = document.getElementById('dispatchChart').getContext('2d');
+            var itemStockChartCtx = document.getElementById('item-stock-chart').getContext('2d');
+            var EwapCtx = document.getElementById('ewapChart').getContext('2d');
+            const monthlyTotalCtx = document.getElementById('monthlyTotalChart').getContext('2d');
+            var salesRatingCtx = document.getElementById('salesRatingChart').getContext('2d');
+
+            var salesRatingChart = new Chart(salesRatingCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Dispatched Units' + window.totalsaleQuantity,
+                        data: [],
+                        backgroundColor: '#28a745',
+                        borderColor: 'white',
+                        borderWidth: 1
+                    }]
+                },
+                options: { // Updated options for salesRatingChart
+                    scales: {
+                        x: {
+                            ticks: {
+                                callback: function (value, index, values) {
+                                    // Corrected to refer to salesRatingChart's own labels
+                                    return salesRatingChart.data.labels[index];
+                                },
+                                maxRotation: 90, // Always rotate labels to 90 degrees
+                                minRotation: 0
+                            }
+                        },
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            var EwapChart = new Chart(EwapCtx, {
+                type: 'bar',
+                data: {
+                    labels: [], // Will be populated with ItemName
+                    datasets: [{
+                        label: 'Total Quantity - ' + window.totalPendingQuantity, // Although your C# returns 'Count', the label here is fine.
+                        data: [],
+                        backgroundColor: '#28a745',
+                        borderColor: 'white',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            ticks: {
+                                callback: function (value, index, values) {
+                                    // Access the chart's data labels array, which is populated
+                                    // in your AJAX success function.
+                                    return EwapChart.data.labels1[index];
+                                },
+                                maxRotation: 90, // Always rotate labels to 90 degrees
+                                minRotation: 0
+                            }
+                        },
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            const monthlyTotalChart = new Chart(monthlyTotalCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Monthly Total Dispatch',
+                        data: [],
+                        backgroundColor: '#28a745',
+                        borderColor: 'white',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        },
+                        x: { // Add x-axis configuration
+                            ticks: {
+                                maxRotation: 90, // Always rotate labels to 90 degrees
+                                minRotation: 0 // Always rotate labels to 90 degrees
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Monthly Dispatch Totals (Apr - Mar)',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        },
+                        legend: {
+                            display: true,
+                            position: 'bottom'
+                        },
+                        afterDraw: function (chart) {
+                            if (chart.data.datasets.length > 0 && chart.data.datasets[0].data.length > 0) {
+                                const overallTotalDispatch = chart.data.datasets[0].data.reduce((sum, value) => sum + value, 0);
+                                const totalYearSale = monthlyDispatchDataForLabels?.reduce((sum, item) => sum + (item.TotalBasicPrice || 0), 0);
+
+                                const ctx = chart.ctx;
+                                ctx.save();
+                                ctx.font = 'bold 14px Arial';
+                                ctx.fillStyle = 'black';
+                                ctx.textAlign = 'center';
+
+                                const chartWidth = chart.chartArea.right - chart.chartArea.left;
+                                const titleY = chart.chartArea.top - 10; // Position above the title
+
+                                ctx.fillText(`Total Year Sale: ₹${totalYearSale ? totalYearSale.toFixed(2) : '0.00'}`, chart.chartArea.left + (chartWidth / 2), titleY);
+
+                                const chartHeight = chart.chartArea.bottom - chart.chartArea.top;
+                                const footerY = chart.chartArea.bottom + (chartHeight * 0.1);
+                                ctx.fillText(`Overall Total: ${overallTotalDispatch}`, chart.chartArea.width / 2, footerY);
+                                ctx.restore();
+                            }
+                        },
+                        datalabels: {
+                            align: 'top',
+                            anchor: 'end',
+                            formatter: (value, context) => {
+                                const totalBasicPrice = monthlyDispatchDataForLabels?.[context.dataIndex]?.TotalBasicPrice;
+                                return totalBasicPrice ? '₹' + totalBasicPrice.toFixed(2) : '';
+                            },
+                            color: 'black',
+                            font: {
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                },
+                plugins: [ChartDataLabels]
+            });
+
+            dispatchChart = new Chart(dispatchCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Total Dispatch Count', // Changed label
+                        data: [],
+                        backgroundColor: '#00698f',
+                        borderColor: 'white',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        },
+                        x: { // Add x-axis configuration
+                            ticks: {
+                                maxRotation: 90, // Always rotate labels to 90 degrees
+                                minRotation: 0 // Always rotate labels to 90 degrees
+                            }
+                        }
+                    },
+                    plugins: {
+                        afterDraw: function (chart) {
+                            if (chart.data.datasets.length > 0 && chart.data.datasets[0].data.length > 0) {
+                                const totalQuantity = chart.data.datasets[0].data.reduce((sum, value) => sum + value, 0);
+
+                                const ctx = chart.ctx;
+                                ctx.save();
+                                ctx.font = 'bold 14px Arial';
+                                ctx.fillStyle = 'black';
+                                ctx.textAlign = 'center';
+
+                                const chartHeight = chart.chartArea.bottom - chart.chartArea.top;
+                                const footerY = chart.chartArea.bottom + (chartHeight * 0.1);
+
+                                ctx.fillText(`Total Dispatched Quantity: ${totalQuantity}`, chart.chartArea.width / 2, footerY);
+                                ctx.restore();
+                            }
+                        }
+                    }
+                }
+            });
+
+            var itemStockChart = new Chart(itemStockChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: [], // Will be populated with ItemNameBar + Model
+                    datasets: [{
+                        label: 'Total Tested - ',
+                        data: [],
+                        backgroundColor: '#00698f',
+                        borderColor: 'white',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            ticks: {
+                                    maxRotation: 90, // Always rotate labels to 90 degrees
+                                    minRotation: 0, // Always rotate labels to 90 degrees
+
+                                callback: function (value, index, values) {
+                                    // Display ItemName below the bars using the globally stored reportData
+                                    if (window.reportData && window.reportData[index]) {
+                                        return window.reportData[index].ItemName;
+                                    }
+                                    return ''; // Handle cases where data might not be loaded yet
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+
+
+            IssueChart = new Chart(issuectx, {
+                type: 'line', // Changed to 'bar' chart type
+                data: {
+                    labels: [], // Initially empty, will be populated by AJAX
+                    datasets: [{
+                        label: 'Total Quantity', // Adjusted label
+                        data: [], // Initially empty
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }],
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            poChart = new Chart(poCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Total Orders',
+                        data: [],
+                        backgroundColor: '#00698f',
+                        borderColor: 'white',
+                        borderWidth: 1
+                    }, {
+                        label: 'Approved Orders',
+                        data: [],
+                        backgroundColor: '#28a745',
+                        borderColor: 'white',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            poChartdir = new Chart(poCtxdir, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Total Orders',
+                        data: [],
+                        backgroundColor: '#00698f',
+                        borderColor: 'white',
+                        borderWidth: 1
+                    }, {
+                        label: 'Approved Orders',
+                        data: [],
+                        backgroundColor: '#28a745',
+                        borderColor: 'white',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            var lowStockChart = new Chart(lowStockCtx, {
+                type: 'line',
+                data: {
+                    labels: [], // Will be ItemCode
+                    datasets: [{
+                        label: 'Actual Stock',
+                        data: [], // Will be Stock
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'Min Stock Level',
+                        data: [], // Will be Minstklvl
+                        backgroundColor: 'rgba(0, 128, 0, 0.2)',
+                        borderColor: 'rgba(0, 128, 0, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                title: function (tooltipItems) {
+                                    // tooltipItems is an array, take the first one
+                                    const itemIndex = tooltipItems[0].dataIndex;
+                                    // Access the full data array stored globally or from success callback
+                                    // Assuming 'data' from success callback is accessible here
+                                    const originalItem = window.lowStockChartData[itemIndex]; // Assuming you store the full data
+                                    return originalItem ? originalItem.ItemName : tooltipItems[0].label; // Show ItemName as title
+                                },
+                                label: function (tooltipItem) {
+                                    // This will show dataset label (e.g., "Actual Stock") and its value
+                                    return `${tooltipItem.dataset.label}: ${tooltipItem.formattedValue}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            var overStockChart = new Chart(overStockCtx, {
+                type: 'line',
+                data: {
+                    labels: [], // Will be ItemName on X-axis (as per user's current code)
+                    datasets: [{
+                        label: 'Actual Stock',
+                        data: [], // Will be Stock
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'Max Stock Level',
+                        data: [], // Will be Maxstklvl
+                        backgroundColor: 'rgba(0, 128, 0, 0.2)',
+                        borderColor: 'rgba(0, 128, 0, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                title: function (tooltipItems) {
+                                    const itemIndex = tooltipItems[0].dataIndex;
+                                    // Access the full data array for overStockChart
+                                    const originalItem = window.overStockChartData[itemIndex]; // IMPORTANT: Use a dedicated global variable
+                                    return originalItem ? originalItem.ItemName : tooltipItems[0].label; // Show ItemName as title
+                                },
+                                label: function (tooltipItem) {
+                                    return `${tooltipItem.dataset.label}: ${tooltipItem.formattedValue}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            var purchaseChart = new Chart(purchaseChartCtx, {
+                type: 'line', // or 'bar' if you prefer a bar chart
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Number of Purchase Vouchers',
+                        data: [],
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'Total Bill Amount',
+                        data: [],
+                        backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                        borderColor: 'rgba(255, 159, 64, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+
+
+            var qualityChart = new Chart(qualityChartCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Completed', 'Pending'],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: [
+                            '#00698f', // Green for Completed
+                            '#28a745'  // Orange for Pending
+                        ],
+                        borderColor: [
+                            'white',
+                            'white'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label
+                                            += context.parsed + ' lines';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            var rejectionChart = new Chart(rejectionCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Rejections', 'Completed Rejection Returns'],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: [
+                            '#00698f',
+                            '#28a745'
+                        ],
+                        borderColor: [
+                            'white',
+                            'white'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    // ... your chart options
+                }
+            });
+
+            function refreshData() {
+                $.ajax({
+                    type: 'GET',
+                    url: '@Url.Action("GetMonthlySaleRatingData", "StockReport")', // Call your C# action
+                    dataType: 'json',
+                    success: function (data) {
+                        const monthlySaleRatings = data.saledata;
+                        const totalsaleQuantity = data.totalSumOfRatings;
+
+                        // Extract labels (RatingDescription) and data (Count)
+                        const labels = monthlySaleRatings.map(x => x.RatingDescription + ' KVA');
+                        const counts = monthlySaleRatings.map(x => x.Count);
+
+                        // Update the chart's data and labels
+                        salesRatingChart.data.labels = labels;
+                        salesRatingChart.data.datasets[0].data = counts;
+                        salesRatingChart.data.datasets[0].label = 'Total Dispatch - ' + totalsaleQuantity;
+
+                        // Update the chart to reflect the new data
+                        salesRatingChart.update();
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.error("Error fetching monthly sales rating data:", textStatus, errorThrown);
+                        // Optionally display an error message to the user
+                    }
+                });
+                 $.ajax({
+                    type: 'GET',
+                    url: '@Url.Action("DashboardDataForEwap", "StockReport")',
+                    dataType: 'json',
+                    success: function (data) {
+                        const pendingEwapItems = data.pendingEwapItems;
+                        const totalQuantity = data.totalQuantity; // Access the totalQuantity from the response
+
+                        // Use ItemName from the pendingEwapItems array for the labels
+                        EwapChart.data.labels = pendingEwapItems.map(x => x.ItemNameBar);
+                        EwapChart.data.labels1 = pendingEwapItems.map(x => x.ItemName);
+                        // EwapChart.data.labels = pendingEwapItems.map(x => x.ItemName);
+
+
+                        // Use Count from the pendingEwapItems array for the bar heights
+                        EwapChart.data.datasets[0].data = pendingEwapItems.map(x => x.Count);
+                        //const labels =
+
+                        // Update the chart label
+                        EwapChart.data.datasets[0].label = 'Total Un-tested FG - ' + totalQuantity;
+
+                    EwapChart.update();
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.error("Error fetching item stock data:", textStatus, errorThrown);
+                }
+                });
+                $.ajax({
+                    type: 'GET',
+                    url: '@Url.Action("GetFinancialYearDispatchData", "StockReport")',
+                    dataType: 'json',
+                    success: function (response) {
+                        monthlyDispatchDataForLabels = response.monthlyData;
+                        //const labelsWithPriceAndTotal = response.monthlyData.map(item =>
+                       //     `${item.MonthYear} (Total: ${item.TotalDispatch}, ₹${item.TotalBasicPrice ? item.TotalBasicPrice.toFixed(2) : 'N/A'})`
+                       // );
+                        const labelsWithPriceAndTotal = response.monthlyData.map(item => {
+                            const formattedPrice = item.TotalBasicPrice
+                                ? item.TotalBasicPrice.toLocaleString('en-IN', {
+                                    style: 'currency',
+                                    currency: 'INR',
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                }).replace('₹', '₹ ') // Add a space after the currency symbol
+                                : 'N/A';
+
+                            return `${item.MonthYear} (Total: ${item.TotalDispatch}, ${formattedPrice})`;
+                        });
+                        monthlyTotalChart.data.labels = labelsWithPriceAndTotal;
+                        monthlyTotalChart.data.datasets[0].data = response.monthlyData.map(item => item.TotalDispatch);
+                        monthlyTotalChart.update();
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.error("Error fetching monthly dispatch data:", textStatus, errorThrown);
+                    }
+                });
+                $.ajax({
+                    type: 'GET',
+                    url: '@Url.Action("GetCurrentMonthDispatchData", "StockReport")',
+                    dataType: 'json',
+                    success: function (response) { // Get the response object
+                        window.dispatchChart.data.labels = response.data.map(item => item.Date);
+                        window.dispatchChart.data.datasets[0].data = response.data.map(item => item.DispatchCount);
+
+                        //Update the label
+                        window.dispatchChart.data.datasets[0].label = `Total Dispatch Count: ${response.totalCount}`;
+
+                        window.dispatchChart.update();
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.error("Error fetching dispatch data:", textStatus, errorThrown);
+                    }
+                });
+               $.ajax({
+                    type: 'GET',
+                    url: '@Url.Action("GetReportData", "StockReport")',
+                    dataType: 'json',
+                    success: function (response) { // Changed 'data' to 'response' for clarity
+                        var reportData = response.data; // Access the 'data' property of the response
+                        var grandTotalQuantity = response.grandTotalQuantity; // Access the 'grandTotalQuantity' property
+
+                        // Use ItemNameBar + Model for the labels (tooltip, etc.)
+                        itemStockChart.data.labels = reportData.map(x => x.ItemNameBar + " (" + x.Model + ")");
+
+                        // Use TotalQuantity for the bar heights
+                        itemStockChart.data.datasets[0].data = reportData.map(x => x.TotalQuantity);
+                        itemStockChart.data.datasets[0].label = 'Total Quantity - ' + grandTotalQuantity; // Update the label with the total
+
+                        // Store the report data in a variable so it's accessible in the callback
+                        window.reportData = reportData; // Make 'reportData' available globally (or in a more appropriate scope)
+                        window.grandTotalQuantity = grandTotalQuantity; // Make 'grandTotalQuantity' available globally
+
+                        itemStockChart.update();
+
+                        // You can now also display the grandTotalQuantity in your HTML
+                        // For example, if you have an element with the ID 'totalQuantityDisplay':
+                        // $('#totalQuantityDisplay').text('Grand Total: ' + grandTotalQuantity);
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.error("Error fetching item stock data:", textStatus, errorThrown);
+                    }
+                });
+                $.ajax({
+                    type: 'GET',
+                    url: '@Url.Action("GetLowStockItems", "StockReport")', // Assuming this action returns the data
+                    dataType: 'json',
+                    success: function (data) {
+                        // Store the full data array globally so tooltip callbacks can access it
+                        window.lowStockChartData = data; // IMPORTANT: Store the full data
+
+                        lowStockChart.data.labels = data.map(x => x.ItemCode); // Set labels to ItemCode
+                        lowStockChart.data.datasets[0].data = data.map(x => x.Stock); // Actual Stock
+                        lowStockChart.data.datasets[1].data = data.map(x => x.Minstklvl); // Min Stock Level
+
+                        lowStockChart.update(); // Redraw the chart
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.error("Error fetching data:", textStatus, errorThrown);
+                    }
+                });
+                 $.ajax({
+                    type: 'GET',
+                    url: '@Url.Action("GetChartData", "StockReport")', // Replace 'YourControllerName'
+                    dataType: 'json',
+                    success: function (data) {
+                        IssueChart.data.labels = data.map(x => x.itemName);
+                        IssueChart.data.datasets[0].data = data.map(x => x.quantity);
+                        // Assuming you have another data point to populate the second dataset
+                        // myChart.data.datasets[1].data = data.map(x => x.someOtherDataPoint);
+                           IssueChart.update();
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.error("Error fetching data:", textStatus, errorThrown);
+                    }
+                });
+
+                $.ajax({
+                    type: 'GET',
+                    url: '/Purchase/GetPurchaseOrderChartData',
+                    dataType: 'json',
+                    success: function (data) {
+                        var labels = data.map(item => moment(item.Date).format('DD/MM/YYYY'));
+                        var totalOrdersData = data.map(item => item.TotalOrders);
+                        var approvedOrdersData = data.map(item => item.ApprovedOrders);
+
+                        // Update the chart data
+                        poChart.data.labels = labels;
+                        poChart.data.datasets[0].data = totalOrdersData;
+                        poChart.data.datasets[1].data = approvedOrdersData;
+                        poChart.update(); // Redraw the chart
+                    },
+                });
+
+                $.ajax({
+                    type: 'GET',
+                    url: '/Purchase/GetPurchaseOrderChartDatadir',
+                    dataType: 'json',
+                    success: function (data) {
+                        var labels = data.map(item => moment(item.Date).format('DD/MM/YYYY'));
+                        var totalOrdersData = data.map(item => item.TotalOrders);
+                        var approvedOrdersData = data.map(item => item.ApprovedOrders);
+
+                        // Update the chart data
+                        poChartdir.data.labels = labels;
+                        poChartdir.data.datasets[0].data = totalOrdersData;
+                        poChartdir.data.datasets[1].data = approvedOrdersData;
+                        poChartdir.update(); // Redraw the chart
+                    },
+                });
+
+                $.ajax({
+                        type: 'GET',
+                        url: '@Url.Action("GetOverStockItems", "StockReport")', // Assuming this action returns the data
+                        dataType: 'json',
+                        success: function (data) {
+                            // Store the full data array globally for overStockChart's tooltip callbacks
+                            window.overStockChartData = data; // IMPORTANT: Use a dedicated global variable
+
+                            overStockChart.data.labels = data.map(x => x.ItemCode); // Set labels to ItemCode (as per lowStockChart logic)
+                            overStockChart.data.datasets[0].data = data.map(x => x.Stock); // Actual Stock
+                            overStockChart.data.datasets[1].data = data.map(x => x.Maxstklvl); // Max Stock Level
+
+                            overStockChart.update(); // Redraw the chart
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            console.error("Error fetching over stock data:", textStatus, errorThrown);
+                        }
+                  });
+
+                $.ajax({
+                    type: 'GET',
+                    url: '@Url.Action("GetPurchaseChartData", "StockReport")', // Call the new action method
+                    // No need to send fromDate and toDate as the action always fetches the last 7 days
+                    dataType: 'json',
+                    success: function (data) {
+                        purchaseChart.data.labels = data.map(x => new Date(x.Date).toLocaleDateString()); // Format the date as needed
+                        purchaseChart.data.datasets[0].data = data.map(x => x.VoucherCount);
+                        purchaseChart.data.datasets[1].data = data.map(x => x.TotalBillAmount);
+                        purchaseChart.update();
+                    }
+                });
+
+                 $.ajax({
+                    type: 'GET',
+                    url: '@Url.Action("GetQualityChartData", "StockReport")',
+                    dataType: 'json',
+                    success: function (data) {
+                        qualityChart.data.labels = data.map(x => x.QualityStatus);
+                        qualityChart.data.datasets[0].data = data.map(x => x.LineCount);
+                        qualityChart.update();
+                    }
+                 });
+
+                  $.ajax({
+                    type: 'GET',
+                    url: '@Url.Action("GetRejectionData", "StockReport")',
+                    dataType: 'json',
+                    success: function (data) {
+                        // Update chart data
+                        rejectionChart.data.datasets[0].data = [data.TotalRejections, data.RejectionReturns];
+                        rejectionChart.update();
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.error("Error fetching rejection data:", textStatus, errorThrown);
+                    }
+                  });
+
+            }
+
+            refreshData();
+            setInterval(refreshData, 5000); // refresh every 5 seconds
+        });
+    </script>
+}
+<script>
+    $(document).ready(function () {
+        $('#ratingTrendRedirectCard').on('click', function () {
+            // This line redirects the browser to the specified URL
+            window.location.href = "@Url.Action("RatingTrendGraphs", "Dashboard")"; // Assuming DashboardController
+        });
+    });
+</script>
+
+

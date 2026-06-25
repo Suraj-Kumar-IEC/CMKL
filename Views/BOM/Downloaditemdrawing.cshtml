@@ -1,0 +1,50 @@
+﻿
+@{
+    ViewBag.Title = "Downloaditemdrawing";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Downloaditemdrawing</h2>
+<h2>Download Drawing</h2>
+
+<div>
+    <label for="itemCodeInput">Enter Item Code:</label>
+    <input type="text" id="itemCodeInput" />
+    <button id="downloadButton">Download</button>
+</div>
+
+<div id="error-message" style="color: red;"></div>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script>
+$(document).ready(function () {
+    $('#downloadButton').on('click', function () {
+        var itemCode = $('#itemCodeInput').val(); // Get the item code from an input field
+
+        $.ajax({
+            type: 'GET',
+            url: '@Url.Action("DownloadDrawing", "BOM")',
+            data: { itemCode: itemCode },
+            xhrFields: {
+            responseType: 'blob' // Important: Set responseType to 'blob' for binary data
+            },
+            success: function (data) {
+            var fileName = itemCode + '.pdf'; // Or get the file name from the response headers
+            var link = document.createElement('a');
+            link.href = window.URL.createObjectURL(data);
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            },
+            error: function (xhr, status, error) {
+            // Handle errors (e.g., display an error message)
+            console.error("Error downloading drawing:", error);
+            }
+            });
+            });
+});
+</script>
+

@@ -1,0 +1,321 @@
+﻿@{
+    ViewData["Title"] = "Consignment Note";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bilty Print - @ViewBag.id</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact;
+        }
+
+        body {
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            color: #000;
+        }
+
+        .a4-container {
+            width: 210mm;
+            margin: 0 auto;
+        }
+
+        .bilty-paper {
+            width: 210mm;
+            height: 148mm;
+            padding: 5mm 8mm;
+            background: #fff;
+            border: 1px solid #000;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .copy-type {
+            position: absolute;
+            top: 2mm;
+            right: 8mm;
+            font-size: 10px;
+            font-weight: bold;
+            border: 1px solid #000;
+            padding: 2px 5px;
+            background: #eee;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .company-name {
+            font-size: 22px;
+            margin: 0;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        .company-address {
+            font-size: 10px;
+            margin: 2px 0;
+            font-weight: bold;
+        }
+
+        .thick-line {
+            border-top: 2.5px solid #000;
+            margin: 5px 0 8px 0;
+        }
+
+        .main-grid {
+            width: 100%;
+            border: 1.5px solid #000;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+            .main-grid td {
+                border: 1px solid #000;
+                vertical-align: top;
+                padding: 0;
+                overflow: hidden;
+            }
+
+        .col-notes {
+            width: 55mm;
+            font-size: 8px;
+            padding: 5px !important;
+        }
+
+        .col-details {
+            width: 100mm;
+        }
+
+        .col-freight {
+            width: 45mm;
+        }
+
+        .section-header {
+            background: #eee;
+            text-align: center;
+            font-weight: bold;
+            border-bottom: 1.5px solid #000;
+            padding: 3px;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+
+        .address-area {
+            height: 45mm;
+            padding: 5px;
+            font-size: 10px;
+            overflow: hidden;
+        }
+
+        .goods-area {
+            height: 35mm;
+            padding: 8px;
+            font-size: 11px;
+            font-weight: bold;
+            overflow: hidden;
+            word-wrap: break-word;
+        }
+
+        .dotted-row {
+            display: flex;
+            margin-bottom: 4px;
+        }
+
+        .val-line {
+            border-bottom: 1px dotted #000;
+            flex-grow: 1;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+
+        .freight-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+            .freight-table td {
+                border-bottom: 1px solid #000;
+                padding: 5px 8px;
+                font-size: 10px;
+                height: 26px;
+            }
+
+                .freight-table td:last-child {
+                    text-align: right;
+                    border-left: 1.5px solid #000;
+                    width: 45%;
+                    font-weight: bold;
+                }
+
+        .payable-row {
+            background: #f9f9f9;
+            font-weight: 900;
+            font-size: 12px;
+        }
+
+        .sig-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px; /* Reduced to fit the new line */
+            padding: 0 10px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .cut-line {
+            width: 100%;
+            text-align: center;
+            border-top: 1px dashed #aaa;
+            height: 1px;
+            margin: 0;
+        }
+
+        @@media print {
+            .no-print {
+                display: none;
+            }
+
+            body {
+                background: none;
+            }
+
+            .a4-container {
+                margin: 0;
+            }
+
+            .bilty-paper {
+                border: 1px solid #000;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print" style="text-align:center; padding: 10px;">
+        <button onclick="window.print()" style="padding: 10px 30px; background: #28a745; color: #fff; border: none; cursor: pointer; font-weight: bold; border-radius: 5px;">PRINT BOTH COPIES</button>
+    </div>
+
+    <div class="a4-container">
+        @for (int i = 1; i <= 2; i++)
+        {
+            <div class="bilty-paper">
+                <div class="copy-type">@(i == 1 ? "CONSIGNEE COPY" : "DRIVER/OFFICE COPY")</div>
+
+                <div class="text-center">
+                    <h1 class="company-name">IEC ELECTRIC POWER LIMITED</h1>
+                    <p class="company-address">Works : Plot No. 1-6A, Ind. Estate, IID Centre, Sicop, Govindsar, Kathua (J&K)</p>
+                </div>
+
+                <div class="thick-line"></div>
+
+                <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: bold; margin-bottom: 5px;">
+                    <span>Consignment Note: <span class="lblConsignmentNote"></span></span>
+                    <span>Date: <span class="lblDate"></span></span>
+                    <span>Time: <span class="lblTime"></span></span>
+                    <span>Vehicle No: <span class="lblVehicleNo"></span></span>
+                </div>
+
+                <table class="main-grid">
+                    <tr>
+                        <td class="col-notes" rowspan="2">
+                            <b style="text-decoration: underline; display: block; text-align: center; margin-bottom: 5px;">NOTE</b>
+                            1. I abide by all terms & Conditions<br>
+                            2. Loading & unloading time 2 hours.<br>
+                            3. Night stay Rs. 200/-<br>
+                            4. Max. Load % tons.<br>
+                            5. Rs. 600/- per day will be charged for detention of vehicles at Sales Tax barriers
+                        </td>
+                        <td class="col-details">
+                            <div style="display: flex; justify-content: space-between; padding: 4px 8px; border-bottom: 1px solid #000; font-size: 10px; font-weight: bold;">
+                                <span>From: <span class="lblFrom" style="text-decoration: underline;"></span></span>
+                                <span>To: <span class="lblTo" style="text-decoration: underline;"></span></span>
+                            </div>
+                            <div class="address-area">
+                                <div class="dotted-row"><b>Consignor:</b> <span class="lblConsignor val-line"></span></div>
+                                <div style="text-align: left; margin-bottom: 20px; font-size: 9px;">Consignor GSTN: <span class="lblConsignorGSTN" style="font-weight: bold;"></span></div>
+
+                                <div class="dotted-row"><b>Consignee:</b> <span class="lblConsignee val-line"></span></div>
+                            </div>
+                            <div class="section-header">Description of Goods</div>
+                            <div class="goods-area">
+                                <div class="goodsContent" style="margin-bottom:10px"></div>
+                                <div class="billContent"></div>
+                            </div>
+                            <div style="display: flex; padding: 4px 8px; border-top: 1px solid #000; font-size: 10px; font-weight: bold;">
+                                <div style="width: 50%;">Value: <span class="lblValue"></span></div>
+                                <div style="width: 50%;">Weight: <span class="lblWeight"></span></div>
+                            </div>
+                        </td>
+                        <td class="col-freight">
+                            <div class="section-header">Freight Details</div>
+                            <table class="freight-table">
+                                <tr><td>Freight</td><td class="valFreight"></td></tr>
+                                <tr><td>GR Charges</td><td class="valGR"></td></tr>
+                                <tr><td>Loading/Unloading</td><td class="valLoading"></td></tr>
+                                <tr><td>Toll Tax</td><td class="valToll"></td></tr>
+                                <tr><td>Advance</td><td class="valAdvance"></td></tr>
+                                <tr class="payable-row"><td>Payable</td><td class="valPayable"></td></tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+
+                <div style="margin-top: 10px; padding-left: 10px; font-size: 9px; font-weight: bold; font-style: italic;">
+                    Received the above mentioned goods in good condition.
+                </div>
+
+                <div class="sig-section">
+                    <span>Customer's Signature</span>
+                    <span>Signature of Driver/Owner</span>
+                    <span>Signature of Booking I/C</span>
+                </div>
+            </div>
+
+            if (i == 1)
+            { <div class="cut-line"></div>}
+        }
+    </div>
+
+    <script src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <script>
+    $(document).ready(function () {
+        var id = '@ViewBag.id';
+        var type='@ViewBag.type'
+        if (id) {
+            $.ajax({
+                url: '@Url.Action("GetDetails", "Production")',
+                type: 'GET',
+                data: { id: id, type: type },
+                success: function (data) {
+                    if(data){
+                        $('.lblConsignmentNote').text(data.consignmentNo ?? "NA");
+                        $('.lblDate').text(data.date ?? "NA");
+                        $('.lblTime').text(data.time ?? "NA");
+                        $('.lblVehicleNo').text(data.vehicleNo ?? "NA");
+                        $('.lblFrom').text(data.fromLoc ?? "NA");
+                        $('.lblTo').text(data.toLoc ?? "NA");
+                        $('.lblConsignor').text(data.consignorName ?? "NA");
+                        $('.lblConsignorGSTN').text(data.consignorGSTN ?? "NA");
+                        $('.lblConsignee').text(data.consigneeName ?? "NA");
+                        $('.lblConsigneeGSTN').text(data.consigneeGSTN ?? "NA");
+                        $('.goodsContent').text(data.description ?? "---");
+                        $('.billContent').text(data.billdetail ?? "---");
+                        var payable = Number(data.payableAmount || 0).toFixed(2);
+                        $('.lblValue').text(payable);
+                        $('.lblWeight').text(data.weight || "");
+                    }
+                },
+                error: function() { console.error("Could not fetch Bilty data."); }
+            });
+        }
+    });
+    </script>
+</body>
+</html>

@@ -1,0 +1,445 @@
+﻿@{
+    ViewBag.Title = "Maintenance Status Intelligence";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const isInModal = !!(document.querySelector('.modal.show'));
+            const handleInvalidUser = () => {
+                toastr.error("Session Expired. Please Login.");
+                setTimeout(() => { window.location.href = "@Url.Action("Index", "Login")"; }, 2000);
+            };
+            setTimeout(handleInvalidUser, isInModal ? 500 : 0);
+        });
+    </script>
+    <div class="vh-100 vw-100 bg-white"></div>
+}
+
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+
+<style>
+    :root {
+        --brand-blue: #00698f;
+        --brand-dark: #004d69;
+        --light-bg: #f8fafc;
+        --border-color: #e2e8f0;
+    }
+
+    body {
+        background-color: var(--light-bg);
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+    }
+
+    /* Header Styling */
+    .report-header {
+        background: linear-gradient(135deg, var(--brand-blue) 0%, var(--brand-dark) 100%);
+        color: white;
+        padding: 1.5rem 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    /* Dashboard KPI Tiles */
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 18px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.2s ease;
+        height: 100%;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--brand-blue);
+        }
+
+    .stat-label {
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #64748b;
+        letter-spacing: 0.5px;
+        margin-bottom: 5px;
+    }
+
+    .stat-value {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: var(--brand-blue);
+    }
+
+    /* Filter & Table Sections */
+    .custom-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .card-header-custom {
+        background: #f8fafc;
+        padding: 15px 20px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .card-title-line {
+        font-weight: 700;
+        color: var(--brand-blue);
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        margin: 0;
+    }
+
+    .form-control-sm {
+        border-radius: 8px;
+        border: 1.5px solid var(--border-color);
+        height: 38px;
+    }
+
+    .btn-generate {
+        background-color: var(--brand-blue);
+        color: white;
+        font-weight: 700;
+        border: none;
+        padding: 0 25px;
+        border-radius: 8px;
+        height: 38px;
+        transition: 0.2s;
+    }
+
+        .btn-generate:hover {
+            background-color: var(--brand-dark);
+            transform: translateY(-1px);
+        }
+
+    /* Radio Button Toggles */
+    .btn-check:checked + .btn-outline-brand {
+        background-color: var(--brand-blue) !important;
+        border-color: var(--brand-blue) !important;
+        color: white !important;
+    }
+
+    .btn-outline-brand {
+        color: var(--brand-blue);
+        border-color: var(--brand-blue);
+        font-weight: 600;
+        font-size: 0.75rem;
+    }
+
+        .btn-outline-brand:hover {
+            background-color: #f0f7f9;
+            color: var(--brand-blue);
+        }
+
+    /* Quick Search Bar */
+    .search-wrapper {
+        position: relative;
+        width: 350px;
+    }
+
+        .search-wrapper i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+
+    .search-input {
+        border-radius: 25px !important;
+        padding-left: 40px !important;
+        background: #fff !important;
+        border: 1.5px solid var(--border-color) !important;
+    }
+
+    /* Table Enhancements */
+    .table thead th {
+        background: #f1f5f9;
+        color: var(--brand-blue);
+        font-weight: 800;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        border: none;
+        padding: 12px 15px;
+    }
+
+    .table tbody td {
+        vertical-align: middle;
+        font-size: 0.8rem;
+        padding: 12px 15px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-weight: 800;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+    }
+
+    .bg-owner {
+        background: #fee2e2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+    }
+
+    .bg-admin {
+        background: #fef3c7;
+        color: #d97706;
+        border: 1px solid #fde68a;
+    }
+
+    .bg-success-alt {
+        background: #dcfce7;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+    }
+
+    .asset-info {
+        font-weight: 700;
+        color: #1e293b;
+    }
+
+    .task-desc {
+        color: #64748b;
+        line-height: 1.4;
+    }
+</style>
+
+<div class="container-fluid px-4 py-4">
+    <!-- Header -->
+    <div class="report-header d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="mb-0 fw-bold"><i class="fas fa-clipboard-check mr-3"></i> Maintenance Status Intelligence</h2>
+            <small class="text-white-50">Authorized audit of technical task lifecycles across the asset fleet</small>
+        </div>
+        <div>
+            <button type="button" class="btn btn-light btn-sm rounded-pill px-4 fw-bold shadow-sm" onclick="exportToExcel()">
+                <i class="fas fa-file-excel text-success mr-2"></i> Export Analysis
+            </button>
+        </div>
+    </div>
+
+    <!-- KPI Dashboard Tiles -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid var(--brand-blue);">
+                <span class="stat-label">Total Task Logs</span>
+                <span class="stat-value" id="kpi-total">0</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #ef4444;">
+                <span class="stat-label">Pending at Owner</span>
+                <span class="stat-value text-danger" id="kpi-owner">0</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #f59e0b;">
+                <span class="stat-label">Awaiting Authorization</span>
+                <span class="stat-value text-warning" id="kpi-admin">0</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #10b981;">
+                <span class="stat-label">Operational Health</span>
+                <span class="stat-value text-success" id="kpi-health">---</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="custom-card mb-4">
+        <div class="card-header-custom">
+            <h6 class="card-title-line"><i class="fas fa-filter mr-2"></i> Refine Selection Criteria</h6>
+        </div>
+        <div class="card-body bg-light">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-2">
+                    <label class="small fw-bold text-muted uppercase mb-1 d-block">Start Date</label>
+                    <input type="date" id="txtFromDate" class="form-control form-control-sm" />
+                </div>
+                <div class="col-md-2">
+                    <label class="small fw-bold text-muted uppercase mb-1 d-block">End Date</label>
+                    <input type="date" id="txtToDate" class="form-control form-control-sm" />
+                </div>
+                <div class="col-md-6">
+                    <label class="small fw-bold text-muted uppercase mb-1 d-block">Filter By Workflow Stage</label>
+                    <div class="btn-group w-100" role="group">
+                        <input type="radio" class="btn-check" name="pendingType" id="typeOwner" value="Owner" checked>
+                        <label class="btn btn-outline-brand" for="typeOwner">Pending Owner</label>
+
+                        <input type="radio" class="btn-check" name="pendingType" id="typeAdmin" value="Admin">
+                        <label class="btn btn-outline-brand" for="typeAdmin">Pending Admin</label>
+
+                        <input type="radio" class="btn-check" name="pendingType" id="typeSAdmin" value="SAdmin">
+                        <label class="btn btn-outline-brand" for="typeSAdmin">Pending PlantHead</label>
+
+                        <input type="radio" class="btn-check" name="pendingType" id="typeCompleted" value="Completed">
+                        <label class="btn btn-outline-brand" for="typeCompleted">Completed Logs</label>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" id="btnSearch" class="btn btn-generate w-100 shadow-sm">
+                        <i class="fas fa-sync-alt mr-2"></i> Sync Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Table Section -->
+    <div class="custom-card shadow-sm">
+        <div class="section-header p-3 d-flex justify-content-between align-items-center bg-white border-bottom">
+            <h6 class="card-title-line text-primary"><i class="fas fa-list-ul mr-2"></i> Detailed Task Logs</h6>
+            <div class="search-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" id="quickSearch" class="form-control form-control-sm search-input" placeholder="Quick find asset, subunit or task identity...">
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table id="tblPendingTasks" class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">Log ID</th>
+                        <th>Asset & SubUnit</th>
+                        <th>Task Definition</th>
+                        <th>Execution Remarks</th>
+                        <th class="text-center">Due Date</th>
+                        <th class="text-center">Action Date</th>
+                        <th>Owner</th>
+                        <th class="text-center">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="taskResults">
+                    <tr><td colspan="8" class="text-center py-5 text-muted italic">Configure parameters and run synchronization to view technical logs.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Global Wait Sign -->
+<img id="wait-sign" src="~/images/wait.gif" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10001; width:80px;" />
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            // Default Date Range: Last 30 Days
+            var today = moment().format('YYYY-MM-DD');
+            var lastMonth = moment().subtract(30, 'days').format('YYYY-MM-DD');
+            $("#txtFromDate").val(lastMonth);
+            $("#txtToDate").val(today);
+
+            // Instant Search Implementation
+            $("#quickSearch").on("keyup", function() {
+                var value = $(this).val().toLowerCase();
+                $("#taskResults tr").filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+
+            $("#btnSearch").click(loadData);
+            loadData(); // Initial Load
+        });
+
+        function loadData() {
+            var fromDate = $("#txtFromDate").val();
+            var toDate = $("#txtToDate").val();
+            var pendingType = $("input[name='pendingType']:checked").val();
+
+            //$('#wait-sign').show();
+            $("#taskResults").html('<tr><td colspan="8" class="text-center py-5"><div class="spinner-border spinner-border-sm text-primary"></div><br><span class="small mt-2 d-block fw-bold text-muted uppercase">Scanning Logs...</span></td></tr>');
+
+            $.ajax({
+                url: '@Url.Action("GetPendingTasksData", "Asset")',
+                type: 'POST',
+                data: { fromDate: fromDate, toDate: toDate, pendingType: pendingType },
+                success: function (response) {
+                    //$('#wait-sign').hide();
+                    $("#taskResults").empty();
+
+                    if (response.success && response.data.length > 0) {
+                        let stats = { owner: 0, admin: 0, overdue: 0 };
+                        const now = moment();
+
+                        $.each(response.data, function (i, item) {
+                            var dueDate = item.DueDate ? moment(parseInt(item.DueDate.substr(6))) : null;
+                            var actionDateStr = item.CompeltionDate ? moment(parseInt(item.CompeltionDate.substr(6))).format('DD/MM/YYYY') : "---";
+                            var dueDateStr = dueDate ? dueDate.format('DD/MM/YYYY') : "N/A";
+
+                            // Logic for KPI Tracking
+                            if (item.StatusDescription.includes("Owner")) stats.owner++;
+                            if (item.StatusDescription.includes("Admin") || item.StatusDescription.includes("PlantHead")) stats.admin++;
+                            if (dueDate && dueDate.isBefore(now) && !item.StatusDescription.includes("Completed")) stats.overdue++;
+
+                            // Badge Styling Logic
+                            var badgeClass = "bg-owner";
+                            if (item.StatusDescription.includes("Admin") || item.StatusDescription.includes("PlantHead")) badgeClass = "bg-admin";
+                            else if (item.StatusDescription.includes("Completed")) badgeClass = "bg-success-alt";
+
+                            $("#taskResults").append(`
+                                <tr>
+                                    <td class="text-muted fw-bold small">#${item.Id}</td>
+                                    <td>
+                                        <div class="asset-info">${item.MachineName}</div>
+                                        <div class="small text-muted font-italic">${item.SubUnit || 'Entire Machine'}</div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold text-primary">${item.TaskName}</div>
+                                    </td>
+                                    <td class="task-desc small italic">${item.Action || '---'}</td>
+                                    <td class="text-center fw-bold text-dark">${dueDateStr}</td>
+                                    <td class="text-center text-muted">${actionDateStr}</td>
+                                    <td class="small fw-bold">${item.CreatedBy}</td>
+                                    <td class="text-center"><span class="status-badge ${badgeClass}">${item.StatusDescription}</span></td>
+                                </tr>`);
+                        });
+
+                        updateKPIDashboard(response.data.length, stats);
+                        toastr.success('Technical audit trails synchronized.');
+                    } else {
+                        $("#taskResults").html('<tr><td colspan="8" class="text-center py-5 text-muted">No records found matching current criteria.</td></tr>');
+                        updateKPIDashboard(0, { owner: 0, admin: 0 });
+                    }
+                },
+                error: function () {
+                    //$('#wait-sign').hide();
+                    toastr.error("Server connection failure.");
+                }
+            });
+        }
+
+        function updateKPIDashboard(total, stats) {
+            $('#kpi-total').text(total);
+            $('#kpi-owner').text(stats.owner);
+            $('#kpi-admin').text(stats.admin);
+
+            let health = total > 0 ? Math.round(((total - stats.owner) / total) * 100) : 0;
+            $('#kpi-health').text(health + "%").addClass(health > 80 ? 'text-success' : (health > 50 ? 'text-warning' : 'text-danger'));
+        }
+
+        function exportToExcel() {
+            var table = document.getElementById("tblPendingTasks");
+            var wb = XLSX.utils.table_to_book(table, { raw: true });
+            XLSX.writeFile(wb, 'Maintenance_Audit_Report_' + moment().format('DDMMYYYY') + '.xlsx');
+        }
+    </script>
+}

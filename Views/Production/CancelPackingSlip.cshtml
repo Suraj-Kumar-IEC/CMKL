@@ -1,0 +1,419 @@
+﻿@{
+    ViewBag.Title = "Dispatch Management Intelligence";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        window.location.href = "@Url.Action("Index", "Login")";
+    </script>
+}
+
+<style>
+    :root {
+        --teal-brand: #00698f;
+        --light-blue: #f0f9ff;
+        --danger-bold: #e11d48;
+    }
+
+    /* 1. Animations */
+    .animate-entrance {
+        animation: fadeInSlide 0.6s ease-out forwards;
+        opacity: 0;
+    }
+
+    .animate-reveal {
+        animation: scaleUp 0.4s ease-out forwards;
+    }
+
+    @@keyframes fadeInSlide {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes scaleUp {
+        from {
+            opacity: 0;
+            transform: scale(0.98);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    /* 2. Theme Styling */
+    .card-intel {
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+        background: #fff;
+    }
+
+    .header-intel {
+        background: var(--teal-brand);
+        color: white;
+        padding: 15px 25px;
+    }
+
+    /* Tab Styling */
+    .nav-tabs-intel {
+        border-bottom: 2px solid #f1f5f9;
+        margin-bottom: 20px;
+    }
+
+        .nav-tabs-intel .nav-link {
+            color: #64748b;
+            font-weight: 700;
+            border: none;
+            padding: 10px 20px;
+            transition: 0.3s;
+            font-size: 0.85rem;
+        }
+
+            .nav-tabs-intel .nav-link.active {
+                color: var(--teal-brand);
+                background: var(--light-blue);
+                border-bottom: 3px solid var(--teal-brand);
+            }
+
+    /* FIXED Label & Input Styling */
+    .intel-group {
+        margin-bottom: 15px;
+    }
+
+    .intel-label {
+        font-size: 0.7rem;
+        font-weight: 800;
+        color: var(--teal-brand) !important;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: var(--light-blue);
+        padding: 5px 12px;
+        border-radius: 6px 6px 0 0;
+        border-left: 4px solid var(--teal-brand);
+        display: block;
+        margin-bottom: 0;
+    }
+
+    .intel-input {
+        border: 1px solid #cbd5e1;
+        border-top: none;
+        border-radius: 0 0 6px 6px;
+        font-size: 0.9rem;
+        padding: 10px 12px;
+        width: 100%;
+        transition: 0.2s;
+        background: #fff;
+    }
+
+        .intel-input:focus {
+            border-color: var(--teal-brand);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0,105,143,0.1);
+        }
+
+    .details-box {
+        background: var(--teal-brand);
+        border-radius: 10px;
+        padding: 25px;
+        color: white;
+    }
+
+    .info-val {
+        font-weight: 700;
+        font-size: 1.2rem;
+        margin-bottom: 0;
+    }
+
+    .info-sub {
+        font-size: 0.65rem;
+        opacity: 0.8;
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+
+    .btn-sync {
+        background: var(--teal-brand);
+        color: white;
+        border: none;
+        font-weight: 700;
+        transition: 0.3s;
+    }
+
+        .btn-sync:hover {
+            background: #005676;
+            box-shadow: 0 4px 12px rgba(0,105,143,0.2);
+        }
+
+    .wait-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255,255,255,0.8);
+        z-index: 9999;
+        backdrop-filter: blur(3px);
+    }
+</style>
+
+<div class="container-fluid py-4 animate-entrance">
+    <div class="card card-intel shadow-lg mx-auto" style="max-width: 1200px;">
+        <div class="header-intel d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold"><i class="fas fa-microchip me-2"></i> Dispatch Management Intelligence</h5>
+            <span class="badge bg-white text-dark small fw-bold shadow-sm">Company ID: @Session["Company_ID"]</span>
+        </div>
+
+        <div class="card-body p-4">
+            <div class="row justify-content-center mb-4">
+                <div class="col-md-10">
+                    <div class="input-group shadow-sm rounded-pill overflow-hidden border">
+                        <span class="input-group-text bg-white border-0"><i class="fas fa-search text-muted"></i></span>
+                        <select id="ddlVoucherNo" class="form-select border-0 py-2" style="font-size: 0.95rem;">
+                            <option value="">Search Packing Slip, Customer Name, or Invoice No...</option>
+                        </select>
+                        <button class="btn btn-sync px-5 fw-bold" id="btnSearch">GET DATA</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="mainContainer" style="display:none;" class="animate-reveal">
+                <ul class="nav nav-tabs nav-tabs-intel" id="modeTabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#paneEdit"><i class="fas fa-edit me-2"></i>Edit Components</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-danger" data-bs-toggle="tab" href="#paneCancel"><i class="fas fa-trash-alt me-2"></i>Full Reversal</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="paneEdit">
+                        <div class="row g-2">
+                            <div class="col-md-6 intel-group">
+                                <label class="intel-label">Customer Name</label>
+                                <input type="text" id="txtCustName" class="intel-input">
+                            </div>
+                            <div class="col-md-6 intel-group">
+                                <label class="intel-label">Location / City</label>
+                                <input type="text" id="txtCustLoc" class="intel-input">
+                            </div>
+                            <div class="col-12 intel-group">
+                                <label class="intel-label">Billing Address</label>
+                                <textarea id="txtCustAddr" class="intel-input" rows="1"></textarea>
+                            </div>
+
+                            <div class="col-12 my-2"><hr /></div>
+
+                            <div class="col-md-3 intel-group">
+                                <label class="intel-label">Invoice Number</label>
+                                <input type="text" id="txtBillNo" class="intel-input">
+                            </div>
+                            <div class="col-md-3 intel-group">
+                                <label class="intel-label">Invoice Date</label>
+                                <input type="date" id="txtBillDate" class="intel-input">
+                            </div>
+                            <div class="col-md-3 intel-group">
+                                <label class="intel-label">Lorry / Vehicle No</label>
+                                <input type="text" id="txtLorry" class="intel-input">
+                            </div>
+                            <div class="col-md-3 intel-group">
+                                <label class="intel-label">Transporter</label>
+                                <input type="text" id="txtTransport" class="intel-input">
+                            </div>
+
+                            <div class="col-md-3 intel-group">
+                                <label class="intel-label">LR Number</label>
+                                <input type="text" id="txtLR" class="intel-input">
+                            </div>
+                            <div class="col-md-3 intel-group">
+                                <label class="intel-label">LR Date</label>
+                                <input type="date" id="txtLRDate" class="intel-input">
+                            </div>
+                            <div class="col-md-6 intel-group">
+                                <label class="intel-label">E-Way Bill Number</label>
+                                <input type="text" id="txtEway" class="intel-input">
+                            </div>
+                            <div class="col-12 intel-group">
+                                <label class="intel-label">Shipping Destination Address</label>
+                                <textarea id="txtShipAddr" class="intel-input" rows="2"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <button id="btnUpdate" class="btn btn-sync px-5 py-3 rounded-pill shadow">
+                                <i class="fas fa-save me-2"></i> UPDATE DISPATCH INTELLIGENCE
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="paneCancel">
+                        <div class="alert alert-danger border-0 shadow-sm d-flex align-items-center mb-4 py-3">
+                            <i class="fas fa-exclamation-triangle me-3 fa-2x"></i>
+                            <div>
+                                <h6 class="fw-bold mb-1">Destructive Action Warning</h6>
+                                <small>This permanently deletes the dispatch record and reverts stock for item: <b id="lblItemName"></b></small>
+                            </div>
+                        </div>
+
+                        <div class="details-box">
+                            <div class="row g-4 text-center text-md-start">
+                                <div class="col-md-5">
+                                    <p class="info-sub">Active Customer</p>
+                                    <p id="lblCustomer" class="info-val"></p>
+                                </div>
+                                <div class="col-md-3">
+                                    <p class="info-sub">Bill No</p>
+                                    <p id="lblBill" class="info-val"></p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p class="info-sub">Total Billing Value</p>
+                                    <p id="lblAmount" class="info-val"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-5">
+                            <button id="btnConfirmCancel" class="btn btn-danger btn-lg px-5 fw-bold shadow rounded-pill">
+                                <i class="fas fa-trash-restore me-2"></i> REVERT STOCK & DELETE RECORD
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="wait-overlay text-center pt-5">
+    <div class="spinner-border text-primary mt-5" style="width: 3rem; height: 3rem;" role="status"></div>
+    <p class="mt-3 fw-bold text-primary">Synchronizing Dispatch Data...</p>
+</div>
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            // Initial load of the dropdown
+            loadVoucherList();
+
+            function loadVoucherList() {
+                $.get('@Url.Action("GetActiveDispatchVouchers", "Production")', function (data) {
+                    var ddl = $('#ddlVoucherNo');
+                    ddl.empty().append('<option value="">Search Packing Slip, Customer Name, or Invoice No...</option>');
+                    $.each(data, function (i, item) {
+                        ddl.append($('<option></option>').val(item.Value).text(item.Text));
+                    });
+                });
+            }
+
+            // --- SEARCH LOGIC ---
+            $('#btnSearch').click(function () {
+                var vNo = $('#ddlVoucherNo').val();
+                if (!vNo) { toastr.warning("Please select a valid record."); return; }
+
+                $('.wait-overlay').fadeIn(200);
+
+                $.ajax({
+                    url: '@Url.Action("GetDispatchDetails", "Production")',
+                    type: 'GET',
+                    data: { voucherNo: vNo },
+                    success: function (res) {
+                        $('.wait-overlay').fadeOut(200);
+                        if (res.success) {
+                            // Map all edit components
+                            $('#txtCustName').val(res.data.CustomerName);
+                            $('#txtCustLoc').val(res.data.CustomerLocation);
+                            $('#txtCustAddr').val(res.data.CustomerAddress);
+                            $('#txtShipAddr').val(res.data.ShippingAddress);
+                            $('#txtBillNo').val(res.data.BillNumber);
+                            $('#txtBillDate').val(res.data.BillDate);
+                            $('#txtLorry').val(res.data.LorryNo);
+                            $('#txtLR').val(res.data.LR);
+                            $('#txtLRDate').val(res.data.LRDate);
+                            $('#txtEway').val(res.data.EwayNo);
+                            $('#txtTransport').val(res.data.Transport);
+
+                            // Map Cancel View labels
+                            $('#lblCustomer').text(res.data.CustomerName);
+                            $('#lblBill').text(res.data.BillNumber);
+                            $('#lblItemName').text(res.data.ItemName);
+                            $('#lblAmount').text("₹" + parseFloat(res.data.BillingAMT).toLocaleString('en-IN', { minimumFractionDigits: 2 }));
+
+                            $('#mainContainer').show().addClass('animate-reveal');
+                        } else {
+                            toastr.error(res.message);
+                        }
+                    },
+                    error: function() { $('.wait-overlay').fadeOut(200); toastr.error("Server connection failed."); }
+                });
+            });
+
+            // --- UPDATE LOGIC ---
+            $('#btnUpdate').click(function () {
+                var model = {
+                    VoucherNumber: $('#ddlVoucherNo').val(),
+                    CustomerName: $('#txtCustName').val(),
+                    CustomerLocation: $('#txtCustLoc').val(),
+                    CustomerAddress: $('#txtCustAddr').val(),
+                    ShippingAddress: $('#txtShipAddr').val(),
+                    BillNumber: $('#txtBillNo').val(),
+                    BillDate: $('#txtBillDate').val(),
+                    LorryNo: $('#txtLorry').val(),
+                    LR: $('#txtLR').val(),
+                    LRDate: $('#txtLRDate').val(),
+                    EwayNo: $('#txtEway').val(),
+                    Transport: $('#txtTransport').val()
+                };
+
+                $('.wait-overlay').fadeIn(200);
+
+                $.ajax({
+                    url: '@Url.Action("UpdateDispatchDetails", "Production")',
+                    type: 'POST',
+                    data: model,
+                    success: function (res) {
+                        $('.wait-overlay').fadeOut(200);
+                        if (res.success) {
+                            toastr.success(res.message);
+                        } else {
+                            toastr.error(res.message);
+                        }
+                    }
+                });
+            });
+
+            // --- CANCELLATION LOGIC ---
+            $('#btnConfirmCancel').click(function () {
+                var vNo = $('#ddlVoucherNo').val();
+                if (!confirm("Are you sure you want to permanently delete this dispatch and revert stock?")) return;
+
+                $('.wait-overlay').fadeIn(200);
+
+                $.post('@Url.Action("ProcessCancellation", "Production")', { voucherNo: vNo }, function (res) {
+                    $('.wait-overlay').fadeOut(200);
+                    if (res.success) {
+                        toastr.success(res.message);
+                        setTimeout(function () { location.reload(); }, 1500);
+                    } else {
+                        toastr.error(res.message);
+                    }
+                });
+            });
+        });
+    </script>
+}

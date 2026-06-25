@@ -1,0 +1,269 @@
+﻿@{
+    ViewBag.Title = "Security Matrix";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+<style>
+    /* Analytics Theme Overrides */
+    body {
+        background-color: #f4f7f6;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .permission-card {
+        border: none;
+        border-radius: 10px;
+        background: #fff;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+
+    .theme-header {
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid #edf2f7;
+        background: #fff;
+        border-radius: 10px 10px 0 0;
+    }
+
+    .theme-title {
+        color: #2d3748;
+        font-weight: 700;
+        font-size: 1.4rem;
+        margin: 0;
+    }
+
+    /* Pill Badges */
+    .step-badge {
+        background: #008080; /* Teal tone from your screenshot */
+        color: white;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 3px 12px;
+        border-radius: 50px;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+        display: inline-block;
+    }
+
+    /* Dynamic Selects */
+    .form-select-custom {
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        height: 42px;
+        font-weight: 500;
+        color: #4a5568;
+    }
+
+    /* Table Design */
+    .table-container {
+        border: 1px solid #edf2f7;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .table thead th {
+        background-color: #f8fafc !important;
+        color: #718096 !important;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 12px 20px !important;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .permission-row td {
+        padding: 14px 20px !important;
+        vertical-align: middle;
+        font-size: 13px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    /* Code Badge */
+    .item-code-badge {
+        background-color: #1a3a5f;
+        color: #fff;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-family: 'Consolas', monospace;
+        font-size: 11px;
+    }
+
+    /* iOS Toggle Switch */
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 44px;
+        height: 22px;
+    }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #cbd5e0;
+        transition: .4s;
+        border-radius: 34px;
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+    input:checked + .slider {
+        background-color: #38a169;
+    }
+
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+    .placeholder-state {
+        padding: 60px;
+        text-align: center;
+        color: #a0aec0;
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <div class="card permission-card animate__animated animate__fadeIn">
+        <div class="theme-header">
+            <h3 class="theme-title">User Rights Assignment</h3>
+            <p class="text-muted small mb-0">Manage granular access controls for system modules and detailed operations.</p>
+        </div>
+
+        <div class="card-body p-4">
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <span class="step-badge">Step 1: User Selection</span>
+                    @Html.DropDownList("UserList", (SelectList)ViewBag.Users, "-- Select User Account --", new { @class = "form-control form-select-custom", id = "UserDropdown" })
+                </div>
+                <div class="col-md-4">
+                    <span class="step-badge" style="background:#4a5568;">Step 2: Module Group</span>
+                    @* Fully Dynamic Dropdown from Database *@
+                    @Html.DropDownList("ModuleList", (SelectList)ViewBag.Modules, "-- Select Main Module --", new { @class = "form-control form-select-custom", id = "MainMenuDropdown" })
+                </div>
+            </div>
+
+            <div id="tableContainer" style="display:none;" class="table-container animate__animated animate__slideInUp">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th width="45%">Detailed Option Name</th>
+                            <th width="30%">Internal Reference</th>
+                            <th width="25%" class="text-center">Access Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="PermissionTableBody"></tbody>
+                </table>
+            </div>
+
+            <div id="placeholder" class="placeholder-state">
+                <i class="fas fa-shield-alt fa-3x mb-3 opacity-25"></i>
+                <h5>Authorized Access Required</h5>
+                <p>Please select a specific user and system module to load the security matrix.</p>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+@section scripts {
+    <script src="~/toastr/Js/toastr.js"></script>
+    <link href="~/toastr/toastr.css" rel="stylesheet" />
+
+    <script>
+        $(document).ready(function () {
+            toastr.options = { "closeButton": true, "progressBar": true, "positionClass": "toast-top-right", "timeOut": "1500" };
+
+            function loadPermissions() {
+                var userId = $('#UserDropdown').val();
+                var mainMenu = $('#MainMenuDropdown').val();
+
+                if (!userId || !mainMenu) {
+                    $('#tableContainer').hide();
+                    $('#placeholder').show();
+                    return;
+                }
+
+                $('#placeholder').hide();
+                $('#PermissionTableBody').html('<tr><td colspan="3" class="text-center py-5"><div class="spinner-border text-teal" role="status"></div></td></tr>');
+                $('#tableContainer').show();
+
+                $.ajax({
+                    url: '@Url.Action("GetUserPermissions", "UserAccess")',
+                    type: 'GET',
+                    data: { userId: userId, mainMenu: mainMenu },
+                    success: function (data) {
+                        var rows = '';
+                        if (data.length === 0) {
+                            rows = '<tr><td colspan="3" class="text-center py-4">No menu items found in this module.</td></tr>';
+                        } else {
+                            $.each(data, function (i, item) {
+                                var checked = item.HasAccess ? 'checked' : '';
+                                rows += '<tr class="permission-row">' +
+                                            '<td><div class="fw-bold" style="color:#2d3748">' + item.DisplayName + '</div></td>' +
+                                            '<td><span class="item-code-badge">' + item.SystemName + '</span></td>' +
+                                            '<td class="text-center">' +
+                                                '<label class="switch">' +
+                                                    '<input type="checkbox" class="permission-toggle" ' +
+                                                    'data-menu="' + item.SystemName + '" ' + checked + '>' +
+                                                    '<span class="slider"></span>' +
+                                                '</label>' +
+                                            '</td>' +
+                                        '</tr>';
+                            });
+                        }
+                        $('#PermissionTableBody').html(rows);
+                    }
+                });
+            }
+
+            // Dropdown Listeners
+            $('#UserDropdown, #MainMenuDropdown').change(loadPermissions);
+
+            // Toggle logic
+            $(document).on('change', '.permission-toggle', function () {
+                var userId = $('#UserDropdown').val();
+                var menuName = $(this).data('menu');
+                var isChecked = $(this).is(':checked');
+                var $this = $(this);
+
+                $.ajax({
+                    url: '@Url.Action("TogglePermission", "UserAccess")',
+                    type: 'POST',
+                    data: { userId: userId, menuName: menuName, isChecked: isChecked },
+                    success: function (res) {
+                        if (res.success) {
+                            toastr.success("Updated: " + menuName);
+                        } else {
+                            toastr.error("Failed: " + res.message);
+                            $this.prop('checked', !isChecked);
+                        }
+                    },
+                    error: function () {
+                        toastr.error("Connection Error");
+                        $this.prop('checked', !isChecked);
+                    }
+                });
+            });
+        });
+    </script>
+}

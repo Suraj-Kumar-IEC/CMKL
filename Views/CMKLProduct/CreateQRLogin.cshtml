@@ -1,0 +1,163 @@
+﻿
+@{
+    ViewBag.Title = "CreateQRLogin";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    #saveButton {
+        background-color: #00698f;
+        color: #ffffff;
+        border-color: #0070d2;
+    }
+</style>
+<h3 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">Create QR Login</h3>
+
+<div class="container">
+    <div id="statusMessage" class="hidden p-4 rounded-md mb-4" role="alert"></div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <label for="Email" class="control-label mb-2">Email</label>
+            <input type="email" id="Email" name="Email" class="form-control w-full p-2 border rounded-md" required />
+            <span class="text-red-500 text-sm mt-1" id="Email-validation"></span>
+        </div>
+
+        <div class="col-md-4">
+            <label for="Password" class="control-label mb-2">Password</label>
+            <input type="password" id="Password" name="Password" class="form-control w-full p-2 border rounded-md" required />
+            <span class="text-red-500 text-sm mt-1" id="Password-validation"></span>
+        </div>
+
+        <div class="col-md-4">
+            <label for="OrderID" class="control-label mb-2">Order ID</label>
+            <input type="text" id="OrderID" name="OrderID" class="form-control w-full p-2 border rounded-md" required />
+            <span class="text-red-500 text-sm mt-1" id="OrderID-validation"></span>
+        </div>
+
+        <div class="flex justify-end mt-6">
+            <button id="saveButton" type="button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition-colors">
+                Save
+            </button>
+        </div>
+    </div>
+    <div class="card-header text-center">
+        Saved Records
+        <div class="card-body">
+            <table class="table table-sm table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Email</th>
+                        <th>Password</th>
+                        <th>Order ID</th>
+                    </tr>
+                </thead>
+                <tbody id="records"></tbody>
+            </table>
+
+        </div>
+
+    </div>
+</div>
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            GetRecords();
+            function GetRecords() {
+                $.ajax({
+                    type: 'GET',
+                    url: '/CMKLProduct/GetQRLoginDetails',
+                    success: function (data)
+                    {
+                        var table = $('#records');
+                        table.empty();
+
+                        $.each(data.records, function (index, item) {
+                            var row = '<tr>' +
+                                '<td>' + item.id + '</td>' +
+                                '<td>' + item.email + '</td>' +
+                                '<td>' + item.password + '</td>' +
+                                '<td>' + item.orderid + '</td>' +
+                                '<tr>';
+                            table.append(row);
+                        })
+
+                        
+                    }
+
+                })
+            }
+            $('#saveButton').click(function (e) {
+                e.preventDefault();
+
+                // Clear previous validation messages and status messages
+                $('.text-red-500').text('');
+                $('#statusMessage').addClass('hidden').removeClass('bg-red-200 text-red-600 bg-green-200 text-green-600').text('');
+
+                var formData = {
+                    Email: $('#Email').val(),
+                    Password: $('#Password').val(),
+                    OrderID: $('#OrderID').val()
+                };
+
+                // Basic client-side validation to ensure fields are not empty
+                var isValid = true;
+                if (!formData.Email) {
+                    $('#Email-validation').text('The Email field is required.');
+                    isValid = false;
+                }
+                if (!formData.Password) {
+                    $('#Password-validation').text('The Password field is required.');
+                    isValid = false;
+                }
+                if (!formData.OrderID) {
+                    $('#OrderID-validation').text('The Order ID field is required.');
+                    isValid = false;
+                }
+
+                if (isValid) {
+                    // Send data via AJAX
+                    $.ajax({
+                        url: '@Url.Action("SaveQRLogin", "CMKLProduct")',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(formData),
+                        success: function (response) {
+                            if (response.success) {
+                                // Show success message
+                                $('#statusMessage').removeClass('hidden').addClass('bg-green-200 text-green-600').text(response.message);
+                                // Clear form fields
+                                $('#Email').val('');
+                                $('#Password').val('');
+                                $('#OrderID').val('');
+                                GetRecords();
+                            } else {
+                                // Show error message from the server
+                                $('#statusMessage').removeClass('hidden').addClass('bg-red-200 text-red-600').text(response.message);
+                                // Display specific validation errors if available
+                                if (response.errors) {
+                                    for (var key in response.errors) {
+                                        $('#' + key + '-validation').text(response.errors[key][0]);
+                                    }
+                                }
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            // Handle general AJAX errors
+                            $('#statusMessage').removeClass('hidden').addClass('bg-red-200 text-red-600').text('An error occurred. Please try again.');
+                            console.error("AJAX Error: " + error);
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+
+}
+

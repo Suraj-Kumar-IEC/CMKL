@@ -1,0 +1,357 @@
+﻿@{
+    ViewBag.Title = "Downtime Audit & Lifecycle Analytics";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            toastr.error("Invalid User Session");
+            setTimeout(function () { window.location.href = "@Url.Action("Index", "Login")"; }, 2000);
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<style>
+    .history-container {
+        background-color: #f8fafc;
+        font-family: 'Inter', sans-serif;
+        color: #334155;
+    }
+
+    .report-header {
+        background: white;
+        padding: 15px 30px;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid #e2e8f0;
+    }
+
+    .filter-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    }
+
+    .table-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    .table thead th {
+        position: sticky;
+        top: 0;
+        background: #f1f5f9;
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #00698f;
+        padding: 12px 10px;
+        border: none;
+        z-index: 10;
+    }
+
+    .table tbody td {
+        vertical-align: middle;
+        padding: 12px 10px;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.75rem;
+    }
+
+    /* Duration & Status Pills */
+    .duration-pill {
+        background: #f3f4f6;
+        color: #374151;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.65rem;
+        border: 1px solid #e5e7eb;
+    }
+
+    .status-badge {
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-weight: 800;
+        font-size: 0.6rem;
+        text-transform: uppercase;
+        border-width: 1px;
+        border-style: solid;
+    }
+
+    .bg-down {
+        background: #fee2e2;
+        color: #dc2626;
+        border-color: #fecaca;
+    }
+
+    .bg-maint {
+        background: #fef3c7;
+        color: #d97706;
+        border-color: #fde68a;
+    }
+
+    .bg-working {
+        background: #dcfce7;
+        color: #166534;
+        border-color: #bbf7d0;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid #e2e8f0;
+        transition: 0.2s;
+        height: 100%;
+    }
+
+    .stat-label {
+        font-size: 0.62rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #64748b;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: #00698f;
+    }
+
+    .trail-block {
+        font-size: 0.7rem;
+        line-height: 1.4;
+    }
+
+    .trail-label {
+        font-weight: 800;
+        display: inline-block;
+        width: 15px;
+    }
+
+    @@media (max-width: 768px) {
+        .report-header {
+            flex-direction: column;
+            text-align: center;
+            gap: 10px;
+        }
+
+        .table thead {
+            display: none;
+        }
+
+        .table, .table tbody, .table tr, .table td {
+            display: block;
+            width: 100%;
+        }
+
+            .table tr {
+                margin-bottom: 15px;
+                border: 1px solid #e2e8f0;
+                border-radius: 12px;
+                padding: 10px;
+                background: #fff;
+            }
+
+            .table td {
+                text-align: right;
+                padding-left: 50%;
+                position: relative;
+                border: none;
+                min-height: 35px;
+                border-bottom: 1px solid #f8fafc;
+            }
+
+                .table td::before {
+                    content: attr(data-label);
+                    position: absolute;
+                    left: 10px;
+                    font-weight: 800;
+                    text-transform: uppercase;
+                    color: #64748b;
+                    font-size: 0.6rem;
+                }
+    }
+</style>
+
+<div class="history-container container-fluid py-4 px-lg-5 animate-up">
+    <!-- Header -->
+    <div class="report-header shadow-sm">
+        <div>
+            <h4 class="fw-bold m-0 text-dark">Downtime Lifecycle Audit</h4>
+            <p class="text-muted small m-0">Consolidated history of machine failures with two-stage verification trail.</p>
+        </div>
+        <button class="btn btn-success rounded-pill px-4 fw-bold shadow-sm" onclick="exportToExcel()">
+            <i class="fas fa-file-excel me-2"></i>Export Excel
+        </button>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="filter-card shadow-sm">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small fw-bold text-muted uppercase">From Date</label>
+                <input type="date" id="txtFrom" class="form-control form-control-sm" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-bold text-muted uppercase">To Date</label>
+                <input type="date" id="txtTo" class="form-control form-control-sm" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-bold text-muted uppercase">Global Search</label>
+                <input type="text" id="txtSearch" class="form-control form-control-sm" placeholder="Search Machine, Staff, or Remarks..." />
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary btn-sm w-100 fw-bold py-2 shadow-sm" style="background-color: #00698f; border:none;" onclick="loadHistory()">
+                    <i class="fas fa-sync-alt me-1"></i>Fetch Logs
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPI Summary Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card shadow-sm" style="border-left: 5px solid #00698f;">
+                <span class="stat-label">Reported Incidents</span>
+                <span class="stat-value" id="kpi-count">0 Records</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card shadow-sm" style="border-left: 5px solid #dc3545;">
+                <span class="stat-label">Total Cumulative Downtime</span>
+                <span class="stat-value text-danger" id="kpi-downtime">0.0 Hrs</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card shadow-sm" style="border-left: 5px solid #10b981;">
+                <span class="stat-label">Resolution Efficiency</span>
+                <span class="stat-value text-success" id="kpi-rate">0%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table Card -->
+    <div class="table-card shadow-lg">
+        <div class="table-responsive" style="max-height: 65vh;">
+            <table class="table table-hover mb-0" id="historyTable">
+                <thead>
+                    <tr>
+                        <th>Asset & SubUnit</th>
+                        <th class="text-center">Lifecycle Status</th>
+                        <th class="text-center">Reported At</th>
+                        <th class="text-center text-primary">Maint. Done</th>
+                        <th class="text-center text-success">Authorized</th>
+                        <th class="text-center">Downtime Duration</th>
+                        <th>Resolution Trail (Prob -> Fix -> Admin)</th>
+                        <th>Personnel Mapping</th>
+                    </tr>
+                </thead>
+                <tbody id="historyBody">
+                    <tr><td colspan="8" class="text-center py-5 text-muted">Select date range and fetch data to view logs.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+
+<script>
+    $(document).ready(function () {
+        const today = new Date().toISOString().split('T')[0];
+        $('#txtFrom').val(today);
+        $('#txtTo').val(today);
+        loadHistory();
+
+        $("#txtSearch").on("keyup", function () {
+            var value = $(this).val().toLowerCase();
+            $("#historyBody tr").filter(function () {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+    });
+
+    function loadHistory() {
+        let f = $('#txtFrom').val(), t = $('#txtTo').val();
+
+        $.getJSON('@Url.Action("GetBreakdownHistoryData")', { from: f, to: t }, function (res) {
+            let tbody = $('#historyBody').empty();
+            let totalMins = 0, resolved = 0;
+
+            if (!res.data || res.data.length === 0) {
+                tbody.append('<tr><td colspan="8" class="text-center py-5 text-muted italic">No records found for the selected period.</td></tr>');
+                updateKPIs(0, 0, 0);
+                return;
+            }
+
+            $.each(res.data, function (i, item) {
+                totalMins += (item.DurationMinutes || 0);
+                if (item.Status === "WORKING") resolved++;
+
+                let badgeClass = "bg-down";
+                if(item.Status === "MAINTENANCE_COMPLETED") badgeClass = "bg-maint";
+                if(item.Status === "WORKING") badgeClass = "bg-working";
+
+                tbody.append(`
+                    <tr>
+                        <td data-label="Asset" class="fw-bold text-dark">
+                            ${item.MachineName}<br>
+                            <small class="text-muted font-normal">${item.SubUnit}</small>
+                        </td>
+                        <td data-label="Status" class="text-center">
+                            <span class="status-badge ${badgeClass}">${item.Status.replace('_',' ')}</span>
+                        </td>
+                        <td data-label="Reported" class="text-center small">${item.FormattedStart}</td>
+                        <td data-label="Maint Done" class="text-center small text-primary fw-bold">${item.FormattedMaint}</td>
+                        <td data-label="Authorized" class="text-center small text-success fw-bold">${item.FormattedEnd}</td>
+                        <td data-label="Duration" class="text-center">
+                            <span class="duration-pill shadow-sm">${item.DurationText}</span><br>
+                            <small class="text-muted" style="font-size:0.6rem">MTTR: ${item.MaintResponse}</small>
+                        </td>
+                        <td data-label="Trail" class="trail-block">
+                            <div class="mb-1"><span class="trail-label text-danger">P:</span> ${item.Problem}</div>
+                            <div class="mb-1"><span class="trail-label text-primary">F:</span> ${item.MaintFix || '---'}</div>
+                            <div><span class="trail-label text-success">A:</span> ${item.AdminFinal || '---'}</div>
+                        </td>
+                        <td data-label="Personnel" class="small text-muted font-monospace" style="font-size: 0.65rem;">
+                            ${item.Staff}
+                        </td>
+                    </tr>
+                `);
+            });
+
+            updateKPIs(res.data.length, totalMins, (resolved / res.data.length * 100));
+            toastr.success('Downtime lifecycle records loaded.');
+        });
+    }
+
+    function updateKPIs(cnt, mins, rate) {
+        $('#kpi-count').text(cnt + " Incidents");
+        $('#kpi-downtime').text((mins / 60).toFixed(1) + " Hrs");
+        $('#kpi-rate').text(Math.round(rate) + "%");
+    }
+
+    function exportToExcel() {
+        const table = document.getElementById("historyTable");
+        const wb = XLSX.utils.table_to_book(table, { raw: true });
+        XLSX.writeFile(wb, 'Breakdown_Lifecycle_Audit_' + moment().format('DDMMYYYY') + '.xlsx');
+    }
+</script>

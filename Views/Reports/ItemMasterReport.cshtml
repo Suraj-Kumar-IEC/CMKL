@@ -1,0 +1,241 @@
+﻿@{
+    ViewBag.Title = "Item Master Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    /* Professional Blue Theme */
+    .report-header {
+        background-color: #00698f;
+        color: white;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .stat-card {
+        border-left: 4px solid #00698f;
+        transition: transform 0.2s;
+    }
+
+    .table-custom thead {
+        background-color: #f8f9fa;
+        color: #00698f;
+        font-weight: bold;
+    }
+
+    /* Search Input styling */
+    .search-input {
+        border-radius: 8px;
+        border: 1.5px solid #e2e8f0;
+        padding: 6px 15px;
+        font-size: 0.85rem;
+        outline: none;
+        transition: 0.3s;
+        width: 280px;
+        color: #333;
+    }
+    .search-input:focus { border-color: #00698f; box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2); }
+
+    /* Print optimizations */
+    @@media print {
+        .no-print {
+            display: none !important;
+        }
+
+        .card {
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        .table-responsive {
+            overflow: visible !important;
+        }
+
+        .container-fluid {
+            padding: 0 !important;
+        }
+    }
+
+    /* Table Scrollbar Styling */
+    .table-responsive::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .table-responsive::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    .table-responsive::-webkit-scrollbar-thumb {
+        background: #00698f;
+        border-radius: 4px;
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <!-- Summary Header with 4 Category Boxes -->
+    <div class="row mb-3 no-print">
+        <div class="col-md-3">
+            <div class="card stat-card border-final shadow-sm p-3">
+                <small class="text-muted text-uppercase fw-bold">Final Items</small>
+                <h3 id="statFinalItems" class="mb-0 text-success">0</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card border-raw shadow-sm p-3">
+                <small class="text-muted text-uppercase fw-bold">Raw Materials</small>
+                <h3 id="statRawMaterials" class="mb-0 text-primary">0</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card border-service shadow-sm p-3">
+                <small class="text-muted text-uppercase fw-bold">Service Items</small>
+                <h3 id="statServiceItems" class="mb-0 text-warning">0</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card border-service shadow-sm p-3">
+                <small class="text-muted text-uppercase fw-bold">FG Products</small>
+                <h3 id="statFGItems" class="mb-0 text-info">0</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="report-header p-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-list-ul me-2"></i> Complete Item Master List</h5>
+            <div class="d-flex gap-2 no-print align-items-center">
+                <!-- QUICK SEARCH ADDED HERE -->
+                <input type="text" id="txtSearch" class="search-input shadow-sm" placeholder="Quick Search (Code, Name, Category)..." />
+
+                <button class="btn btn-sm btn-light text-primary fw-bold shadow-sm" onclick="exportToExcel()">
+                    <i class="fas fa-file-excel me-1"></i> Export Excel
+                </button>
+                <button class="btn btn-sm btn-light text-dark fw-bold shadow-sm" onclick="window.print()">
+                    <i class="fas fa-print me-1"></i> Print Report
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive" style="max-height: 70vh;">
+            <table id="tblItemMaster" class="table table-hover table-sm table-custom mb-0">
+                <thead class="sticky-top bg-light">
+                    <tr>
+                        <th style="width: 120px;">Item Code</th>
+                        <th>Item Name</th>
+                        <th>Description</th>
+                        <th>Category</th>
+                        <th>Group</th>
+                        <th>Location</th>
+                        <th>MOQ</th>
+                        <th class="text-center">UOM</th>
+                    </tr>
+                </thead>
+                <tbody id="itemDataBody">
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status"></div>
+                            <div class="mt-2">Loading full item list...</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+
+@section scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Load all data immediately on page ready
+            loadAllItems();
+
+            // QUICK SEARCH LOGIC
+            $("#txtSearch").on("keyup", function () {
+                var value = $(this).val().toLowerCase();
+                $("#itemDataBody tr").filter(function () {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+
+        function loadAllItems() {
+            $.ajax({
+                url: '@Url.Action("GetItemMasterData", "Reports")',
+                type: 'GET',
+                data: { category: '', search: '' },
+                success: function (response) {
+                    if (response.success) {
+                        renderTable(response.data);
+                        calculateAndShowStats(response.data);
+
+                        // Re-apply filter if user already typed something while loading
+                        var searchVal = $("#txtSearch").val();
+                        if (searchVal) $("#txtSearch").trigger("keyup");
+
+                    } else {
+                        toastr.error("Error loading item list: " + response.message);
+                    }
+                },
+                error: function() {
+                    toastr.error("Failed to connect to the server.");
+                }
+            });
+        }
+
+        function calculateAndShowStats(items) {
+            let finalCount = 0;
+            let rawCount = 0;
+            let serviceCount = 0;
+            let fgcount = 0;
+
+            if (items && items.length > 0) {
+                $.each(items, function (i, item) {
+                    if (item.ItemCategory === "Final Item") finalCount++;
+                    else if (item.ItemCategory === "Raw Material") rawCount++;
+                    else if (item.ItemCategory === "Service Item") serviceCount++;
+                    else if (item.ItemCategory === "FG Product") fgcount++;
+                });
+            }
+
+            $('#statFinalItems').text(finalCount);
+            $('#statRawMaterials').text(rawCount);
+            $('#statServiceItems').text(serviceCount);
+            $('#statFGItems').text(fgcount);
+        }
+
+        function renderTable(items) {
+            var tbody = $('#itemDataBody');
+            tbody.empty();
+
+            if (!items || items.length === 0) {
+                tbody.append('<tr><td colspan="7" class="text-center py-5 text-muted">No items found in the database.</td></tr>');
+                return;
+            }
+
+            $.each(items, function (i, item) {
+                var row = `<tr>
+                    <td class="fw-bold text-primary">${item.ItemCode}</td>
+                    <td class="fw-bold text-dark">${item.ItemName}</td>
+                    <td class="text-muted small">${item.Description || '---'}</td>
+                    <td>${item.ItemCategory || 'N/A'}</td>
+                    <td>${item.ItemGroup || 'N/A'}</td>
+                    <td>${item.ItemLocation || '---'}</td>
+                    <td>${item.MOQ || '---'}</td>
+                    <td class="text-center"><span class="badge bg-light text-dark border px-2">${item.UOM || '---'}</span></td>
+                </tr>`;
+                tbody.append(row);
+            });
+        }
+
+        function exportToExcel() {
+            var table = document.getElementById("tblItemMaster");
+            var wb = XLSX.utils.table_to_book(table, { sheet: "Complete Item Master" });
+            XLSX.writeFile(wb, "ItemMaster_Full_List_" + new Date().toISOString().split('T')[0] + ".xlsx");
+        }
+    </script>
+}

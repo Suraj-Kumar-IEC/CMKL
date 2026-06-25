@@ -1,0 +1,584 @@
+﻿@{
+    ViewBag.Title = "PendingPDI";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if the current context is inside a Bootstrap modal
+            const isInModal = !!(document.querySelector('.modal.show'));
+
+            if (isInModal) {
+                // If inside a modal, wait for a short delay
+                setTimeout(() => {
+                    handleInvalidUser();
+                }, 500); // Adjust the delay as needed
+            } else {
+                // If not in a modal, proceed immediately
+                handleInvalidUser();
+            }
+
+            function handleInvalidUser() {
+                toastr.error("Invalid User");
+
+                setTimeout(function () {
+                    window.location.href = "@Url.Action("Index", "Login")";
+                }, 2000); // Redirect after 2 seconds
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<h3 style="background-color: #00698f; color: #ffffff; padding: 5px 10px; border-radius: 5px; text-align: center;">Pending For PDI</h3>
+<div class="container-fluid">
+    <div class="row">
+        <table class="table table-bordered table-sm" id="PendingPDITable">
+            <thead>
+                <tr>
+                    <th>Voucher Number</th>
+                    <th>Voucher Date</th>
+                    <th>Created By</th>
+                    <th>FG Product Code</th>
+                    <th>FG Product Name</th>
+                    <th>Engine No</th>
+                    <th>Alternator No</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="PendingRows"></tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="pdiModal" tabindex="-1" aria-labelledby="pdiModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="pdiModalLabel">Edit PDI Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="pdiForm">
+                    <input type="hidden" id="headid" name="itemId">
+                    <div>
+                        <h6 style="background-color: #00698f; color: #ffffff; padding: 5px 10px; border-radius: 5px; text-align: center; margin-bottom: 10px;">Engine Detail</h6>
+                        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-6">
+                            <div class="col">
+                                <label for="emake" class="form-label form-label-sm">Make</label>
+                                <input type="text" id="emake" class="form-control form-control-sm" name="emake" required />
+                            </div>
+                            <div class="col">
+                                <label for="emodel" class="form-label form-label-sm">Model</label>
+                                <select id="emodel" class="form-select form-select-sm" name="emodel" required></select>
+                            </div>
+                            <div class="col">
+                                <label for="eserial" class="form-label form-label-sm">Serial No</label>
+                                <input type="text" id="engineSerialNo" class="form-control form-control-sm" name="engineSerialNo" required disabled="disabled" />
+                            </div>
+                            <div class="col">
+                                <label for="etestcert" class="form-label form-label-sm">Test Certificate</label>
+                                <select id="etestcert" class="form-control form-control-sm" name="etestcert" required>
+                                    <option>Yes</option>
+                                    <option>No</option>
+                                </select>
+                            </div>
+                            <div class="col">
+                                <label for="eremarks" class="form-label form-label-sm">Remarks</label>
+                                <input type="text" id="eremarks" class="form-control form-control-sm" name="eremarks" />
+                            </div>
+                            <div class="col">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <h6 style="background-color: #00698f; color: #ffffff; padding: 5px 10px; border-radius: 5px; text-align: center; margin-bottom: 10px;">Alternator Detail</h6>
+                        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-6">
+                            <div class="col">
+                                <label for="amake" class="form-label form-label-sm">Make</label>
+                                <input type="text" id="amake" class="form-control form-control-sm" name="amake" required />
+                            </div>
+                            <div class="col">
+                                <label for="aframe" class="form-label form-label-sm">Frame</label>
+                                <input type="text" id="aframe" class="form-control form-control-sm" name="aframe" required />
+                            </div>
+                            <div class="col">
+                                <label for="amcno" class="form-label form-label-sm">MC No</label>
+                                <input type="text" id="alternatorSerialNo" class="form-control form-control-sm" name="alternatorSerialNo" required disabled="disabled" />
+                            </div>
+                            <div class="col-md-4">
+                                <label for="arating">Alternator Rating</label>
+                                <select id="arating" class="form-control form-control-sm" required></select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="aphase">Phase</label>
+                                <select id="aphase" class="form-control form-control-sm" required></select>
+                            </div>
+                            <div class="col">
+                                <label for="atestcert" class="form-label form-label-sm">Test Certificate</label>
+                                <select id="atestcert" class="form-control form-control-sm" name="atestcert">
+                                    <option>Yes</option>
+                                    <option>No</option>
+                                </select>
+                            </div>
+                            <div class="col">
+                                <label for="awarranty" class="form-label form-label-sm">Warranty Card</label>
+                                <select id="awarranty" class="form-control form-control-sm" name="awarranty">
+                                    <option>Yes</option>
+                                    <option>No</option>
+                                </select>
+                            </div>
+                            <div class="col">
+                                <label for="aremarks" class="form-label form-label-sm">Remarks</label>
+                                <input type="text" id="aremarks" class="form-control form-control-sm" name="aremarks" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <h6 style="background-color: #00698f; color: #ffffff; padding: 5px 10px; border-radius: 5px; text-align: center; margin-bottom: 10px;">Other Detail</h6>
+                        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-6">
+                            <div class="col">
+                                <label for="exhaust" class="form-label form-label-sm">Exhaust Pipe</label>
+                                <input type="number" id="exhaust" class="form-control form-control-sm" name="exhaust" />
+                            </div>
+                            <div class="col">
+                                <label for="kgsticker" class="form-label form-label-sm">KG Sticker</label>
+                                <input type="text" id="kgsticker" class="form-control form-control-sm" name="kgsticker" />
+                            </div>
+                            <div class="col">
+                                <label for="AVM" class="form-label form-label-sm">AVM Pads</label>
+                                <input type="text" id="AVM" class="form-control form-control-sm" name="AVM" />
+                            </div>
+                            <div class="col">
+                                <label for="fuelspout" class="form-label form-label-sm">Fuel Spout</label>
+                                <input type="number" id="fuelspout" class="form-control form-control-sm" name="fuelspout" />
+                            </div>
+                            <div class="col">
+                                <label for="flexbel" class="form-label form-label-sm">Flexible Bellow</label>
+                                <input type="number" id="flexbel" class="form-control form-control-sm" name="flexbel" />
+                            </div>
+                            <div class="col">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <h6 style="background-color: #00698f; color: #ffffff; padding: 5px 10px; border-radius: 5px; text-align: center; margin-bottom: 10px;">Control Panel Details</h6>
+                        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-6">
+                            <div class="col">
+                                <label for="CPtype" class="form-label form-label-sm">Type</label>
+                                <select id="cptype" class="form-select form-select-sm" name="CPtype" required></select>@*Get Data from Table*@
+                            </div>
+                            <div class="col">
+                                <label for="cprating" class="form-label form-label-sm">Rating:</label>
+                                <select class="form-select form-select-sm" id="cprating" name="cprating" required></select>@*Get Data from Table*@
+                            </div>
+                            <div class="col">
+                                <label for="PanelSerialNo" class="form-label form-label-sm">Panel Serial No.:</label>
+                                <input type="text" class="form-control form-control-sm" id="PanelSerialNo" name="PanelSerialNo" required>
+                            </div>
+                            <div class="col">
+                                <label for="cpotherdetail" class="form-label form-label-sm">Other Detail</label>
+                                <input type="text" id="cpotherdetail" class="form-control form-control-sm" name="cpotherdetail" />
+                            </div>
+                            <div class="col-span-2">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <h6 style="background-color: #00698f; color: #ffffff; padding: 5px 10px; border-radius: 5px; text-align: center; margin-bottom: 10px;">Battery Details</h6>
+                        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-6">
+                            <div class="col">
+                                <label for="bmake" class="form-label form-label-sm">Make:</label>
+                                <input type="text" class="form-control form-control-sm" id="bmake" name="bmake" required>
+                            </div>
+                            <div class="col">
+                                <label for="BatteryRating" class="form-label form-label-sm">Battery Rating:</label>
+                                <select id="BatteryRating" class="form-select form-select-sm" name="BatteryRating"></select>@*Get Data from Table*@
+                            </div>
+                            <div class="col">
+                                <label for="BatteryQTY" class="form-label form-label-sm">Battery QTY:</label>
+                                <input type="number" class="form-control form-control-sm" id="Batteryqty" name="Batteryqty" required>
+                            </div>
+                            <div class="col">
+                                <label for="BatterySerialNo" class="form-label form-label-sm">Battery Serial No.:</label>
+                                <input type="text" class="form-control form-control-sm" id="BatterySerialNo" name="BatterySerialNo" disabled="disabled">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <h6 style="background-color: #00698f; color: #ffffff; padding: 5px 10px; border-radius: 5px; text-align: center; margin-bottom: 10px;">Material Other Details</h6>
+                        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-6">
+                            <div class="col">
+                                <label for="dateOfTesting" class="form-label form-label-sm">Date of Testing:</label>
+                                <input type="date" class="form-control form-control-sm" id="dateOfTesting" name="dateOfTesting" required>
+                            </div>
+                            <div class="col">
+                                <label for="ratingOfGenset" class="form-label form-label-sm">Rating of Genset:</label>
+                                <select class="form-select form-select-sm" id="ratingOfGenset" name="ratingOfGenset" required></select>@*Get Data from Table*@
+                            </div>
+                            <div class="col">
+                                <label for="canopy" class="form-label form-label-sm">Canopy Qty:</label>
+                                <input type="number" class="form-control form-control-sm" id="canopy" name="canopy" required>
+                            </div>
+                            <div class="col">
+                                <label for="lube" class="form-label form-label-sm">Lube Oil:</label>
+                                <input type="text" class="form-control form-control-sm" id="lube" name="lube" required>
+                            </div>
+                            <div class="col">
+                                <label for="kcool" class="form-label form-label-sm">K Cool:</label>
+                                <input type="text" class="form-control form-control-sm" id="kcool" name="kcool" required>
+                            </div>
+                            <div class="col">
+                                <label for="KRMNo" class="form-label form-label-sm">KRM No.:</label>
+                                <input type="text" class="form-control form-control-sm" id="KRMNo" name="KRMNo" required>
+                            </div>
+                            <div class="col">
+                                <label for="adblue" class="form-label form-label-sm">AD Blue:</label>
+                                <input type="text" class="form-control form-control-sm" id="adblue" name="adblue" required>
+                            </div>
+                            <div class="col">
+                                <label for="specialRemarks" class="form-label form-label-sm">Special Remarks:</label>
+                                <input type="text" class="form-control form-control-sm" id="specialRemarks" name="specialRemarks">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-12 text-center">
+                            <button type="submit" class="btn btn-primary btn-sm" style="background-color: #00698f; color: #ffffff; border-color: #00626e;">Save PDI Details</button>
+                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.16.2/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.2.1/exceljs.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        //Get Models
+        $.ajax({
+            url: '/Production/GetEngineModel',
+            type: 'GET',
+            success: function (data) {
+                $('#emodel').append($('<option></option>').val("").text("Select Engine Model"));
+                $.each(data, function (index, item) {
+                    $('#emodel').append($('<option></option>').val(item.value).text(item.text));
+                });
+            }
+
+        })
+        //Get Control Panel Type
+
+        $.ajax({
+            url: '/Production/GetCPType',
+            type: 'GET',
+            success: function (data) {
+                $('#cptype').append($('<option></option>').val("").text("Select Control Panel"));
+                $.each(data.type, function (index, item) {
+                    $('#cptype').append($('<option></option>').val(item.value).text(item.text));
+                });
+            }
+        })
+
+        //Get Ratings
+        $.ajax({
+            url: '/Production/GetRatings',
+            type: 'GET',
+            success: function (data) {
+                $('#ratingOfGenset').append($('<option></option>').val("").text("Select Rating"));
+                $.each(data.rating, function (index, item) {
+                    $('#ratingOfGenset').append($('<option></option>').val(item.value).text(item.text));
+                });
+                //Update ControlPanel Rating
+                $('#cprating').append($('<option></option>').val("").text("Select Rating"));
+                $.each(data.rating, function (index, item) {
+                    $('#cprating').append($('<option></option>').val(item.value).text(item.text));
+                });
+                //update alternator rating
+                $('#arating').append($('<option></option>').val("").text("Select Rating"));
+                $.each(data.rating, function (index, item) {
+                    $('#arating').append($('<option></option>').val(item.value).text(item.text));
+                });
+
+            }
+        })
+        //Get Phase
+        $.ajax({
+            url: '/Production/GetAlternatorPhase',
+            type: 'GET',
+            success: function (data) {
+                $('#aphase').append($('<option></option>').val("").text("Select Phase"));
+                $.each(data.phase, function (index, item) {
+                    $('#aphase').append($('<option></option>').val(item.value).text(item.text));
+                });
+            }
+        })
+        //Get Battery Model
+        $.ajax({
+            url: '/Production/GetBatteriesModel',
+            type: 'GET',
+            success: function (data) {
+                $('#BatteryRating').append($('<option></option>').val("").text("Select Battery"));
+                $.each(data, function (index, item) {
+                    $('#BatteryRating').append($('<option></option>').val(item.value).text(item.text));
+                });
+            }
+        })
+
+        loadPendingRecords();
+
+        function loadPendingRecords() {
+            $.ajax({
+                type: 'GET',
+                url: '/Production/PendingPDIRecords',
+                dataType: 'JSON',
+                success: function (data) {
+                    $('#PendingRows').empty();
+                    if (data && data.get && data.get.length > 0) {
+                        $.each(data.get, function (index, item) {
+                            // Error Handling for Date conversion
+                            let formattedDate = 'Invalid Date';
+                            if (item.VoucherDate) {
+                                try {
+                                    var dateValue = parseInt(item.VoucherDate.replace(/[^0-9]/g, ''));
+                                    var voucherDate = new Date(dateValue);
+                                    formattedDate = voucherDate.toLocaleDateString('en-GB', {
+                                        day: '2-digit',
+                                        month: '2-digit',
+                                        year: 'numeric'
+                                    }).replace(/\//g, '-');
+                                } catch (e) {
+                                    console.error("Error converting date:", e);
+                                    formattedDate = 'Invalid Date';
+                                }
+                            }
+
+                            // Determine the status indicator based on item.Status
+                            // Determine the status indicator based on item.Status
+                            let statusIndicator = '';
+                            let statusText = ''; // To display the actual status number if needed, or custom text
+                            if (item.Status === 0) {
+                                statusIndicator = '<span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background-color: red; margin-right: 5px;"></span>';
+                                statusText = 'Pending'; // Optional: display text like "Pending"
+                            } else if (item.Status === 1) {
+                                statusIndicator = '<span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background-color: green; margin-right: 5px;"></span>';
+                                statusText = 'Completed'; // Optional: display text like "Completed"
+                            } else {
+                                statusIndicator = '<span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background-color: gray; margin-right: 5px;"></span>'; // Default for other values
+                                statusText = 'Unknown';
+                            }
+
+                            var row = '<tr>' +
+                                '<td>' + item.VoucherNumber + '</td>' +
+                                '<td>' + formattedDate + '</td>' +
+                                '<td>' + item.CreatedBy + '</td>' +
+                                '<td>' + item.FGProductCode + '</td>' +
+                                '<td>' + item.FGProductName + '</td>' +
+                                '<td>' + item.EngineNumber + '</td>' +
+                                '<td>' + item.AlternatorNumber + '</td>' +
+                                '<td>' + statusIndicator + '</td>' + // Display the indicator and optional text
+                                '<td><button class="btn btn-primary btn-sm edit-button" style="background-color: #00698f; color: #ffffff; padding: 3px 6px; border-radius: 5px;" data-voucher="' + item.id + '">Edit Details</button></td>' + // Changed button class
+                                '</tr>';
+
+                            $('#PendingRows').append(row);
+                        });
+
+                        // Attach click event to the new "Edit Details" button.
+                        $('.edit-button').click(function () {
+                            var voucherId = $(this).data('voucher');
+                            //openModal(voucherId); // Call function to populate and show modal
+                            populateModal(voucherId);
+                        });
+                    } else {
+                        // Handle case where no data is returned
+                        $('#PendingRows').append('<tr><td colspan="6">No pending records found.</td></tr>');
+                    }
+                },
+                error: function (error) {
+                    console.error("Error loading pending records:", error);
+                    // Using a simple message box instead of alert()
+                    var errorMessage = "Failed to load pending production records. Check console for error details.";
+                    // You would typically have a custom modal or div for messages
+                    // For demonstration, let's just log it and suggest a UI element
+                    console.log(errorMessage);
+                    // Example of how you might show a message in a div:
+                    // $('#messageBox').text(errorMessage).show();
+                }
+            });
+        }
+
+
+
+        function populateModal(voucherId) {
+
+            var Headid = voucherId;
+            $.ajax({
+                type: 'GET',
+                url: '/Production/GetPDIFormData/',
+                data: { Headid: Headid },
+                dataType: 'JSON',
+                success: function (data) {
+                    if (data.success) { // Check the success property of the response
+                        // Populate the form fields with the retrieved data.
+                        debugger;
+                        var TestingDate = (moment(data.TestingData.dateOfTesting).format("YYYY-MM-DD"));
+                        $('#headid').val(Headid);
+                        $('#emake').val(data.ProductionData.emake);
+                        $('#emodel').val(data.ProductionData.emodel);
+                        $('#engineSerialNo').val(data.ProductionData.engineSerialNo);
+                        $('#etestcert').val(data.ProductionData.etestcert);
+                        $('#eremarks').val(data.ProductionData.eremarks);
+                        $('#amake').val(data.ProductionData.amake);
+                        $('#aframe').val(data.ProductionData.aframe);
+                        $('#aphase').val(data.ProductionData.aphase);
+                        $('#arating').val(data.ProductionData.arating);
+                        $('#alternatorSerialNo').val(data.ProductionData.alternatorSerialNo);
+                        $('#atestcert').val(data.ProductionData.atestcert);
+                        $('#awarranty').val(data.ProductionData.awarranty);
+                        $('#aremarks').val(data.ProductionData.aremarks);
+                        $('#exhaust').val(data.ProductionData.exhaust);
+                        $('#kgsticker').val(data.ProductionData.kgsticker);
+                        $('#AVM').val(data.ProductionData.AVM);
+                        $('#fuelspout').val(data.ProductionData.fuelspout);
+                        $('#flexbel').val(data.ProductionData.flexbel);
+                        $('#cptype').val(data.TestingData.CPtype); // Make sure to populate dropdowns.
+                        $('#cprating').val(data.TestingData.cprating);
+                        $('#PanelSerialNo').val(data.TestingData.PanelSerialNo);
+                        $('#cpotherdetail').val(data.TestingData.cpotherdetail);
+                        $('#bmake').val(data.TestingData.bmake);
+                        $('#BatteryRating').val(data.TestingData.BatteryRating);
+                        $('#Batteryqty').val(data.TestingData.Batteryqty);
+                        $('#BatterySerialNo').val(data.TestingData.BatterySerialNo);
+                        $('#dateOfTesting').val(TestingDate);
+                        $('#ratingOfGenset').val(data.TestingData.ratingOfGenset);
+                        $('#canopy').val(data.TestingData.canopy);
+                        $('#lube').val(data.TestingData.lube);
+                        $('#kcool').val(data.TestingData.kcool);
+                        $('#KRMNo').val(data.TestingData.KRMNo);
+                        $('#adblue').val(data.TestingData.adblue);
+                        $('#specialRemarks').val(data.TestingData.specialRemarks);
+
+                        // Show the modal after populating the data
+                        $('#pdiModal').modal('show');
+                    } else {
+                        // Handle the case where data.success is false
+                        toastr.error(data.Message || 'Failed to retrieve PDI details.'); // Show the message from the server or a default message
+                    }
+                },
+                error: function (error) {
+                    console.error("Error loading PDI form data:", error);
+                    alert("Failed to load PDI form data. Check console for error details.");
+                }
+            });
+        }
+
+        // Form submission handler
+        // Form submission handler
+        $('#pdiForm').submit(function (e) {
+            debugger;
+            e.preventDefault(); // Prevent the default form submission
+
+            // Create the data objects to send to the server.  Use parseInt() for numeric fields.
+            var engineData = {
+                VoucherId: parseInt($('#headid').val()),
+                emake: $('#emake').val(),
+                emodel: parseInt($('#emodel option:selected').val()),
+                eserial: $('#engineSerialNo').val(),
+                etestcert: $('#etestcert option:selected').val(),
+                eremarks: $('#eremarks').val()
+            };
+
+            var alternatorData = {
+                //VoucherId: parseInt($('#headid').val()),
+                amake: $('#amake').val(),
+                aframe: $('#aframe').val(),
+                amcNo: $('#alternatorSerialNo').val(),
+                aphase: $('#aphase option:selected').val(),
+                arating :$('#arating option:selected').val(),
+                atestCert: $('#atestcert option:selected').val(),
+                awarranty: $('#awarranty option:selected').val(),
+                aremarks: $('#aremarks').val()
+            };
+
+            var otherData = {
+                exhaust: parseInt($('#exhaust').val()),
+                kgSticker: $('#kgsticker').val(),
+                avmPads: $('#AVM').val(),
+                fuelSpout: parseInt($('#fuelspout').val()),
+                flexBellow: parseInt($('#flexbel').val())
+            };
+
+            var testingData = {
+                // Id: 0, // Or get the ID from the form if it exists
+                CPtype: parseInt($('#cptype option:selected').val()),
+                CPRating: parseInt($('#cprating option:selected').val()),
+                PanelSerialNo: $('#PanelSerialNo').val(),
+                CPOtherDetail: $('#cpotherdetail').val(),
+                BMake: $('#bmake').val(),
+                BatteryRating: parseInt($('#BatteryRating option:selected').val()),
+                BatteryQTY: parseInt($('#Batteryqty').val()),
+                BatterySerialNo: $('#BatterySerialNo').val(),
+                DateOfTesting: $('#dateOfTesting').val(), // YYYY-MM-DD
+                RatingOfGenset: parseInt($('#ratingOfGenset option:selected').val()),
+                Canopy: parseInt($('#canopy').val()),
+                Lube: $('#lube').val(),
+                KCool: $('#kcool').val(),
+                KRMNo: $('#KRMNo').val(),
+                ADBlue: $('#adblue').val(),
+                SpecialRemarks: $('#specialRemarks').val()
+            };
+            // --- NEW CONDITION CHECK FOR ALTERNATOR PHASE AND RATING ---
+            if ((alternatorData.aphase === '' || alternatorData.arating === '') || (alternatorData.aphase === null || alternatorData.arating === null) || (alternatorData.aphase === undefined || alternatorData.arating === undefined))
+            {
+                
+                toastr.error('Check Alternator Data');
+                return false;
+ 
+            }
+            
+
+            console.log(engineData, alternatorData, otherData, testingData); //debug
+
+            $.ajax({
+                type: 'POST', // Or 'PUT' depending on your API
+                url: '/Production/UpdatePDIForm/', //  Update URL
+                data: {
+                    engineData: engineData,
+                    alternatorData: alternatorData,
+                    otherData: otherData,
+                    testingData: testingData
+                },
+                dataType: 'JSON',
+                success: function (response) {
+                    if (response.success) {
+                        $('#pdiModal').modal('hide'); // Hide the modal on success
+                        loadPendingRecords(); // Refresh the table
+                        toastr.success(response.message)
+                    } else {
+                        alert('Failed to update PDI details: ' + response.message);
+                    }
+                },
+                error: function (error) {
+                    console.error("Error updating PDI details:", error);
+                    alert("Failed to update PDI details. Check console for error details.");
+                }
+            });
+        });
+    });
+</script>

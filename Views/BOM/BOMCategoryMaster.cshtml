@@ -1,0 +1,89 @@
+﻿@{
+    ViewBag.Title = "BOMCategoryMaster";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if the current context is inside a Bootstrap modal
+            const isInModal = !!(document.querySelector('.modal.show'));
+
+            if (isInModal) {
+                // If inside a modal, wait for a short delay
+                setTimeout(() => {
+                    handleInvalidUser();
+                }, 500); // Adjust the delay as needed
+            } else {
+                // If not in a modal, proceed immediately
+                handleInvalidUser();
+            }
+
+            function handleInvalidUser() {
+                toastr.error("Invalid User");
+
+                setTimeout(function () {
+                    window.location.href = "@Url.Action("Index", "Login")";
+                }, 2000); // Redirect after 2 seconds
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="categoryName" class="slds-form-element__label">Category Name</label>
+            <input type="text" id="categoryName" class="form-control" placeholder="Enter category name">
+        </div>
+
+        <button id="saveCategoryButton" class="btn btn-primary">Save Category</button>
+    </div>
+    <div class="col-md-6">
+        <div id="categoryListContainer">
+            @Html.Action("_CategoryList", "BOM")
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="category" class="slds-form-element__label">Subcategory Name</label>
+            <input type="text" id="subcategoryName" class="form-control" placeholder="Enter category name">
+        </div>
+        <div class="form-group">
+            <label for="Subcategory" class="slds-form-element__label">Subcategory Name</label>
+            <input type="text" id="subcategoryName" class="form-control" placeholder="Enter category name">
+        </div>
+
+        <button id="saveCategoryButton" class="btn btn-primary">Save Category</button>
+    </div>
+    <div class="col-md-6">
+        <div id="categoryListContainer">
+            @Html.Action("_CategoryList", "BOM")
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('#saveCategoryButton').on('click', function () {
+            var categoryName = $('#categoryName').val();
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("SaveCategory", "BOMCategoryMaster")',
+                data: { categoryName: categoryName },
+                success: function (data) {
+                    if (data.success) {
+                        console.log('Category saved successfully!');
+                        $('#categoryName').val(''); // clear the text box
+                    } else {
+                        console.log('Error saving category: ' + data.error);
+                    }
+                }
+            });
+        });
+    });
+</script>

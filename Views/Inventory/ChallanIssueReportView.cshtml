@@ -1,0 +1,331 @@
+﻿@{
+    ViewBag.Title = "Challan Lifecycle Intelligence";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<style>
+    :root {
+        --brand-blue: #00698f;
+        --brand-dark: #004d69;
+        --bg-light: #f1f5f9;
+        --border-color: #e2e8f0;
+    }
+
+    body {
+        background-color: var(--bg-light);
+        font-family: 'Inter', sans-serif;
+    }
+
+    .toolbar-card {
+        background: white;
+        padding: 15px 25px;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .view-btn {
+        padding: 6px 18px;
+        border-radius: 50px;
+        border: 1px solid #cbd5e1;
+        background: white;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #64748b;
+        transition: 0.2s;
+        cursor: pointer;
+    }
+
+        .view-btn.active {
+            background: var(--brand-blue);
+            color: white;
+            border-color: var(--brand-blue);
+        }
+
+    .filter-select {
+        border-radius: 50px;
+        border: 1px solid #cbd5e1;
+        padding: 6px 15px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #64748b;
+        outline: none;
+    }
+
+    /* Status Badges */
+    .badge-lifecycle {
+        font-size: 0.65rem;
+        font-weight: 800;
+        padding: 4px 12px;
+        border-radius: 50px;
+        border: 1px solid transparent;
+    }
+
+    .status-completed {
+        background: #dcfce7;
+        color: #166534;
+        border-color: #bbf7d0;
+    }
+
+    .status-partial {
+        background: #fef3c7;
+        color: #92400e;
+        border-color: #fde68a;
+    }
+
+    .status-pending {
+        background: #fee2e2;
+        color: #991b1b;
+        border-color: #fecaca;
+    }
+
+    /* Item Blocks */
+    .item-log {
+        font-size: 0.75rem;
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+        background: #fff;
+        margin-bottom: 5px;
+    }
+
+    .return-log {
+        background: #f0f9ff;
+        border-color: #bae6fd;
+        border-left: 3px solid #0ea5e9;
+    }
+
+    .mismatch-log {
+        background: #fff1f2;
+        border-color: #fecaca;
+        color: #be123c;
+        border-left: 3px solid #e11d48;
+    }
+
+    /* Professional Small Font for Names */
+    .item-name-small {
+        display: block;
+        font-size: 0.65rem;
+        color: #64748b;
+        margin-top: 2px;
+        font-weight: normal;
+        line-height: 1.2;
+    }
+
+    /* Action Buttons */
+    .btn-action {
+        padding: 4px 10px;
+        font-size: 0.65rem;
+        border-radius: 4px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 8px;
+        font-weight: 700;
+        transition: 0.2s;
+    }
+
+    .btn-challan {
+        background: #fff;
+        color: var(--brand-blue);
+        border: 1px solid var(--brand-blue);
+    }
+
+        .btn-challan:hover {
+            background: var(--brand-blue);
+            color: #fff;
+        }
+
+    .btn-bilty {
+        background: var(--brand-blue);
+        color: #fff;
+        border: 1px solid var(--brand-dark);
+    }
+
+        .btn-bilty:hover {
+            background: var(--brand-dark);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+    .table-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+
+    .table thead th {
+        background: #f8fafc;
+        color: #64748b;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 15px;
+    }
+</style>
+
+<div class="container-fluid py-4 px-lg-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="fw-bold m-0 text-dark">Challan Lifecycle Intelligence</h4>
+            <p class="text-muted small m-0">Consolidated Reconciliation: Issues vs Physical Receipts</p>
+        </div>
+        <button class="btn btn-success btn-sm fw-bold px-4 rounded-pill shadow-sm" onclick="exportToExcel()">
+            <i class="fas fa-file-excel me-1"></i> EXPORT EXCEL
+        </button>
+    </div>
+
+    <div class="toolbar-card shadow-sm">
+        <div class="d-flex align-items-center gap-2">
+            <span class="small fw-bold text-muted">PROCESS:</span>
+            <button class="view-btn active" data-mode="ALL" onclick="applyFilters('ALL', this)">ALL</button>
+            <button class="view-btn" data-mode="PENDING" onclick="applyFilters('PENDING', this)">PENDING</button>
+            <button class="view-btn" data-mode="RECEIVED" onclick="applyFilters('RECEIVED', this)">RECEIVED</button>
+        </div>
+
+        <div class="d-flex align-items-center gap-2 border-start ps-3">
+            <span class="small fw-bold text-muted">TYPE:</span>
+            <select id="retFilter" class="filter-select" onchange="applyFilters()">
+                <option value="ALL">All Challans</option>
+                <option value="RET">Returnable Only</option>
+                <option value="NON">Non-Returnable</option>
+            </select>
+        </div>
+
+        <div class="ms-auto" style="min-width: 250px;">
+            <input type="text" id="txtSearch" class="form-control form-control-sm rounded-pill" placeholder="Search Data..." onkeyup="searchData()">
+        </div>
+    </div>
+
+    <div class="table-card">
+        <table id="main-table" class="table mb-0">
+            <thead>
+                <tr>
+                    <th width="22%">Dispatch Info & Actions</th>
+                    <th width="32%" class="col-issue">Issued Items</th>
+                    <th width="32%" class="col-return">Physical Receipts</th>
+                    <th width="14%" class="text-center">Lifecycle Status</th>
+                </tr>
+            </thead>
+            <tbody id="report-body">
+                <tr><td colspan="4" class="text-center py-5"><i class="fas fa-spinner fa-spin me-2"></i> Fetching Analytics...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+    let rawData = [];
+    let currentMode = 'ALL';
+
+    $(document).ready(function () {
+        fetchData();
+    });
+
+    function fetchData() {
+        $.get('@Url.Action("ChallanIssueReport", "Inventory")', function (data) {
+            rawData = data;
+            renderTable(data);
+        });
+    }
+
+    function applyFilters(mode, btn) {
+        if (mode) {
+            currentMode = mode;
+            $('.view-btn').removeClass('active');
+            $(btn).addClass('active');
+        }
+
+        let retType = $('#retFilter').val();
+        let filteredData = rawData;
+
+        if (currentMode === 'PENDING') {
+            filteredData = filteredData.filter(x => x.LifecycleStatus !== 'COMPLETED');
+        } else if (currentMode === 'RECEIVED') {
+            filteredData = filteredData.filter(x => x.PhysicalReturns && x.PhysicalReturns.length > 0);
+        }
+
+        if (retType === 'RET') { filteredData = filteredData.filter(x => x.IsRet === true); }
+        else if (retType === 'NON') { filteredData = filteredData.filter(x => x.IsRet === false); }
+
+        renderTable(filteredData);
+    }
+
+    function renderTable(data) {
+        var tbody = $('#report-body').empty();
+        if (data.length === 0) {
+            tbody.append('<tr><td colspan="4" class="text-center py-4 text-muted">No records found.</td></tr>');
+            return;
+        }
+
+        $.each(data, function (i, row) {
+            // 1. Build Issued Column with small item name
+            var issueHtml = "";
+            $.each(row.IssuedItems, (j, item) => {
+                issueHtml += `<div class="item-log">
+                    <b>${item.ItemCode}</b> <span class="float-end fw-bold text-primary">${item.Qty}</span>
+                    <span class="item-name-small">${item.ItemName || ''}</span>
+                </div>`;
+            });
+
+            // 2. Build Returns Column with mismatch highlight and small name
+            var returnHtml = "";
+            if (row.PhysicalReturns && row.PhysicalReturns.length > 0) {
+                $.each(row.PhysicalReturns, (k, ret) => {
+                    var isNew = ret.IsNewItem;
+                    returnHtml += `<div class="item-log return-log ${isNew ? 'mismatch-log' : ''}">
+                        <i class="fas ${isNew ? 'fa-exclamation-circle' : 'fa-check-circle'} me-1"></i>
+                        <b>${ret.RetVN}</b>: ${ret.RetItemCode} <span class="float-end fw-bold">${ret.RetQty}</span>
+                        <span class="item-name-small">${ret.RetItemName || ''}</span>
+                        ${isNew ? '<small class="fw-bold text-uppercase d-block mt-1" style="font-size:9px;">[Mismatched Item]</small>' : ''}
+                    </div>`;
+                });
+            } else {
+                returnHtml = '<div class="text-muted small italic text-center py-3">No material received</div>';
+            }
+
+            // 3. Fix: Use row.IssueId and row.IsBilty (Case Sensitive)
+            var actionButtons = `<a href="/Inventory/PrintChallan?ID=${row.IssueId}" target="_blank" class="btn-action btn-challan"><i class="fas fa-print"></i> Print</a>`;
+            if (row.IsBilty === true) {
+                actionButtons += `<a href="/Production/Loadbilty?id=${row.IssueId}&type=Challan" target="_blank" class="btn-action btn-bilty"><i class="fas fa-truck"></i> Bilty</a>`;
+            }
+
+            var statusClass = "status-" + row.LifecycleStatus.toLowerCase();
+            var tr = `<tr>
+                <td class="bg-light-subtle">
+                    <div class="fw-bold text-primary" style="font-size:0.85rem;">${row.VN}</div>
+                    <div class="small fw-bold text-dark">${row.Cust}</div>
+                    <div class="text-muted small" style="font-size:0.7rem;">Date: ${row.Date}</div>
+                    ${!row.IsRet ? '<span class="badge bg-secondary mt-1" style="font-size:0.6rem;">NON-RETURNABLE</span>' : '<span class="badge bg-info mt-1 text-white" style="font-size:0.6rem;">RETURNABLE</span>'}
+                    <div class="d-flex flex-wrap">${actionButtons}</div>
+                </td>
+                <td class="col-issue p-3">${issueHtml}</td>
+                <td class="col-return p-3">${returnHtml}</td>
+                <td class="text-center"><span class="badge-lifecycle ${statusClass}">${row.LifecycleStatus}</span></td>
+            </tr>`;
+            tbody.append(tr);
+        });
+    }
+
+    function searchData() {
+        var val = $('#txtSearch').val().toLowerCase();
+        $("#report-body tr").filter(function() { $(this).toggle($(this).text().toLowerCase().indexOf(val) > -1); });
+    }
+
+    function exportToExcel() {
+        var wb = XLSX.utils.table_to_book(document.getElementById("main-table"), { raw: true });
+        XLSX.writeFile(wb, 'Challan_Lifecycle_Analysis.xlsx');
+    }
+</script>

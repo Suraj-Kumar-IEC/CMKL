@@ -1,0 +1,81 @@
+﻿@model IEnumerable<CMKL.Models.tbl_User_Master>
+
+@{
+    ViewBag.Title = "CPCB Permission";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container text-center">
+    <h2>CPCB 2 Permission</h2>
+</div>
+
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+
+@if (TempData["message"] != null)
+{
+    <script type="text/javascript">
+        window.onload = function () {
+            toastr.success("@TempData["message"]")
+        }
+    </script>
+}
+
+<div class="container">
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th class="text-center">@Html.DisplayName("User Name")</th>
+                <th class="text-center">@Html.DisplayName("First Name")</th>
+                <th class="text-center">@Html.DisplayName("Password")</th>
+                <th class="text-center">@Html.DisplayName("Role")</th>
+                <th class="text-center">@Html.DisplayName("CPCBII Permission")</th>
+                <th class="text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td class="text-center">@Html.DisplayFor(modelItem => item.user_name)</td>
+                    <td class="text-center">@Html.DisplayFor(modelItem => item.FirstName)</td>
+                    <td class="text-center">@Html.DisplayFor(modelItem => item.user_password)</td>
+                    <td class="text-center">@Html.DisplayFor(modelItem => item.user_Role)</td>
+                    <td class="text-center">
+                        @if (item.ClientIPAddId == 1)
+                        {
+                            <text>Disabled</text>
+                        }
+                        else if (item.ClientIPAddId == 2)
+                        {
+                            <text>Enabled</text>
+                        }
+                    </td>
+                    <td class="text-center">
+                        <div>
+                            @if (item.ClientIPAddId == 2)
+                            {
+                                <button class="btn btn-success" style="font-size: 16px; font-weight: bold; color: #ffffff">@Html.ActionLink("Disable CPCBII", "DisableCPCBII", new { id = item.Id })</button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-danger" style="font-size: 16px; font-weight: bold; color: #ffffff">@Html.ActionLink("Enable CPCBII", "EnableCPCBII", new { id = item.Id })</button>
+                            }
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<script>
+    $(document).ready(function () {
+        setTimeout(function () {
+            $('#loading').fadeOut(500);
+        }, 2000);
+    });
+</script>
+

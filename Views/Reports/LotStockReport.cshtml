@@ -1,0 +1,362 @@
+﻿@{
+    ViewBag.Title = "FIFO Stock Lot Traceability";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string userRole = Session["U_Role"]?.ToString() ?? "";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const isInModal = !!(document.querySelector('.modal.show'));
+            if (isInModal) {
+                setTimeout(() => { handleInvalidUser(); }, 500);
+            } else {
+                handleInvalidUser();
+            }
+            function handleInvalidUser() {
+                toastr.error("Invalid User Session");
+                setTimeout(function () { window.location.href = "@Url.Action("Index", "Login")"; }, 2000);
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<style>
+    /* Professional Dashboard Styling */
+    .report-card {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        background: #fff;
+    }
+
+    .header-custom {
+        background-color: #00698f;
+        color: white;
+        border-radius: 12px 12px 0 0;
+        padding: 1.25rem;
+    }
+
+    .filter-section {
+        background-color: #f8fbfe;
+        padding: 20px;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .stat-card {
+        border: none;
+        border-radius: 10px;
+        transition: transform 0.2s;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        background: white;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+    .stat-label {
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #64748b;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: #00698f;
+    }
+
+    .table-container {
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+
+    .table thead th {
+        position: sticky;
+        top: 0;
+        background-color: #f1f4f9;
+        color: #00698f;
+        font-weight: 700;
+        font-size: 0.7rem;
+        z-index: 10;
+        border: none;
+        padding: 12px;
+        text-transform: uppercase;
+    }
+
+    /* Status Badges */
+    .badge-available {
+        background-color: #dcfce7;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+        font-weight: 700;
+    }
+
+    .badge-consumed {
+        background-color: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+        font-weight: 700;
+    }
+
+    .badge-reserved {
+        background-color: #fff7ed;
+        color: #9a3412;
+        border: 1px solid #ffedd5;
+        font-weight: 700;
+        cursor: help;
+    }
+
+    /* Action Buttons */
+    .btn-action-custom {
+        padding: 4px 12px;
+        font-size: 0.75rem;
+        border-radius: 6px;
+        transition: 0.2s;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+        .btn-action-custom:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+    .item-pill {
+        font-weight: 700;
+        font-size: 0.7rem;
+        color: #ffffff;
+        background-color: #00698f;
+        padding: 2px 8px;
+        border-radius: 4px;
+        display: inline-block;
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="row g-3 mb-4 text-center">
+        <div class="col-md-3"><div class="stat-card p-3 border-start border-4 border-info"><div class="stat-label">Total Lots</div><div class="stat-value" id="summaryCount">0</div></div></div>
+        <div class="col-md-3"><div class="stat-card p-3 border-start border-4 border-primary"><div class="stat-label">Original Qty</div><div class="stat-value" id="summaryOriginal">0.00</div></div></div>
+        <div class="col-md-3"><div class="stat-card p-3 border-start border-4 border-success"><div class="stat-label">In Stock Qty</div><div class="stat-value text-success" id="summaryAvailable">0.00</div></div></div>
+        <div class="col-md-3"><div class="stat-card p-3 border-start border-4 border-danger"><div class="stat-label">Consumed Qty</div><div class="stat-value text-danger" id="summaryConsumed">0.00</div></div></div>
+    </div>
+
+    <div class="card report-card">
+        <div class="header-custom d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold"><i class="fas fa-history me-2"></i> FIFO Lot Traceability Intelligence</h5>
+            <button class="btn btn-sm btn-light text-success fw-bold px-4 rounded-pill" onclick="exportToExcel()">
+                <i class="fas fa-file-excel me-1"></i> Export to Excel
+            </button>
+        </div>
+
+        <div class="filter-section">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label fw-bold small">Filter by Status</label>
+                    <select id="ddlStatus" class="form-select shadow-sm">
+                        <option value="All">All Transactions</option>
+                        <option value="Available" selected>Available (In Stock)</option>
+                        <option value="Consumed">Consumed (Empty)</option>
+                        <option value="Reserved">Reserved Only</option>
+                    </select>
+                </div>
+                <div class="col-md-8">
+                    <label class="form-label fw-bold small">Instant Intelligence Search</label>
+                    <input type="text" id="txtSearch" class="form-control shadow-sm" placeholder="Search Part Code, Lot No, Supplier or User..." />
+                </div>
+                <div class="col-md-2 text-end">
+                    <button id="btnFetch" class="btn btn-primary w-100 fw-bold" style="background-color: #00698f; border: none;">
+                        <i class="fas fa-sync-alt me-1"></i> Refresh Data
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="tblLotDetail" class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th class="text-center">ID</th>
+                        <th>Part Code</th>
+                        <th>Description</th>
+                        <th>Receipt Date</th>
+                        <th>Lot/Serial No</th>
+                        <th class="text-end">Balance Qty</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-center">Reservation</th>
+                        <th class="text-center">Ref</th>
+                        <th>By</th>
+                        <th id="thActions" class="text-center" style="display:none;">Management</th>
+                    </tr>
+                </thead>
+                <tbody id="lotDataBody">
+                    <tr><td colspan="11" class="text-center py-5 text-muted">Awaiting sync...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="reserveModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark p-2">
+                <h6 class="modal-title fw-bold"><i class="fas fa-lock me-1"></i> Mark as Reserved</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="hiddenLotId" />
+                <label class="small fw-bold mb-1">Reservation Note / Customer</label>
+                <textarea id="txtReserveRemarks" class="form-control" rows="3" placeholder="Enter reason or customer name..."></textarea>
+            </div>
+            <div class="modal-footer p-2">
+                <button type="button" class="btn btn-primary btn-sm w-100" onclick="submitReservation()">Save Reservation</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+@section scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            loadReport();
+            $('#btnFetch').click(loadReport);
+
+            $("#txtSearch").on("keyup", function () {
+                var value = $(this).val().toLowerCase();
+                $("#lotDataBody tr").filter(function () {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+
+        function loadReport() {
+            var status = $('#ddlStatus').val();
+            $('#thActions').hide();
+            $('#lotDataBody').html('<tr><td colspan="11" class="text-center py-5"><div class="spinner-border text-primary" role="status"></div></td></tr>');
+
+            $.ajax({
+                url: '@Url.Action("GetStockLotData", "Reports")',
+                type: 'GET',
+                data: { status: status },
+                success: function (response) {
+                    var tbody = $('#lotDataBody').empty();
+                    if (response.success) {
+                        // Update Statistics
+                        $('#summaryCount').text(response.summary.count);
+                        $('#summaryOriginal').text(parseFloat(response.summary.totalOriginal).toLocaleString('en-IN', {minimumFractionDigits: 2}));
+                        $('#summaryAvailable').text(parseFloat(response.summary.totalAvailable).toLocaleString('en-IN', {minimumFractionDigits: 2}));
+                        $('#summaryConsumed').text(parseFloat(response.summary.totalConsumed).toLocaleString('en-IN', {minimumFractionDigits: 2}));
+
+                        var showActions = response.summary.isSuperAdmin;
+                        if (showActions) { $('#thActions').show(); }
+
+                        if (response.data.length > 0) {
+                            $.each(response.data, function (i, item) {
+                                var statusBadge = item.IsAvailable
+                                    ? '<span class="badge rounded-pill badge-available">In Stock</span>'
+                                    : '<span class="badge rounded-pill badge-consumed">Consumed</span>';
+
+                                var resBadge = item.IsReserved
+                                    ? `<span class="badge rounded-pill badge-reserved" title="Reserved: ${item.ReservedTo}"><i class="fas fa-lock"></i> ${item.ReservedTo}</span>`
+                                    : '<span class="text-muted small">Available</span>';
+
+                                var actionBtn = "";
+                                if (showActions) {
+                                    var reserveToggle = item.IsReserved
+                                        ? `<button class="btn btn-outline-info btn-action-custom" onclick="unreserveLot(${item.id})" title="Release Stock">
+                                            <i class="fas fa-unlock"></i> Release
+                                           </button>`
+                                        : `<button class="btn btn-warning btn-action-custom text-dark" onclick="openReserveModal(${item.id})" title="Reserve Stock">
+                                            <i class="fas fa-lock"></i> Reserve
+                                           </button>`;
+
+                                    actionBtn = `<td class="text-center">
+                                                    <div class="d-flex justify-content-center gap-1">
+                                                        ${reserveToggle}
+                                                        <button class="btn btn-danger btn-action-custom" onclick="deleteLot(${item.id})" title="Delete Lot Record">
+                                                            <i class="fas fa-trash-alt"></i> Delete
+                                                        </button>
+                                                    </div>
+                                                </td>`;
+                                }
+
+                                tbody.append(`<tr>
+                                    <td class="text-center small text-muted">${item.id}</td>
+                                    <td><span class="item-pill">${item.ItemCode}</span></td>
+                                    <td class="fw-bold text-dark text-truncate" style="max-width:180px" title="${item.ItemName}">${item.ItemName}</td>
+                                    <td class="small text-nowrap">${item.RecieptDate}</td>
+                                    <td class="fw-bold text-primary">${item.Lot_SerialNumber || 'N/A'}</td>
+                                    <td class="text-end fw-bold">${parseFloat(item.CurrentQuantity).toFixed(2)}</td>
+                                    <td class="text-center">${statusBadge}</td>
+                                    <td class="text-center">${resBadge}</td>
+                                    <td class="text-center small text-muted">${item.UsageReference || '-'}</td>
+                                    <td><small class="fw-bold text-muted">${item.CreatedBy}</small></td>
+                                    ${actionBtn}
+                                </tr>`);
+                            });
+                        } else {
+                            tbody.append(`<tr><td colspan="${showActions ? 11 : 10}" class="text-center py-5 text-muted">No data found for this filter.</td></tr>`);
+                        }
+                    }
+                },
+                error: function() { toastr.error("Server Error: Unable to fetch data."); }
+            });
+        }
+
+        function openReserveModal(id) {
+            $('#hiddenLotId').val(id);
+            $('#txtReserveRemarks').val('');
+            $('#reserveModal').modal('show');
+        }
+
+        function submitReservation() {
+            var id = $('#hiddenLotId').val();
+            var remarks = $('#txtReserveRemarks').val();
+            if(!remarks) { toastr.warning("Please enter a reservation note"); return; }
+            $.post('@Url.Action("ReserveStockLot", "Reports")', { lotId: id, remarks: remarks }, function(res) {
+                if(res.success) {
+                    toastr.success("Lot Reserved Successfully");
+                    $('#reserveModal').modal('hide');
+                    loadReport();
+                } else { toastr.error(res.message); }
+            });
+        }
+
+        function unreserveLot(id) {
+            if(confirm("Release this stock lot back into general inventory?")) {
+                $.post('@Url.Action("UnreserveStockLot", "Reports")', { lotId: id }, function (res) {
+                    if (res.success) { toastr.success("Stock is now available"); loadReport(); }
+                    else { toastr.error(res.message); }
+                });
+            }
+        }
+
+        function deleteLot(id) {
+            if(confirm("CRITICAL WARNING: This will permanently delete this lot from the database. Proceed?")) {
+                $.post('@Url.Action("DeleteStockLot", "Reports")', { lotId: id }, function(res) {
+                    if(res.success) { toastr.success("Lot Deleted Successfully"); loadReport(); }
+                    else { toastr.error(res.message); }
+                });
+            }
+        }
+
+        function exportToExcel() {
+            var table = document.getElementById("tblLotDetail");
+            var wb = XLSX.utils.table_to_book(table, { raw: true });
+            XLSX.writeFile(wb, "Stock_FIFO_Trace_" + moment().format('YYYYMMDD') + ".xlsx");
+        }
+    </script>
+}

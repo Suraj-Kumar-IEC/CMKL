@@ -1,0 +1,287 @@
+﻿@model dynamic
+@{
+    Layout = null;
+    var dueTasks = Model.DueTasks as IEnumerable<dynamic> ?? new List<dynamic>();
+    var totalTasks = dueTasks.Count();
+    var uniqueMachines = dueTasks.Select(x => x.MachineName).Distinct().Count();
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@Model.Title</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f1f5f9;
+            margin: 0;
+            padding: 0;
+            color: #334155;
+        }
+
+        .wrapper {
+            width: 100%;
+            max-width: 850px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Header Bar */
+        .header {
+            background: linear-gradient(135deg, #004d69 0%, #00698f 100%);
+            color: #ffffff;
+            padding: 35px 30px;
+            text-align: left;
+        }
+
+            .header h1 {
+                margin: 0;
+                font-size: 22px;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+
+            .header p {
+                margin: 5px 0 0;
+                opacity: 0.8;
+                font-size: 13px;
+            }
+
+        /* KPI Dashboard Row */
+        .dashboard {
+            padding: 20px;
+            background-color: #f8fafc;
+            display: table;
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 10px;
+            box-sizing: border-box;
+        }
+
+        .stat-card {
+            display: table-cell;
+            background: #ffffff;
+            padding: 15px 10px;
+            border-radius: 12px;
+            text-align: center;
+            width: 25%;
+            border: 1px solid #e2e8f0;
+            vertical-align: middle;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .stat-label {
+            font-size: 9px;
+            font-weight: 800;
+            color: #94a3b8;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 14px;
+            font-weight: 800;
+            color: #00698f;
+        }
+
+        /* Content Area */
+        .content {
+            padding: 25px;
+        }
+
+        .section-title {
+            font-size: 12px;
+            font-weight: 800;
+            color: #1e293b;
+            text-transform: uppercase;
+            border-left: 4px solid #00698f;
+            padding-left: 10px;
+            margin-bottom: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: #64748b;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 12px 10px;
+            text-align: left;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+            color: #475569;
+        }
+
+        .machine-identity {
+            font-weight: 700;
+            color: #0f172a;
+            font-size: 12px;
+        }
+
+        .task-tag {
+            background: #f0f9ff;
+            color: #0369a1;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 700;
+            border: 1px solid #bae6fd;
+            display: inline-block;
+        }
+
+        .due-pill {
+            background: #fff1f2;
+            color: #e11d48;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 800;
+            border: 1px solid #fecdd3;
+        }
+
+        .footer {
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #f1f5f9;
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+            .footer a {
+                color: #00698f;
+                text-decoration: none;
+                font-weight: 700;
+            }
+
+        .btn-portal {
+            display: inline-block;
+            margin-top: 15px;
+            background-color: #00698f;
+            color: #ffffff !important;
+            padding: 10px 25px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Header -->
+        <div class="header">
+            <h1>@Model.Title</h1>
+            <p>Predictive Maintenance Audit | @Model.ReportDate.ToString("dd MMMM, yyyy")</p>
+        </div>
+
+        <!-- KPI Dashboard -->
+        <div class="dashboard">
+            <div class="stat-card" style="border-top: 4px solid #00698f;">
+                <span class="stat-label">Tasks Pending</span>
+                <span class="stat-value">@totalTasks Records</span>
+            </div>
+            <div class="stat-card" style="border-top: 4px solid #ef4444;">
+                <span class="stat-label">Machines Involved</span>
+                <span class="stat-value">@uniqueMachines Units</span>
+            </div>
+            <div class="stat-card" style="border-top: 4px solid #f59e0b;">
+                <span class="stat-label">Priority Level</span>
+                <span class="stat-value" style="color:#f59e0b;">Action Required</span>
+            </div>
+            <div class="stat-card" style="border-top: 4px solid #10b981;">
+                <span class="stat-label">Report Status</span>
+                <span class="stat-value" style="color:#10b981;">Verified</span>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content">
+            <div class="section-title">Maintenance Due Schedule</div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Machine Asset & Subunit</th>
+                            <th>Technical Task</th>
+                            <th class="text-center">Frequency</th>
+                            <th class="text-center">History (Last Done)</th>
+                            <th class="text-center">Next Due Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (dueTasks.Any())
+                        {
+                            foreach (var task in dueTasks)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="machine-identity">@task.MachineName</div>
+                                        <div style="font-size: 9px; color: #94a3b8; text-transform: uppercase; font-weight: 700;">@task.SubunitName</div>
+                                    </td>
+                                    <td>
+                                        <span class="task-tag">@task.EquipmentName</span>
+                                    </td>
+                                    <td class="text-center fw-bold">@task.FrequencyName</td>
+                                    <td class="text-center small text-muted">
+                                        Alloc: @(task.AllocatedOn.ToString("dd/MM/yy"))<br />
+                                        Last: @(task.LastMaintenanceOn.ToString("dd/MM/yy"))
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="due-pill">@task.NextDueDate.ToString("dd/MM/yyyy")</span>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center py-5">
+                                    <div style="color: #94a3b8; font-style: italic;">No active maintenance schedules found to report for today.</div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="margin-top: 25px; background-color: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; text-align: center;">
+                <p style="margin: 0 0 10px 0; font-size: 13px; font-weight: 600;">Action Required: Please synchronize completion status and record technical remarks in the ERP portal.</p>
+                <a href="http://erp.iecelectric.co.in/" class="btn-portal">Login to ERP System</a>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>This is an automated notification from the <strong>IEPL ERP Cloud</strong>.</p>
+            <p style="margin-top: 8px;">&copy; @DateTime.Now.Year IEC Electric Power Limited | <a href="http://erp.iecelectric.co.in/">Management Console</a></p>
+        </div>
+    </div>
+</body>
+</html>

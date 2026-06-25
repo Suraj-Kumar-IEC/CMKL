@@ -1,0 +1,99 @@
+﻿@{
+    ViewBag.Title = "Return & Rework Analysis";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    :root { --purp: #6366f1; --rose: #f43f5e; --emerald: #10b981; }
+    .report-card { border-radius: 15px; border: none; box-shadow: 0 10px 25px rgba(0,0,0,0.05); overflow: hidden; }
+    .status-pill { font-size: 0.65rem; padding: 4px 12px; border-radius: 20px; font-weight: 700; }
+    .rework-details { background: #f8fafc; border-left: 4px solid var(--purp); padding: 10px; margin: 5px 0; border-radius: 0 8px 8px 0; }
+
+    /* Animation for rows */
+    .row-entry { animation: fadeInRight 0.5s ease forwards; opacity: 0; }
+    @@keyframes fadeInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+    .item-tag { display: inline-block; background: white; border: 1px solid #e2e8f0; padding: 2px 8px; border-radius: 4px; margin: 2px; font-size: 11px; }
+</style>
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold m-0"><i class="fas fa-undo-alt text-danger me-2"></i>Return Rework Tracker</h3>
+            <p class="text-muted small">Tracing Returns → Rework Estimation → Final BOM Conversion</p>
+        </div>
+        <div class="d-flex gap-2">
+            <input type="date" id="fDt" class="form-control form-control-sm" value="@DateTime.Now.ToString("yyyy-MM-01")">
+            <input type="date" id="tDt" class="form-control form-control-sm" value="@DateTime.Now.ToString("yyyy-MM-dd")">
+            <button class="btn btn-primary btn-sm px-4 shadow-sm" onclick="fetchData()">Generate</button>
+        </div>
+    </div>
+
+    <div class="card report-card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="tblReturns">
+                <thead class="bg-light">
+                    <tr>
+                        <th>Return Info</th>
+                        <th>FG Product / Reason</th>
+                        <th>Rework Estimation</th>
+                        <th>Conversion Status</th>
+                       
+                    </tr>
+                </thead>
+                <tbody id="report-body">
+                    <tr><td colspan="5" class="text-center py-5 text-muted">Select dates to analyze returns.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script>
+    function fetchData() {
+        const start = $('#fDt').val();
+        const end = $('#tDt').val();
+
+        $('#report-body').html('<tr><td colspan="5" class="text-center py-5"><div class="spinner-border text-primary"></div></td></tr>');
+
+        $.get('/Reports/GetDispatchReturnReport', { fromDate: start, toDate: end }, function (res) {
+            if (!res.success) { alert(res.message); return; }
+
+            let rows = "";
+            $.each(res.data, function (i, v) {
+                let statusCls = v.IsConverted ? 'bg-success' : (v.ReworkID ? 'bg-warning' : 'bg-danger');
+                let statusTxt = v.IsConverted ? 'CONVERTED' : (v.ReworkID ? 'ESTIMATED' : 'PENDING');
+
+                // Construct Rework Items List
+                let itemHtml = "";
+                $.each(v.ReworkItems, function (j, item) {
+                    itemHtml += `<span class="item-tag"><b>${item.Qty}</b> x ${item.Item}</span>`;
+                });
+
+                rows += `<tr class="row-entry" style="animation-delay: ${i * 0.1}s">
+                    <td>
+                        <div class="fw-bold text-primary">${v.ReturnNo}</div>
+                        <small class="text-muted">${moment(v.ReturnDt).format('DD MMM YYYY')}</small>
+                    </td>
+                    <td>
+                        <div class="fw-bold small">${v.Customer}</div>
+                        <div class="text-muted" style="font-size:11px">Reason: ${v.Reason}</div>
+                    </td>
+                    <td>
+                        <div class="small fw-bold">${v.ReworkVoucher}</div>
+                        <div class="mt-1">${itemHtml || '<small class="text-muted">No items defined</small>'}</div>
+                    </td>
+                    <td>
+                        <span class="status-pill text-white ${statusCls}">${statusTxt}</span>
+                        <div class="small mt-1 fw-bold text-dark">Final BOM: ${v.FinalBOMNo}</div>
+                    </td>
+                    
+                </tr>`;
+            });
+
+            $('#report-body').html(rows || '<tr><td colspan="5" class="text-center py-5">No returns found.</td></tr>');
+        });
+    }
+</script>

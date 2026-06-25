@@ -1,0 +1,42 @@
+﻿
+@{
+    ViewBag.Title = "ProductionJob";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="container">
+    <div class="row">
+        <div class="col-md-4">
+            <h3 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">Create Production Job</h3>
+            <div class="form-group">
+                <label for="JobNumber" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Job Number</label>
+                <input type="text" id="JobNumber" class="form-control form-control-sm" disabled />
+            </div>
+            <div class="form-group">
+                <label for="item" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Select Item</label>
+                <select id="item" class="form-control form-control-sm">
+                    <option value="">Select an Item</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="quantity" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Quantity</label>
+                <input type="number" id="quantity" class="form-control form-control-sm" />
+            </div>
+            <button type="button" id="createJobBtn" class="btn btn-sm" style="background-color: #00698f; color: #ffffff; border-radius: 4px;">Create Job</button>
+        </div>
+        <div class="col-md-8">
+            <h3 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">Active Jobs</h3>
+            <table class="table table-striped" id="activeJobsTable">
+                <thead>
+                    <tr>
+                        <th>Job Number</th>
+                        <th>Item Name</th>
+                        <th>Quantity</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

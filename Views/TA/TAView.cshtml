@@ -1,0 +1,412 @@
+﻿@model CMKL.VMModels.TAClass
+
+
+@{
+    ViewBag.Title = "TAView";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<link href="https://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" rel="Stylesheet">
+<script src="https://code.jquery.com/jquery-latest.min.js"></script>
+<script src="https://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+
+
+<script>
+
+     @{var dt = DateTime.Now.ToString("dd/MM/yyyy"); }
+    $.noConflict();
+   jQuery(document).ready(function ($) {
+        $(function () {
+            $('#dtlvhq').datepicker({
+                dateFormat: 'dd/mm/yy',
+
+
+            });
+           // $('#MDOL').datepicker('setDate','today')
+
+        });
+       $(function () {
+           $('#dtavhq').datepicker({
+               dateFormat: 'dd/mm/yy',
+
+
+           });
+
+          // $('#MDOA').datepicker('setDate', 'today')
+       });
+       $(function () {
+           $('#TDATE').datepicker({
+               dateFormat: 'dd/mm/yy',
+
+
+           });
+
+           // $('#MDOA').datepicker('setDate', 'today')
+       });
+
+    });
+</script>
+
+<script>
+
+    //addProject();
+    function addProject() {
+
+        // Save Data Line wise
+        var table_data = new Array();
+
+        $('#tblTransportList tbody tr').each(function (row, tr) {
+            //  var barcode = parseInt($(tr).find('td:eq(1)').text());
+            // var itemcode = $(tr).find('td:eq(1)').text();
+            // var itemname = $(tr).find('td:eq(2)').text();
+            var sum = {
+                //these records i am going to add into sales table
+                'tatype': $(tr).find('td:eq(0)').text(),
+                'tadate': $(tr).find('td:eq(1)').text(),
+                'locationfrom': $(tr).find('td:eq(2)').text(),
+                'locationto': $(tr).find('td:eq(3)').text(),
+                'mode': $(tr).find('td:eq(4)').text(),
+                'amount': $(tr).find('td:eq(5)').text(),
+                //'itemid': $(tr).find('td:eq(7)').text(),
+            };
+            table_data.push(sum);
+
+        });
+        console.log(table_data);
+        $.post("/TA/SaveNew",
+            {
+
+
+                data: JSON.stringify({
+                    name: $("#name").val(),
+                    jesignation: $("#designation").val(),
+                    jfrom: $("#jfrom").val(),
+                    jto: $("#jto").val(),
+                    jstartdt: $("#dtlvhq").val(),
+                    jenddt: $("#dtavhq").val(),
+                    advance: $("#advance").val(),
+                    total: $("#TAtotal").val(),
+                    balance: $("#balance").val(),
+                    //balance: $("#balance").val,
+                    // total: $("#total").val(),
+                    data: table_data
+                })
+            },
+            function (data, status) {
+                console.log(data);
+                //alert("Status: " + status + "\nMessage: " + data.message);
+
+                toastr.success(data.message);
+                $("#billno").val(""),
+                    $("#billdt").val(""),
+                    $('#product_list tbody').empty();
+                // location.reload(true);
+            });
+
+    }
+</script>
+
+
+@*<script type="text/javascript">
+    $(document).ready(function () {
+        $("#save").click(function () {
+            savedata();
+        })
+    })
+
+
+
+
+
+    function savedata() {
+        var objtamodelview = {};
+        var listofobjtamodelview = new Array();
+        objtamodelview.Name = $("#TANAME").val();
+        objtamodelview.Designation = $("#TADESIGNATION").val();
+        objtamodelview.JourneyFrom = $("#JOURNEYFROM").val();
+        objtamodelview.journeyto = $("#JOURNEYTO").val();
+        objtamodelview.DateofLeaving = $("#MDOL").val();
+        objtamodelview.DateofArrival = $("#MDOA").val();
+
+
+        $("#tblTransportList").find("tr:gt(0)").each(function () {
+            var tadetailview = {};
+            tadetailview.TAType = $(this).find("td:eq(0)").text();
+            tadetailview.Date = $(this).find("td:eq(1)").text();
+            tadetailview.From = $(this).find("td:eq(2)").text();
+            tadetailview.To = $(this).find("td:eq(3)").text();
+            tadetailview.Mode = $(this).find("td:eq(4)").text();
+            tadetailview.amount = parseFloat($(this).find("td:eq(5)").text());
+            listofobjtamodelview.push(tadetailview);
+
+        });
+
+        objtamodelview.listofobjtamodelview = listofobjtamodelview;
+
+
+        $.ajax({
+            async: true,
+            type: "POST",
+            dataType: 'json',
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify(objtamodelview),
+
+            url: 'SaveNew',
+
+            success: function (data) {
+
+            },
+            error: function (data) {
+
+            }
+        })
+
+    }
+*@
+
+
+</script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#add").click(function () {
+
+            AddTransport();
+        });
+    })
+    function AddTransport() {
+        $("#advance").prop("disabled", true);
+        $("name").fadeOut();
+        var tbladdtransport = $("#tblTransportList");
+
+        var tbltype = $("#TAtype").val();
+        var tbldate = $("#TDATE").val();
+        var tblfrom = $("#TFROM").val();
+        var tblto = $("#TTO").val();
+        var tblmode = $("#TMODE").val();
+        var tblamount = $("#Amount").val();
+
+
+        var TranList = "<tr><td>" +
+
+            tbltype +
+            "</td><td>" +
+            tbldate +
+            "</td><td>" +
+            tblfrom +
+            "</td><td>" +
+            tblto +
+            "</td><td>" +
+            tblmode +
+            "</td><td>" +
+            tblamount +
+            "</td><td> <input type='button' value='Remove' name='remove' class='btn btn-danger' onclick='Removeitem(this)' /> </td></tr>"
+
+        tbladdtransport.append(TranList)//.fadeIn(800);
+        finaltotal();
+        resettrans();
+    }
+    function finaltotal() {
+        $("#TAtotal").val("0");
+        var finalttl = 0;
+        var balance = 0;
+        $("#tblTransportList").find("tr:gt(0)").each(function () {
+            var TTL = parseFloat($(this).find("td:eq(5)").text());
+            finalttl += TTL;
+            debugger;
+
+        });
+        $("#TAtotal").val(parseFloat(finalttl).toFixed(0));
+        var advance = $("#advance").val();
+        var total = $("#TAtotal").val();
+        var balance = total - advance;
+
+        $("#balance").val(parseFloat(balance).toFixed(0));
+
+    }
+
+    function resettrans() {
+        $("#Transid").val("");
+        $("#TDATE").val("");
+        $("#TFROM").val("");
+        $("#TTO").val("");
+        $("#TMODE").val("");
+        $("#Amount").val("");
+
+    }
+    function Removeitem(tblid) {
+        //  debugger
+        var getamt = $(tblid).closest('tr').find("td:eq(5)").text();
+        var getamt1 = $("#TAtotal").val();
+        var minus = getamt1 - getamt;
+        $("#TAtotal").val(parseFloat(minus).toFixed(0));
+        $(tblid).closest('tr').remove().fadeOut(800);
+    }
+</script>
+
+
+
+       
+
+
+
+        <div><div class="container" align="center"><h2>TA Form</h2></div></div>
+
+
+
+
+
+        <div>
+            <div class="container" align="center">
+
+                <div class="col-lg-4">
+                    <input type="text" class="form-control" placeholder="Name" id="name" name="name" width="30px" style="margin-bottom: 10px;" required>
+                </div>
+                <div class="col-lg-4">
+                    <input type="text" class="form-control" placeholder="Designation" id="designation" name="designation" width="30px" style="margin-bottom: 10px;" required>
+                </div>
+                <div class="col-lg-4">
+                    <input type="text" class="form-control" placeholder="Journey From" id="jfrom" name="jfrom" width="30px" style="margin-bottom: 10px;" required>
+                </div>
+                <div class="col-lg-4">
+                    <input type="text" class="form-control" placeholder="Journey To" id="jto" name="jto" width="30px" style="margin-bottom: 10px;" required>
+                </div>
+                <div class="col-lg-4">
+                    <input type="text" class="form-control" placeholder="Date of Leaving HQ" id="dtlvhq" name="dtlvhq" width="30px" style="margin-bottom: 10px;" required>
+                </div>
+                <div class="col-lg-4">
+                    <input type="text" class="form-control" placeholder="Date of Arrival HQ" id="dtavhq" name="dtavhq" width="30px" style="margin-bottom: 10px;" required>
+                </div>
+
+
+                <div class="animsition-loading">
+                    <div class="col-lg-4">
+                        <input type="text" class="form-control" placeholder="Advance Taken" id="advance" name="advance" width="30px" style="margin-bottom: 10px;" required>
+                    </div>
+                    <div class="col-lg-4">
+                        <input type="text" class="form-control" placeholder="0.00" id="TAtotal" name="TAtotal" width="30px" style="margin-bottom: 10px;" required readonly>
+                    </div>
+                    <div class="col-lg-4">
+                        <input type="text" class="form-control" placeholder="0.00" id="balance" name="balance" width="30px" style="margin-bottom: 10px;" required readonly>
+                    </div>
+
+                </div>
+                <div class="col-lg-4">
+                    <input class="form-control" type="file" id="Fileupload" multiple>
+                </div>
+
+
+
+            </div>
+        </div>
+
+
+
+        @* <form id="myForm">*@
+        <fieldset>
+
+            <hr />
+
+            <legend style="align-content">
+                Travel Details
+            </legend>
+            <div class="container">
+                <div class="row">
+
+
+                    <div class="col-sm-3">
+                        <select class="form-control" id="TAtype" name="TAtype" width="30px" style="margin-bottom:10px">
+                            <option>Select TA/DA Type</option>
+                            <option>Outstation Travel</option>
+                            <option>Local Travel</option>
+                            <option>Hotel Stay</option>
+                            <option>Food</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-3">
+                        <p>@Html.TextBoxFor(mode => mode.TATransport.DateTime, new { id = "TDATE", placeholder = "Date Of Travel / Food / Hotel", @class = "form-control" })</p>
+                    </div>
+                    <div class="col-sm-3">
+                        <p>@Html.TextBoxFor(mode => mode.TATransport.From, new { id = "TFROM", placeholder = "Location From", @class = "form-control" })</p>
+                    </div>
+                    <div class="col-sm-3">
+                        <p>@Html.TextBoxFor(mode => mode.TATransport.To, new { id = "TTO", placeholder = "Location To", @class = "form-control", })</p>
+                    </div>
+                    <div class="col-sm-3">
+                        <p>@Html.TextBoxFor(mode => mode.TATransport.Mode, new { id = "TMODE", placeholder = "Travel Mode -Bus/Car / Food / Hotel ", @class = "form-control" })</p>
+                    </div>
+                    <div class="col-sm-3">
+                        <p>@Html.TextBoxFor(mode => mode.TATransport.Amount, new { id = "Amount", placeholder = "Amount", @class = "form-control" })</p>
+                    </div>
+                    @*<div class="col-sm-3">
+                            <p> <input type="text" id="TAtotal" name="Total" readonly="readonly" value="0.00" class="form-control"</p>
+                        </div>
+                    *@
+                    <div class="col-sm-3">
+                        <button type="button" id="add" class="btn btn-primary right-0">Add Transport Detail</button>
+                    </div>
+
+
+                </div>
+            </div>
+
+
+        </fieldset>
+        <fieldset>
+            <div class="text-center">Travel Detail List</div>
+            <h5></h5>
+            <hr />
+            <style>
+                table, th, td {
+                    border: 1px solid black;
+                    border-collapse: collapse;
+                }
+
+                th, td {
+                    padding: 5px;
+                    text-align: center;
+                }
+            </style>
+            <table style="width:100%" id="tblTransportList" align="center">
+                <thead>
+                    <tr>
+                        <th>
+                            Type
+                        </th>
+
+                        <th>
+                            Date
+                        </th>
+                        <th>
+                            Location From
+                        </th>
+                        <th>
+                            Location To
+                        </th>
+                        <th>
+                            Mode
+                        </th>
+                        <th>
+                            Amount
+                        </th>
+                        <th>
+                            Action
+                        </th>
+                    </tr>
+                </thead>
+            </table>
+
+        </fieldset>
+        <hr>
+        @*<button type="button" id="save" class="btn btn-info" onclick="addProject()">Save TA Bill</button>*@
+        <button type="button" id="save" class="btn btn-info" onclick="addProject()">Save TA bill</button>
+        @*</form>*@
+
+
+
+
+
+
+

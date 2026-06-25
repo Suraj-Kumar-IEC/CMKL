@@ -1,0 +1,323 @@
+﻿@{
+    ViewBag.Title = "Live Machine Tracking & Control";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var currentRole = Session["U_Role"]?.ToString();
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            toastr.error("Session Expired. Redirecting...");
+            window.location.href = "@Url.Action("Index", "Login")";
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<style>
+    .breakdown-container { background-color: #f1f5f9; font-family: 'Inter', sans-serif; font-size: 0.85rem; }
+
+    .report-header {
+        background: white; padding: 15px 30px; border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); margin-bottom: 20px;
+        display: flex; justify-content: space-between; align-items: center;
+        border: 1px solid #e2e8f0;
+    }
+
+    /* Machine Card Workflow Styling */
+    .machine-card {
+        background: white; border-radius: 12px; border-left: 6px solid #ef4444;
+        margin-bottom: 15px; padding: 18px; position: relative; transition: 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    }
+    .machine-card.maint-done { border-left-color: #f59e0b; background-color: #fffaf0; }
+
+    /* Stage Progress Indicator */
+    .workflow-steps { display: flex; gap: 4px; margin: 12px 0; }
+    .step-bar { flex: 1; height: 6px; border-radius: 10px; background: #e2e8f0; }
+    .step-active { background: #3b82f6; animation: pulse-blue 2s infinite; }
+    .step-complete { background: #10b981; }
+
+    @@keyframes pulse-blue { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+    .status-pill { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-bottom: 5px; }
+    .pill-down { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+    .pill-maint { background: #fef3c7; color: #d97706; border: 1px solid #fde68a; }
+
+    .btn-action-step { font-weight: 800; font-size: 0.7rem; text-transform: uppercase; border-radius: 8px; padding: 10px 15px; border: none; width: 100%; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .btn-maint { background: #3b82f6; color: white; }
+    .btn-admin { background: #10b981; color: white; }
+    .btn-maint:hover { background: #2563eb; transform: translateY(-1px); }
+    .btn-admin:hover { background: #059669; transform: translateY(-1px); }
+
+    .form-label-custom { font-weight: 700; font-size: 0.65rem; color: #ffffff; text-transform: uppercase; background-color: #00698f; padding: 2px 10px; border-radius: 4px; display: inline-block; margin-bottom: 5px; }
+</style>
+
+<div class="breakdown-container container-fluid py-4 px-lg-5">
+    <!-- Header -->
+    <div class="report-header shadow-sm">
+        <div>
+            <h4 class="fw-bold m-0 text-dark">Shop Floor Live Tracking</h4>
+            <p class="text-muted small m-0">2-Step Protocol: Maintenance Completion & Admin Authorization.</p>
+        </div>
+        <button class="btn btn-danger rounded-pill px-4 fw-bold shadow" data-bs-toggle="modal" data-bs-target="#newBreakdownModal">
+            <i class="fas fa-exclamation-triangle me-2"></i> Report Breakdown
+        </button>
+    </div>
+
+    <div class="row">
+        <!-- Live Feed Area -->
+        <div class="col-lg-8" id="liveFeedContainer">
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-2 text-muted">Fetching live machine status...</p>
+            </div>
+        </div>
+
+        <!-- Sidebar Guidance -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm p-4 rounded-4 sticky-top mb-4" style="top: 100px;">
+                <h6 class="fw-bold text-primary mb-3 uppercase small">Workflow Compliance</h6>
+                <div class="d-flex gap-3 mb-4">
+                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width:24px; height:24px; flex:none; font-size:10px;">1</div>
+                    <div class="small text-muted"><b>Technician Stage:</b> Marks repair work as done and logs technical remarks.</div>
+                </div>
+                <div class="d-flex gap-3 mb-4">
+                    <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width:24px; height:24px; flex:none; font-size:10px;">2</div>
+                    <div class="small text-muted"><b>Admin Stage:</b> Final audit of the repair. Machine is only restored to the working pool after this step.</div>
+                </div>
+                <hr>
+                <div class="d-grid gap-2">
+                    <a href="@Url.Action("BreakdownHistory", "Asset")" class="btn btn-outline-primary btn-sm rounded-pill">
+                        <i class="fas fa-history me-2"></i> View History
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: NEW BREAKDOWN REPORTING -->
+<div class="modal fade" id="newBreakdownModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0 rounded-4">
+            <div class="modal-header bg-danger text-white py-3 border-0">
+                <h6 class="modal-title fw-bold">Report Machine Failure</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <div class="mb-3">
+                    <label class="form-label-custom">Target Machine</label>
+                    <select id="ddlMachine" class="form-select shadow-sm" required>
+                        <option value="">-- Select Machine --</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label-custom">Affected SubUnit</label>
+                    <select id="ddlSubUnit" class="form-select shadow-sm">
+                        <option value="">-- Entire Machine --</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label-custom">Incident Details</label>
+                    <textarea id="txtProblem" class="form-control shadow-sm" rows="3" placeholder="Describe symptoms..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer border-0 p-3 bg-white">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger rounded-pill px-5 shadow fw-bold" onclick="submitReport()">Submit Report</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Stage 1 Maintenance Completion -->
+<div class="modal fade" id="maintModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0 rounded-4">
+            <div class="modal-header bg-primary text-white py-3 border-0">
+                <h6 class="modal-title fw-bold">Stage 1: Work Completion</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <input type="hidden" id="maintLogId" />
+                <label class="form-label-custom">Technical Action Taken</label>
+                <textarea id="txtMaintRemarks" class="form-control shadow-sm" rows="4" placeholder="Detail the fix applied..."></textarea>
+            </div>
+            <div class="modal-footer border-0 p-3 bg-white">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary rounded-pill px-5 shadow fw-bold" onclick="submitMaintStep()">Finalize Stage 1</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Stage 2 Admin Final Authorization -->
+<div class="modal fade" id="adminModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0 rounded-4">
+            <div class="modal-header bg-success text-white py-3 border-0">
+                <h6 class="modal-title fw-bold">Stage 2: Admin Verification</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <input type="hidden" id="adminLogId" />
+                <div class="card p-3 border-0 shadow-sm mb-3 bg-white">
+                    <small class="text-muted fw-bold uppercase" style="font-size:0.6rem">Maint. Report:</small>
+                    <p class="m-0 italic text-dark" id="lblMaintNotes" style="font-size:0.85rem"></p>
+                    <hr class="my-2 opacity-10">
+                    <small class="text-muted fw-bold uppercase" style="font-size:0.6rem">Completed By:</small>
+                    <p class="m-0 fw-bold" id="lblMaintBy"></p>
+                </div>
+                <label class="form-label-custom text-success">Authorization Remarks</label>
+                <textarea id="txtAdminRemarks" class="form-control border-success shadow-sm" rows="3" placeholder="Final audit notes..."></textarea>
+            </div>
+            <div class="modal-footer border-0 p-3 bg-white">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success rounded-pill px-5 shadow fw-bold" onclick="submitAdminFinal()">Restore to fleet</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<img id="wait-sign" src="~/images/wait.gif" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10005; width: 80px;" />
+
+<
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script>
+    const sessionRole = '@currentRole';
+
+    $(document).ready(function () {
+        loadLiveFeed();
+        initDropdowns();
+        setInterval(loadLiveFeed, 10000); // 10s Live Sync
+    });
+
+    function initDropdowns() {
+        $.getJSON('/Asset/GetMachineList', (d) => $.each(d, (i, it) => $('#ddlMachine').append(new Option(it.text, it.value))));
+        $('#ddlMachine').change(function() {
+            let mid = $(this).val();
+            $.getJSON('/Asset/GetSubUnits', { machineId: mid }, (d) => {
+                $('#ddlSubUnit').empty().append('<option value="">-- Entire Machine --</option>');
+                $.each(d, (i, it) => $('#ddlSubUnit').append(new Option(it.text, it.value)));
+            });
+        });
+    }
+
+    function loadLiveFeed() {
+        $.getJSON('@Url.Action("GetLiveBreakdowns", "Asset")', function (res) {
+            let container = $('#liveFeedContainer').empty();
+            if (res.data.length === 0) {
+                container.append('<div class="card p-5 border-0 shadow-sm text-center text-success fw-bold rounded-4 animate-up"><i class="fas fa-check-circle fa-4x mb-3 opacity-50"></i><h5>All Assets Operational</h5></div>');
+                return;
+            }
+            $.each(res.data, function (i, item) {
+                const isMaintDone = item.IsMaintDone;
+                const cardClass = isMaintDone ? 'maint-done' : '';
+                const statusLabel = isMaintDone
+                    ? '<span class="status-pill pill-maint"><i class="fas fa-user-clock me-1"></i> Awaiting Admin Auth</span>'
+                    : '<span class="status-pill pill-down"><i class="fas fa-tools me-1"></i> Awaiting Maintenance</span>';
+
+                let actionBtn = '';
+                if (!isMaintDone) {
+                    actionBtn = `<button class="btn-action-step btn-maint" onclick="openMaintModal(${item.id})">Mark Maint. Done</button>`;
+                } else if (isMaintDone && (sessionRole === 'ASSETADMIN' || sessionRole === 'SUPERADMIN')) {
+                    actionBtn = `<button class="btn-action-step btn-admin" onclick="openAdminModal(${item.id}, '${item.MaintRemarks}', '${item.MaintDoneBy}')">Final Resolve</button>`;
+                } else {
+                    actionBtn = `<button class="btn-action-step btn-secondary opacity-50" disabled>Pending Admin</button>`;
+                }
+
+                container.append(`
+                    <div class="machine-card ${cardClass}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div style="flex:1">
+                                ${statusLabel}
+                                <h5 class="fw-bold m-0">${item.MachineName}</h5>
+                                <div class="text-muted small">${item.SubUnit} | Reported by <b>${item.ReportedBy}</b></div>
+                                <div class="workflow-steps">
+                                    <div class="step-bar ${isMaintDone ? 'step-complete' : 'step-active'}"></div>
+                                    <div class="step-bar ${isMaintDone ? 'step-active' : ''}"></div>
+                                </div>
+                                <div class="mt-2 small bg-light p-2 rounded"><b>Issue:</b> ${item.ProblemDescription}</div>
+                            </div>
+                            <div class="text-end" style="width:180px">
+                                <div class="fw-bold text-danger fs-5">${Math.round(item.MinutesDown)}m</div>
+                                <div class="small text-muted mb-3 uppercase fw-bold" style="font-size:0.55rem">Total Idle Time</div>
+                                ${actionBtn}
+                            </div>
+                        </div>
+                    </div>
+                `);
+            });
+        });
+    }
+
+    function submitReport() {
+        var mid = $('#ddlMachine').val();
+        var prob = $('#txtProblem').val();
+        if(!mid || !prob) { toastr.warning("Machine and Problem are required."); return; }
+
+        $('#wait-sign').show();
+        $.post('@Url.Action("ReportBreakdown", "Asset")', { machineId: mid, subunitId: $('#ddlSubUnit').val(), problem: prob }, (res) => {
+            $('#wait-sign').hide();
+            if(res.success) {
+                toastr.success(res.message);
+                $('#newBreakdownModal').modal('hide');
+                loadLiveFeed();
+            } else toastr.error(res.message);
+        }).fail(function() { $('#wait-sign').hide(); toastr.error("Critical Server Error"); });
+    }
+
+    function openMaintModal(id) { $('#maintLogId').val(id); $('#txtMaintRemarks').val(''); $('#maintModal').modal('show'); }
+
+    function submitMaintStep() {
+        var rem = $('#txtMaintRemarks').val();
+        var id = $('#maintLogId').val();
+        if(!rem) { toastr.warning("Maintenance remarks mandatory."); return; }
+
+        $('#wait-sign').show();
+        $.post('@Url.Action("CompleteMaintenance", "Asset")', { logId: id, remarks: rem }, (res) => {
+            $('#wait-sign').hide();
+            if(res.success) {
+                toastr.success(res.message);
+                $('#maintModal').modal('hide');
+                $('.modal-backdrop').remove(); // Safeguard for 'backdrop' error
+                loadLiveFeed();
+            } else {
+                toastr.error(res.message || "Update failed.");
+            }
+        }).fail(function() {
+            $('#wait-sign').hide();
+            toastr.error("Database update error. Check if Status column length is sufficient.");
+        });
+    }
+
+    function openAdminModal(id, notes, tech) {
+        $('#adminLogId').val(id);
+        $('#lblMaintNotes').text(notes);
+        $('#lblMaintBy').text(tech);
+        $('#txtAdminRemarks').val('');
+        $('#adminModal').modal('show');
+    }
+
+    function submitAdminFinal() {
+        var rem = $('#txtAdminRemarks').val();
+        var id = $('#adminLogId').val();
+        if(!rem) { toastr.warning("Admin remarks mandatory."); return; }
+
+        $('#wait-sign').show();
+        $.post('@Url.Action("FinalResolve", "Asset")', { logId: id, adminRemarks: rem }, (res) => {
+            $('#wait-sign').hide();
+            if(res.success) {
+                toastr.success(res.message);
+                $('#adminModal').modal('hide');
+                $('.modal-backdrop').remove(); // Safeguard for 'backdrop' error
+                loadLiveFeed();
+            } else toastr.error(res.message);
+        }).fail(function() { $('#wait-sign').hide(); toastr.error("Authorization failed on server."); });
+    }
+</script>

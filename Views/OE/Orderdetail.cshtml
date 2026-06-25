@@ -1,0 +1,286 @@
+﻿@model CMKL.Models.orderdetailmodel
+
+@{
+    ViewBag.Title = "Orderdetail";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Orderdetail</h2>
+@{
+    // Get the current date in the desired format (dd/mm/yyyy)
+    var currentDate = DateTime.Now.ToString("dd/MM/yyyy");
+}
+
+<ul class="nav nav-tabs">
+    <li class="active"><a href="#box1" data-toggle="tab">Order Detail </a></li>
+    <li><a href="#box2" data-toggle="tab">Customer / Billing</a></li>
+    <li><a href="#box3" data-toggle="tab">Technical Specification</a></li>
+    <li><a href="#box4" data-toggle="tab">Commercial Details</a></li>
+    <li><a href="#box5" data-toggle="tab">Other</a></li>
+</ul>
+<div class="tab-content">
+    <div class="tab-pane active" id="box1">
+        <!-- Fields for Box 1 -->
+        <form id="myForm">
+            <div class="container">
+                <div class="row">
+                    <br />
+                    <div class="col-sm-4">
+                        <label style="text-align: center; display: block;">Booking Office</label>
+                        <p> @Html.TextBoxFor(x => x.bookingoffice, new { placeholder = "Booking Office", @class = "form-control", @readonly = "readonly" }) </p>
+                    </div>
+                    <div class="col-sm-4">
+                        <label style="text-align: center; display: block;">Execution Date</label>
+                        <p> @Html.TextBoxFor(x => x.ExecutionDate, new { placeholder = "Execution Date", @class = "form-control", @readonly = "readonly" }) </p>
+                    </div>
+                    <div class="col-sm-4">
+                        <p>
+                            <label style="text-align: center; display: block;">Genset Selection</label>
+                            <select class="form-control" id="gensetselection" name="Select Genset">
+                                <option>Select</option>
+                            </select>
+                        </p>
+                    </div>
+                    <div class="col-sm-4">
+                        <p>
+                            <label style="text-align: center; display: block;">Reason For Old</label>
+                            <select class="form-control" id="reasonforold" name="Select Reason">
+                                <option>Select</option>
+                            </select>
+                        </p>
+                    </div>
+                    <div class="col-sm-4">
+                        <p>
+                            <label style="text-align: center; display: block;">Select Supplier / Dealer</label>
+                            <select class="form-control" id="supplierdealer" name="Select Dealer">
+                                <option>Select</option>
+                            </select>
+                        </p>
+                    </div>
+                    <div class="col-sm-4">
+                        <p>
+                            <label style="text-align: center; display: block;">Select Order Involvment</label>
+                            <select class="form-control" id="orderinvolvment" name="Order Involvment">
+                                <option>Select</option>
+                            </select>
+                        </p>
+                    </div>
+                    <div class="col-sm-4">
+                        <p>
+                            <label style="text-align: center; display: block;">Select Customer Type</label>
+                            <select class="form-control" id="typeofcustomer" name="Customer Type">
+                                <option>Select</option>
+                            </select>
+                        </p>
+                    </div>
+                    <div class="col-sm-4">
+                        <p>
+                            <label style="text-align: center; display: block;">Select Billing Company</label>
+                            <select class="form-control" id="billingcompany" name="Billing Company">
+                                <option>Select</option>                                
+                            </select>
+                        </p>
+                    </div>
+                    <div class="col-sm-4">
+                        <p>
+                            <label style="text-align: center; display: block;">Select Marketing Person</label>
+                            <select class="form-control" id="marketingperson" name="Marketing Person">
+                                <option>Select</option>                                
+                            </select>
+                        </p>
+                    </div>
+                    <div class="col-sm-4">
+                        <p>
+                            <label style="text-align: center; display: block;">Select Installtion State</label>
+                            <select class="form-control" id="installationstate" name="Installation State">
+                                <option>Select</option>                                
+                            </select>
+                        </p>
+                    </div>
+                    <div class="col-sm-4">
+                        <p>
+                            <label style="text-align: center; display: block;">Select Installation Distt</label>
+                            <select class="form-control" id="installationdistt" name="Installation Distt">
+                                <option>Select</option>
+                            </select>
+                        </p>
+                    </div>
+                    <div class="col-sm-4">
+                        <label style="text-align: center; display: block;">Jointly Person Name</label>
+                        <p> @Html.TextBoxFor(x => x.jointlyperson, new { placeholder = "Jointly Person Name", @class = "form-control" }) </p>
+                    </div>
+                    <div class="col-sm-4">
+                        <label style="text-align: center; display: block;">OE Number</label>
+                        <p> @Html.TextBoxFor(x => x.OE, new { placeholder = "OE Number", @class = "form-control", @readonly = "readonly" }) </p>
+                    </div>
+
+                </div>
+
+                <br />
+                <div class="col-sm-4">
+                    <p><button type="button" id="add" class="btn btn-primary">Add Product</button></p>
+                </div>
+
+
+            </div>
+        </form>
+    </div>
+    <div class="tab-pane" id="box2">
+        <!-- Fields for Box 2 -->
+        <div class="container">
+            <div class="row">
+                <br />
+                <div class="col-sm-4">
+                    
+                    <p> @Html.TextBoxFor(x => x.companyname, new { placeholder = "Company/Customer", @class = "form-control" }) </p>
+                </div>
+                <div class="col-sm-4">
+                    
+                    
+                    <p> @Html.TextBoxFor(x => x.customercontactname, new { placeholder = "Customer Contact Name", @class = "form-control" }) </p>
+                </div>
+                <div class="col-sm-4">
+                    
+                    
+                    <p> @Html.TextBoxFor(x => x.customermobile, new { placeholder = "Customer Mobile Number", @class = "form-control" }) </p>
+                </div>
+                <div class="col-sm-4">
+                    <p> @Html.TextBoxFor(x => x.customeremail, new { placeholder = "Customer Email ID", @class = "form-control" }) </p>
+                </div>
+                <div class="col-sm-4">
+                    <p> @Html.TextBoxFor(x => x.billingcompany, new { placeholder = "Billing Company", @class = "form-control" }) </p>
+                </div>
+                <div class="col-sm-4">
+                    <p> @Html.TextBoxFor(x => x.installationdestination, new { placeholder = "Installation Desination", @class = "form-control" }) </p>
+                </div>
+                <div class="col-sm-4">
+                    <p> @Html.TextBoxFor(x => x.consigneeaddress, new { placeholder = "Consignee Address", @class = "form-control" }) </p>
+                </div>
+
+                <div class="col-sm-4">
+                    <p> @Html.TextBoxFor(x => x.consigneeaddress, new { placeholder = "Supplier GST No", @class = "form-control" }) </p>
+                </div>
+                <div class="col-sm-4">
+                    <p> @Html.TextBoxFor(x => x.consigneeaddress, new { placeholder = "Consignee GST No", @class = "form-control" }) </p>
+                </div>
+
+                <div class="col-sm-4">
+                    <label style="align-content:center">Supplier GST</label>
+                    <input type="file" class="form-control-file" id="SupplierGSTupload">
+                </div>
+                <div class="col-sm-4">
+                    <label style="align-content:center">Consignee GST</label>
+                    <input type="file" class="form-control-file" id="ConsigneeGSTupload">
+                </div>
+                <div class="col-sm-4">
+                    <label style="align-content:center">Supplier PAN</label>
+                    <input type="file" class="form-control-file" id="SupplierPANupload">
+                </div>
+                <div class="col-sm-4">
+                    <label style="align-content:center">Consignee PAN</label>
+                    <input type="file" class="form-control-file" id="ConsigneePANupload">
+                </div>
+                <br />
+                <div class="col-sm-4">
+                    <p> @Html.CheckBoxFor(x => x.consigneeaddressactive, new { placeholder = "Same as Customer Address", @class = "form-control" })</p>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+    <div class="tab-pane" id="box3">
+        <!-- Fields for Box 2 -->
+        <div class="container">
+            <div class="row">
+                <br />
+                <div class="col-sm-4">
+                    <p>
+                        <label style="text-align: center; display: block;">Select Engine Model</label>
+                        <select class="form-control" id="enginemodel" name="Engine Model">
+                            <option>Select</option>
+                        </select>
+                    </p>
+                </div>
+                <div class="col-sm-4">
+                    <p>
+                        <label style="text-align: center; display: block;">Select Phase</label>
+                        <select class="form-control" id="phase" name="phase">
+                            <option>Select</option>
+                        </select>
+                    </p>
+                </div>
+                <div class="col-sm-4">
+                    <p>
+                        <label style="text-align: center; display: block;">Select Standard/L3</label>
+                        <select class="form-control" id="standardl3" name="standard l3">
+                            <option>Select</option>
+                        </select>
+                    </p>
+                </div>
+                <div class="col-sm-4">
+                    <p>
+                        <label style="text-align: center; display: block;">Select Alternator Make</label>
+                        <select class="form-control" id="alternatormake" name="Alternator Make">
+                            <option>Select</option>
+                        </select>
+                    </p>
+                </div>
+                <div class="col-sm-4">
+                    <p>
+                        <label style="text-align: center; display: block;">Select Phase</label>
+                        <select class="form-control" id="phase" name="phase">
+                            <option>Select</option>
+                        </select>
+                    </p>
+                </div>
+                <div class="col-sm-4">
+                    <p>
+                        <label style="text-align: center; display: block;">Select DG Rating</label>
+                        <select class="form-control" id="dgrating" name="dgrating">
+                            <option>Select</option>
+                        </select>
+                    </p>
+                </div>
+
+            </div>
+            </div>
+        </div>
+    
+            <div class="tab-pane" id="box4">
+                <!-- Fields for Box 2 -->
+                Commercial
+            </div>
+            <div class="tab-pane" id="box5">
+                <!-- Fields for Box 2 -->
+                Other
+            </div>
+        </div>
+
+
+
+
+
+        <script src="~/Scripts/jquery-3.4.1.min.js"></script>
+        <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+        <script src="~/toastr/Js/toastr.js"></script>
+        <link href="~/toastr/toastr.css" rel="stylesheet" />
+        <script>
+            $(document).ready(function () {
+                $('#GetCompanies').click(function () {
+                    $.ajax({
+                        type: "GET",
+                        url: "/OE/GetCompanies",
+                        success: function (data) {
+                            $.each(data, function (index, item) {
+                                $('#company').append($('<option>').val(item.Id).text(item.Name));
+                            });
+                        },
+                        error: function (xhr, status, error) {
+                            console.error('Error:', error); // Handle any errors
+                        }
+                    });
+                });
+            });
+
+        </script>

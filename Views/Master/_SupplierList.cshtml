@@ -1,0 +1,33 @@
+﻿<table class="table table-sm table-bordered">
+    <thead>
+        <tr>
+            <th>Supplier Name</th>
+            <th>Supplier Contact Name</th>
+            <th>Contact Number</th>
+            <th>Email</th>
+            <th>Supplier Address</th>
+            <th>GST Number</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var supplier in ViewBag.Suppliers)
+        {
+            <tr>
+                <td>@supplier.SupplierName</td>
+                <td>@supplier.SupplierContactName</td>
+                <td>@supplier.ContactNumber</td>
+                <td>@supplier.Email</td>
+                <td>@supplier.SupplierAddress</td>
+                <td>@supplier.GSTNumber</td>
+                <td>
+                    <button type="button" class="btn btn-sm edit-supplier-btn"
+                            style="background-color: #00698f; color: #ffffff; border-color: #00698f;"
+                            data-id="@supplier.id">
+                        Edit
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

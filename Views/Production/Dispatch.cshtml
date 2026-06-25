@@ -1,0 +1,740 @@
+﻿@{
+    ViewBag.Title = "Professional Dispatch Console";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const isInModal = !!(document.querySelector('.modal.show'));
+            if (isInModal) {
+                setTimeout(() => { handleInvalidUser(); }, 500);
+            } else {
+                handleInvalidUser();
+            }
+            function handleInvalidUser() {
+                toastr.error("Invalid User Session");
+                setTimeout(function () { window.location.href = "@Url.Action("Index", "Login")"; }, 2000);
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<style>
+    :root {
+        --brand-blue: #00698f;
+        --soft-gray: #f8fafc;
+        --border-color: #e2e8f0;
+    }
+
+    body {
+        background-color: #f1f5f9;
+        font-family: 'Inter', sans-serif;
+        color: #334155;
+        overflow-y: hidden;
+    }
+
+    .main-viewport {
+        height: calc(100vh - 70px);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .scrollable-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 15px 30px;
+    }
+
+    .dispatch-header {
+        background: white;
+        padding: 10px 30px;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .section-card {
+        background: white;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 15px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        position: relative;
+    }
+
+    .section-title {
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: var(--brand-blue);
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-bottom: 1px solid #f1f5f9;
+        padding-bottom: 6px;
+    }
+
+    .form-label {
+        font-weight: 700;
+        font-size: 0.65rem;
+        color: #ffffff !important;
+        margin-bottom: 4px;
+        text-transform: uppercase;
+        background-color: var(--brand-blue);
+        padding: 1px 8px;
+        border-radius: 3px;
+        display: inline-block;
+    }
+
+    .form-control-sm, .form-select-sm {
+        border-radius: 6px;
+        border: 1.2px solid var(--border-color);
+        font-size: 0.8rem;
+        height: 32px;
+    }
+
+    textarea.form-control-sm {
+        height: auto !important;
+    }
+
+    .ui-autocomplete {
+        z-index: 10000 !important;
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 8px !important;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important;
+        max-height: 300px;
+        overflow-y: auto;
+        padding: 5px 0 !important;
+        opacity: 1 !important;
+    }
+
+    .ui-menu-item {
+        list-style: none;
+        background: #ffffff !important;
+    }
+
+    .ui-menu-item-wrapper {
+        padding: 10px 15px !important;
+        font-weight: 600;
+        color: #1e293b;
+        font-size: 0.8rem;
+        border: none !important;
+        cursor: pointer;
+        background: #ffffff !important;
+    }
+
+    .ui-state-active {
+        background: var(--brand-blue) !important;
+        color: white !important;
+        margin: 0 !important;
+    }
+
+    .history-fetch-box {
+        background: #f0f9ff;
+        border: 1px dashed var(--brand-blue);
+        border-radius: 10px;
+        padding: 10px;
+        margin-bottom: 15px;
+    }
+
+    .pdi-badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.7rem;
+        cursor: pointer;
+        border: none;
+    }
+
+    .pdi-not-done {
+        background: #fee2e2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+    }
+
+    .pdi-done {
+        background: #dcfce7;
+        color: #16a34a;
+        border: 1px solid #bbf7d0;
+    }
+
+    .valuation-footer {
+        background: #f8fafc;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 15px;
+    }
+
+    hr {
+        margin: 10px 0;
+        opacity: 0.1;
+    }
+
+    ::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+    }
+</style>
+
+<div class="main-viewport">
+    <div class="scrollable-content">
+        <div class="dispatch-header animate-up">
+            <div>
+                <h4 class="fw-bold m-0 text-dark">Dispatch Console</h4>
+                <p class="text-muted small m-0" style="font-size: 0.75rem;">Create and finalize outbound logistics.</p>
+            </div>
+            <div class="text-end">
+                <span class="badge bg-light text-primary border px-3 py-1 rounded-pill fw-bold">
+                    Slip: <span id="displayVoucherNo">Generating...</span>
+                </span>
+            </div>
+        </div>
+
+        <form id="dispatchForm">
+            <!-- HIDDEN IDENTITY FIELDS -->
+            <input type="hidden" id="id" name="id" /> <!-- Ewap ID -->
+            <input type="hidden" id="dispatchVoucherNumber" name="dispatchVoucherNumber" />
+
+            <!-- HIDDEN TOTALS FOR CALCULATION -->
+            <input type="hidden" id="totalamt" name="totalamt" value="0.00" />
+            <input type="hidden" id="billingamount" name="billingamount" value="0.00" />
+
+            <div class="row g-3">
+                <!-- Left Column (70%) -->
+                <div class="col-lg-8">
+
+                    <!-- 1. Order Identification -->
+                    <div class="section-card shadow-sm">
+                        <div class="section-title"><i class="fas fa-file-invoice"></i> Order Identification</div>
+                        <div class="row g-2">
+                            <div class="col-md-2">
+                                <label class="form-label">Disp. Date</label>
+                                <input type="date" class="form-control form-control-sm" id="dispatchDate" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Order No</label>
+                                <input type="text" class="form-control form-control-sm" id="ordernumber" placeholder="PO/123" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Order Date</label>
+                                <input type="date" class="form-control form-control-sm" id="orderdate" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Bill No</label>
+                                <input type="text" class="form-control form-control-sm" id="BillNumber" placeholder="INV-001" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Bill Date</label>
+                                <input type="date" class="form-control form-control-sm" id="BillDate" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Eway No</label>
+                                <input type="text" class="form-control form-control-sm" id="eway">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Customer Logistics -->
+                    <div class="section-card shadow-sm">
+                        <div class="section-title"><i class="fas fa-truck-loading"></i> Customer Logistics</div>
+
+                        <div class="history-fetch-box">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-white"><i class="fas fa-search-plus text-primary"></i></span>
+                                <input type="text" id="txtHistorySearch" class="form-control border-start-0" placeholder="Search history (Customer, Bill, or GST) to auto-fill details...">
+                            </div>
+                        </div>
+
+                        <div class="row g-2">
+                            <div class="col-md-5">
+                                <label class="form-label">Customer Name</label>
+                                <input type="text" class="form-control form-control-sm" id="customerName" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">GST Number</label>
+                                <input type="text" class="form-control form-control-sm" id="customerGST">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Location</label>
+                                <input type="text" class="form-control form-control-sm" id="customerLocation">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Shipping Address</label>
+                                <textarea class="form-control form-control-sm" id="shippingAddress" rows="4"></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Billing Address</label>
+                                <textarea class="form-control form-control-sm" id="billingAddress" rows="4"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Technical Validation -->
+                    <div class="section-card shadow-sm">
+                        <div class="section-title"><i class="fas fa-shield-alt"></i> Validation & PDI</div>
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-3">
+                                <label class="form-label">Part Code</label>
+                                <input type="text" class="form-control form-control-sm" id="fgItemCode" required>
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label">Genset Description</label>
+                                <input type="text" class="form-control form-control-sm bg-light" id="fgItemname" disabled>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Ready Serial No</label>
+                                <select id="engineSerialNumber" class="form-select form-select-sm"></select>
+                            </div>
+                        </div>
+                        <div class="row g-2 mt-2 align-items-center">
+                            <div class="col-md-4">
+                                <label class="form-label">Site Erection?</label>
+                                <div class="d-flex gap-2">
+                                    <select id="erection" class="form-select form-select-sm w-50">
+                                        <option value="No">No</option>
+                                        <option value="Yes">Yes</option>
+                                    </select>
+                                    <input type="text" class="form-control form-control-sm flex-fill" id="erectiondetail" value="NA">
+                                </div>
+                            </div>
+                            <div class="col-md-5"></div>
+                            <div class="col-md-3 text-end">
+                                <button type="button" id="pdiStatusButton" class="pdi-badge pdi-not-done w-100 shadow-sm" data-bs-toggle="modal" data-bs-target="#pdiModal">
+                                    <i class="fas fa-exclamation-circle me-1"></i> PDI Not Verified
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column (30%) -->
+                <div class="col-lg-4">
+                    <!-- 4. Transporter -->
+                    <div class="section-card shadow-sm">
+                        <div class="section-title"><i class="fas fa-shipping-fast"></i> Transporter</div>
+                        <div class="row g-2">
+                            <div class="col-12">
+                                <label class="form-label">Agency Name</label>
+                                <input type="text" id="transport" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Vehicle No</label>
+                                <input type="text" id="lorryno" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">LR Date</label>
+                                <input type="date" id="lrdate" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">LR Number</label>
+                                <input type="text" id="lr" class="form-control form-control-sm">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5. Commercial Summary (Tax Fields Restored and Visible) -->
+                    <div class="valuation-footer shadow-sm">
+                        <div class="section-title"><i class="fas fa-coins"></i> Valuation Summary</div>
+                        <div class="row g-2 align-items-center">
+                            <div class="col-7 small fw-bold text-muted">Basic Price</div>
+                            <div class="col-5"><input type="number" step="0.01" class="form-control form-control-sm text-end fw-bold" id="basicprice" value="0.00"></div>
+
+                            <div class="col-7 small fw-bold text-muted">Freight</div>
+                            <div class="col-5"><input type="number" step="0.01" class="form-control form-control-sm text-end" id="frieght" value="0.00"></div>
+
+                            <div class="col-12"><hr></div>
+
+                            <div class="col-7 small fw-bold">Tax Percent</div>
+                            <div class="col-5"><select id="taxid" class="form-select form-select-sm"></select></div>
+
+                            <div class="col-7 small fw-bold">Tax Type</div>
+                            <div class="col-5"><select id="taxtype" class="form-select form-select-sm"></select></div>
+
+                            <div class="col-7 small fw-bold text-primary">IGST Amount</div>
+                            <div class="col-5">
+                                <input type="text" class="form-control form-control-sm text-end bg-light" id="gst" disabled value="0.00">
+                            </div>
+
+                            <!-- VISIBLE CGST / SGST FIELDS -->
+                            <div class="col-7 small fw-bold text-info">CGST Amount</div>
+                            <div class="col-5">
+                                <input type="text" class="form-control form-control-sm text-end bg-light" id="cgst_display" disabled value="0.00">
+                            </div>
+
+                            <div class="col-7 small fw-bold text-info">SGST Amount</div>
+                            <div class="col-5">
+                                <input type="text" class="form-control form-control-sm text-end bg-light" id="sgst_display" disabled value="0.00">
+                            </div>
+
+                            <div class="col-7 small fw-bold text-muted">Round Off</div>
+                            <div class="col-5"><input type="number" step="0.01" class="form-control form-control-sm text-end" id="roundoff" value="0.00"></div>
+
+                            <div class="col-12 mt-2">
+                                <div class="p-2 bg-white rounded-3 border-2 border-primary border shadow-sm">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="fw-bold text-dark small">TOTAL BILLING</span>
+                                        <h4 class="m-0 fw-bold text-primary" id="lblGrandTotal">₹0.00</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <button type="button" id="dispatchOrderButton" disabled class="btn btn-primary-custom w-100 shadow py-2">
+                            <i class="fas fa-check-double me-2"></i> GENERATE DISPATCH
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Full PDI Modal restored from previous specifications -->
+<div class="modal fade" id="pdiModal" tabindex="-1">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content border-0">
+            <div class="modal-header bg-light border-0">
+                <h5 class="modal-title fw-bold text-primary"><i class="fas fa-clipboard-check me-2"></i>Technical Specification Review</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <div class="row g-4">
+                    <!-- Engine Details -->
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm rounded-4 p-3">
+                            <h6 class="fw-bold text-primary border-bottom pb-2 mb-3">1. ENGINE DETAILS</h6>
+                            <div class="row g-3">
+                                <div class="col-md-2"><label class="form-label">Make</label><input type="text" id="emake" class="form-control form-control-sm" disabled /></div>
+                                <div class="col-md-2"><label class="form-label">Model</label><select id="emodel" class="form-select form-select-sm" disabled></select></div>
+                                <div class="col-md-2"><label class="form-label">Serial No</label><input type="text" id="engineSerialNo" class="form-control form-control-sm" disabled /></div>
+                                <div class="col-md-2"><label class="form-label">Test Cert</label><select id="etestcert" class="form-select form-select-sm" disabled><option>Yes</option><option>No</option></select></div>
+                                <div class="col-md-4"><label class="form-label">Remarks</label><input type="text" id="eremarks" class="form-control form-control-sm" disabled /></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Alternator Details -->
+                    <div class="col-md-8">
+                        <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+                            <h6 class="fw-bold text-primary border-bottom pb-2 mb-3">2. ALTERNATOR & AUXILIARY</h6>
+                            <div class="row g-3">
+                                <div class="col-md-4"><label class="form-label">Alt. Make</label><input type="text" id="amake" class="form-control form-control-sm" disabled /></div>
+                                <div class="col-md-4"><label class="form-label">Alt. Frame</label><input type="text" id="aframe" class="form-control form-control-sm" disabled /></div>
+                                <div class="col-md-4"><label class="form-label">MC Number</label><input type="text" id="alternatorSerialNo" class="form-control form-control-sm" disabled /></div>
+                                <div class="col-md-4"><label class="form-label">Alt. Test Cert</label><select id="atestcert" class="form-select form-select-sm" disabled><option>Yes</option><option>No</option></select></div>
+                                <div class="col-md-4"><label class="form-label">Warranty Card</label><select id="awarranty" class="form-select form-select-sm" disabled><option>Yes</option><option>No</option></select></div>
+                                <div class="col-md-4"><label class="form-label">Alt. Remarks</label><input type="text" id="aremarks" class="form-control form-control-sm" disabled /></div>
+                                <div class="col-12"><hr /></div>
+                                <div class="col-md-4 text-center"><label class="form-label">Exhaust Pipe</label><input type="number" id="exhaust" class="form-control form-control-sm text-center" disabled /></div>
+                                <div class="col-md-4 text-center"><label class="form-label">Fuel Spout</label><input type="number" id="fuelspout" class="form-control form-control-sm text-center" disabled /></div>
+                                <div class="col-md-4 text-center"><label class="form-label">Flex Bellow</label><input type="number" id="flexbel" class="form-control form-control-sm text-center" disabled /></div>
+                                <div class="col-md-4 text-center"><label class="form-label">KG Sticker</label><input type="text" id="kgsticker" class="form-control form-control-sm text-center" disabled /></div>
+                                <div class="col-md-4 text-center"><label class="form-label">AVM Pads</label><input type="text" id="AVM" class="form-control form-control-sm text-center" disabled /></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Battery & Testing -->
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+                            <h6 class="fw-bold text-primary border-bottom pb-2 mb-3">3. BATTERY & TESTING</h6>
+                            <div class="row g-3">
+                                <div class="col-md-12"><label class="form-label">Battery Make</label><input type="text" id="bmake" class="form-control form-control-sm" disabled /></div>
+                                <div class="col-md-12"><label class="form-label">Battery Serial</label><input type="text" id="BatterySerialNo" class="form-control form-control-sm" disabled /></div>
+                                <div class="col-md-6"><label class="form-label">Rating</label><select id="BatteryRating" class="form-select form-select-sm" disabled></select></div>
+                                <div class="col-md-6"><label class="form-label">Qty</label><input type="number" id="Batteryqty" class="form-control form-control-sm" disabled /></div>
+                                <div class="col-12"><hr /></div>
+                                <div class="col-md-12"><label class="form-label">Test Date</label><input type="date" id="dateOfTesting" class="form-control form-control-sm" disabled /></div>
+                                <div class="col-md-12"><label class="form-label">Genset Rating</label><select id="ratingOfGenset" class="form-select form-select-sm" disabled></select></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Control Panel Details -->
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm rounded-4 p-3">
+                            <h6 class="fw-bold text-primary border-bottom pb-2 mb-3">4. PANEL & FLUIDS</h6>
+                            <div class="row g-3">
+                                <div class="col-md-3"><label class="form-label">CP Type</label><select id="cptype" class="form-select form-select-sm" disabled></select></div>
+                                <div class="col-md-3"><label class="form-label">CP Rating</label><select id="cprating" class="form-select form-select-sm" disabled></select></div>
+                                <div class="col-md-3"><label class="form-label">Panel Serial</label><input type="text" id="PanelSerialNo" class="form-control form-control-sm" disabled /></div>
+                                <div class="col-md-3"><label class="form-label">CP Other Info</label><input type="text" id="cpotherdetail" class="form-control form-control-sm" disabled /></div>
+                                <div class="col-md-2"><label class="form-label">Canopy Qty</label><input type="number" id="canopy" class="form-control form-control-sm" disabled /></div>
+                                <div class="col-md-2"><label class="form-label">Lube Oil</label><input type="text" id="lube" class="form-control form-control-sm" disabled /></div>
+                                <div class="col-md-2"><label class="form-label">K-Cool</label><input type="text" id="kcool" class="form-control form-control-sm" disabled /></div>
+                                <div class="col-md-2"><label class="form-label">KRM No</label><input type="text" id="KRMNo" class="form-control form-control-sm" disabled /></div>
+                                <div class="col-md-2"><label class="form-label">AD Blue</label><input type="text" id="adblue" class="form-control form-control-sm" disabled /></div>
+                                <div class="col-md-2"><label class="form-label">Special Rem.</label><input type="text" id="specialRemarks" class="form-control form-control-sm" disabled /></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light border-0"><button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button></div>
+        </div>
+    </div>
+</div>
+
+<img id="wait-sign" src="~/images/wait.gif" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10001; width:60px;" />
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+@section scripts {
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            const today = moment().format('YYYY-MM-DD');
+            $('#dispatchDate, #orderdate, #BillDate, #lrdate, #dateOfTesting').val(today);
+
+            initPageData();
+            initHistorySearch();
+            initPdiDropdowns();
+
+            $('#basicprice, #taxid, #frieght, #taxtype, #roundoff').on('input change', updateTotalAmount);
+            $('#fgItemCode').on('change', function () { fetchItemDetails($(this).val()); });
+            $('#engineSerialNumber').on('change', function () {
+                const val = $(this).val();
+                if (val) fetchPDIDetails(val); else resetPDIStatus();
+            });
+            $('#dispatchOrderButton').click(saveDispatch);
+        });
+
+        function initPageData() {
+            $.getJSON('/Production/GetDispatchNumber', (d) => {
+                $('#dispatchVoucherNumber').val(d.vouchernumber.vouchernumber);
+                $('#displayVoucherNo').text(d.vouchernumber.vouchernumber);
+            });
+            $.getJSON('/Purchase/GetTaxes', (data) => {
+                $('#taxid').empty().append('<option value="">-- Tax % --</option>');
+                $.each(data, (i, item) => $("#taxid").append(`<option value='${item.value}' data-percent='${item.percent}'>${item.text}</option>`));
+            });
+            $.getJSON('/Purchase/GetTaxType', (data) => {
+                $('#taxtype').empty().append('<option value="">-- Type --</option>');
+                $.each(data, (i, item) => $('#taxtype').append(`<option value="${item.value}">${item.text}</option>`));
+            });
+        }
+
+        function initHistorySearch() {
+            $("#txtHistorySearch").autocomplete({
+                source: function (request, response) {
+                    $.ajax({
+                        url: '@Url.Action("SearchInvoiceHistory", "Production")',
+                        data: { term: request.term },
+                        success: function (data) { response(data); }
+                    });
+                },
+                minLength: 3,
+                select: function (event, ui) {
+                    $('#customerName').val(ui.item.CustomerName);
+                    $('#customerGST').val(ui.item.GST || '');
+                    $('#customerLocation').val(ui.item.Location);
+                    $('#shippingAddress').val(ui.item.Shipping);
+                    $('#billingAddress').val(ui.item.Billing);
+                    toastr.success('Logistics data imported.');
+                    $(this).autocomplete("close");
+                    var $this = $(this);
+                    setTimeout(function() { $this.val('').blur(); }, 100);
+                    return false;
+                }
+            });
+        }
+
+        function fetchItemDetails(code) {
+            $.getJSON('/Purchase/getItemDetails', { itemCode: code }, (data) => {
+                if (data.success) {
+                    $('#fgItemname').val(data.itemname);
+                    loadEngines(data.itemid);
+                } else {
+                    toastr.error(data.error);
+                }
+            });
+        }
+
+        function loadEngines(itemId) {
+            $.getJSON('@Url.Action("GetEngineSerialNumbers", "Production")', { itemId: itemId }, (data) => {
+                $('#engineSerialNumber').empty().append('<option value="">-- Select Ready Serial --</option>');
+                $.each(data, (i, item) => $('#engineSerialNumber').append($('<option></option>').val(item.Value).text(item.Engine)));
+            });
+        }
+
+        function fetchPDIDetails(serial) {
+            $.getJSON('@Url.Action("BillingPDIDetails", "Production")', { engineSerialNumber: serial }, (data) => {
+                if (data.PDIStatus === 1) {
+                    $('#id').val(data.ewapid);
+                    $('#emake').val(data.ProductionData.emake);
+                    $('#emodel').val(data.ProductionData.emodel);
+                    $('#engineSerialNo').val(data.ProductionData.engineSerialNo);
+                    $('#etestcert').val(data.ProductionData.etestcert);
+                    $('#eremarks').val(data.ProductionData.eremarks);
+                    $('#amake').val(data.ProductionData.amake);
+                    $('#aframe').val(data.ProductionData.aframe);
+                    $('#alternatorSerialNo').val(data.ProductionData.alternatorSerialNo);
+                    $('#atestcert').val(data.ProductionData.atestcert);
+                    $('#awarranty').val(data.ProductionData.awarranty);
+                    $('#aremarks').val(data.ProductionData.aremarks);
+                    $('#exhaust').val(data.ProductionData.exhaust);
+                    $('#kgsticker').val(data.ProductionData.kgsticker);
+                    $('#AVM').val(data.ProductionData.AVM);
+                    $('#fuelspout').val(data.ProductionData.fuelspout);
+                    $('#flexbel').val(data.ProductionData.flexbel);
+                    $('#cptype').val(data.TestingData.CPtype);
+                    $('#cprating').val(data.TestingData.cprating);
+                    $('#PanelSerialNo').val(data.TestingData.PanelSerialNo);
+                    $('#cpotherdetail').val(data.TestingData.cpotherdetail);
+                    $('#bmake').val(data.TestingData.bmake);
+                    $('#BatteryRating').val(data.TestingData.BatteryRating);
+                    $('#Batteryqty').val(data.TestingData.Batteryqty);
+                    $('#BatterySerialNo').val(data.TestingData.BatterySerialNo);
+                    if(data.TestingData.dateOfTesting) $('#dateOfTesting').val(moment(data.TestingData.dateOfTesting).format('YYYY-MM-DD'));
+                    $('#ratingOfGenset').val(data.TestingData.ratingOfGenset);
+                    $('#canopy').val(data.TestingData.canopy);
+                    $('#lube').val(data.TestingData.lube);
+                    $('#kcool').val(data.TestingData.kcool);
+                    $('#KRMNo').val(data.TestingData.KRMNo);
+                    $('#adblue').val(data.TestingData.adblue);
+                    $('#specialRemarks').val(data.TestingData.specialRemarks);
+
+                    $('#pdiStatusButton').removeClass('pdi-not-done').addClass('pdi-done').html('<i class="fas fa-check-circle me-1"></i> PDI Verified');
+                    $('#dispatchOrderButton').prop('disabled', false);
+                } else {
+                    resetPDIStatus();
+                    toastr.error('PDI incomplete.');
+                }
+            });
+        }
+
+        function resetPDIStatus() {
+            $('#pdiStatusButton').removeClass('pdi-done').addClass('pdi-not-done').html('<i class="fas fa-exclamation-circle me-1"></i> Not Verified');
+            $('#dispatchOrderButton').prop('disabled', true);
+            $('#id').val('');
+        }
+
+        function updateTotalAmount() {
+            var basic = parseFloat($('#basicprice').val()) || 0;
+            var freight = parseFloat($('#frieght').val()) || 0;
+            var taxPercent = parseFloat($('#taxid option:selected').attr('data-percent')) || 0;
+            var taxType = $('#taxtype option:selected').text().trim();
+            var round = parseFloat($('#roundoff').val()) || 0;
+
+            var subtotal = basic + freight;
+            var totalTaxValue = (subtotal * taxPercent) / 100;
+
+            // LOGIC FIX: Condition based on Tax Type for correct Column mapping in backend
+            if (taxType === 'IGST') {
+                $('#gst').val(totalTaxValue.toFixed(2)); // Visible IGST field
+                $('#cgst').val('0.00'); // Hidden CGST field
+                $('#sgst').val('0.00'); // Hidden SGST field
+
+                // Keep display consistent
+                $('#cgst_display').val('0.00');
+                $('#sgst_display').val('0.00');
+            } else if (taxType === 'CGST | SGST') {
+                // Split tax for CGST/SGST logic
+                var splitTax = (totalTaxValue / 2).toFixed(2);
+
+                $('#gst').val('0.00'); // Reset IGST column to 0
+                $('#cgst').val(splitTax); // Populate hidden CGST field
+                $('#sgst').val(splitTax); // Populate hidden SGST field
+
+                // Update UI Display
+                $('#cgst_display').val(splitTax);
+                $('#sgst_display').val(splitTax);
+            } else {
+                // Default fallback
+                $('#gst').val(totalTaxValue.toFixed(2));
+                $('#cgst').val('0.00');
+                $('#sgst').val('0.00');
+                $('#cgst_display').val('0.00');
+                $('#sgst_display').val('0.00');
+            }
+
+            var grandTotal = subtotal + totalTaxValue;
+            var finalBill = grandTotal + round;
+
+            $('#totalamt').val(grandTotal.toFixed(2));
+            $('#billingamount').val(finalBill.toFixed(2));
+            $('#lblGrandTotal').text("₹" + finalBill.toLocaleString('en-IN', { minimumFractionDigits: 2 }));
+        }
+
+        function saveDispatch() {
+            $('#wait-sign').show();
+            $('#dispatchOrderButton').prop('disabled', true);
+
+            var formData = {
+                dispatchVoucherNumber: $('#dispatchVoucherNumber').val(),
+                dispatchDate: $('#dispatchDate').val(),
+                customerName: $('#customerName').val(),
+                customerGST: $('#customerGST').val(),
+                customerLocation: $('#customerLocation').val(),
+                shippingAddress: $('#shippingAddress').val(),
+                billingAddress: $('#billingAddress').val(),
+                fgItemCode: $('#fgItemCode').val(),
+                billdate: $('#BillDate').val(),
+                id: $('#id').val(),
+                ordernumber: $('#ordernumber').val(),
+                orderdate: $('#orderdate').val(),
+                BillNumber: $('#BillNumber').val(),
+                basicprice: $('#basicprice').val(),
+                gst: $('#gst').val(), // Maps to IGST column
+                totalamt: $('#totalamt').val(),
+                billingamount: $('#billingamount').val(),
+                frieght: $('#frieght').val(),
+                transport: $('#transport').val(),
+                lr: $('#lr').val(),
+                lrdate: $('#lrdate').val(),
+                lorryno: $('#lorryno').val(),
+                eway: $('#eway').val(),
+                erection: $('#erection option:selected').val(),
+                erectiondetail: $('#erectiondetail').val(),
+                taxid: $('#taxid').val(),
+                taxtypeid: $('#taxtype').val(),
+                cgst: $('#cgst_display').val(),
+                sgst: $('#sgst_display').val(),
+                roundoff: $('#roundoff').val()
+            };
+
+            $.post('@Url.Action("SaveDispatchData", "Production")', formData, function(res) {
+                $('#wait-sign').hide();
+                if (res.success) {
+                    toastr.success("Dispatch finalized!");
+                    window.open('/Inventory/PackingSlipPrint?BOMID=' + res.BOMID, '_blank');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    toastr.error(res.message || "Error saving record.");
+                    $('#dispatchOrderButton').prop('disabled', false);
+                }
+            });
+        }
+
+        function initPdiDropdowns() {
+            $.getJSON('/Production/GetEngineModel', (d) => $.each(d, (i, item) => $('#emodel').append(new Option(item.text, item.value))));
+            $.getJSON('/Production/GetCPType', (d) => $.each(d.type, (i, item) => $('#cptype').append(new Option(item.text, item.value))));
+            $.getJSON('/Production/GetRatings', (d) => {
+                $.each(d.rating, (i, item) => {
+                    $('#ratingOfGenset').append(new Option(item.text, item.value));
+                    $('#cprating').append(new Option(item.text, item.value));
+                });
+            });
+            $.getJSON('/Production/GetBatteriesModel', (d) => $.each(d, (i, item) => $('#BatteryRating').append(new Option(item.text, item.value))));
+        }
+    </script>
+}

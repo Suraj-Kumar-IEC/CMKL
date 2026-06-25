@@ -1,0 +1,342 @@
+﻿@{
+    ViewBag.Title = "ERP Central Command Center";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var userRole = Session["U_Role"]?.ToString() ?? "";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const isInModal = !!(document.querySelector('.modal.show'));
+            const handleInvalidUser = () => {
+                toastr.error("Session Expired. Please Login.");
+                setTimeout(() => { window.location.href = "@Url.Action("Index", "Login")"; }, 2000);
+            };
+            setTimeout(handleInvalidUser, isInModal ? 500 : 0);
+        });
+    </script>
+    <div class="vh-100 vw-100 bg-white"></div>
+}
+
+<style>
+    :root {
+        --brand-blue: #00698f;
+        --brand-dark: #004d69;
+        --light-bg: #f1f5f9;
+        --border-color: #e2e8f0;
+    }
+
+    body { background-color: var(--light-bg); font-family: 'Inter', sans-serif; }
+
+    /* Page Header */
+    .command-header {
+        background: linear-gradient(135deg, var(--brand-blue) 0%, var(--brand-dark) 100%);
+        color: white; padding: 2rem; border-radius: 16px; margin-bottom: 2rem;
+        box-shadow: 0 10px 25px rgba(0, 105, 143, 0.15);
+    }
+
+    /* Global Search */
+    .search-hub {
+        position: relative; max-width: 600px; margin: -40px auto 30px auto;
+        z-index: 10;
+    }
+    .search-hub i { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: var(--brand-blue); font-size: 1.2rem; }
+    .search-hub input {
+        width: 100%; padding: 18px 25px 18px 55px; border-radius: 50px;
+        border: none; box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        font-size: 1rem; font-weight: 600; outline: none; transition: 0.3s;
+    }
+    .search-hub input:focus { box-shadow: 0 15px 35px rgba(0, 105, 143, 0.2); transform: scale(1.02); }
+
+    /* Hub Category Cards */
+    .hub-section { margin-bottom: 2.5rem; }
+    .hub-title {
+        font-size: 0.85rem; font-weight: 800; text-transform: uppercase;
+        color: #64748b; letter-spacing: 2px; margin-bottom: 1.5rem;
+        display: flex; align-items: center; gap: 15px;
+    }
+    .hub-title::after { content: ''; flex: 1; height: 1px; background: #cbd5e1; }
+
+    .link-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px; }
+
+    /* Individual Link Card */
+    .nav-card {
+        background: white; border-radius: 12px; padding: 15px 20px;
+        border: 1px solid var(--border-color); display: flex; align-items: center;
+        gap: 15px; text-decoration: none !important; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .nav-card:hover {
+        transform: translateY(-5px); border-color: var(--brand-blue);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    }
+
+    .icon-box {
+        width: 42px; height: 42px; border-radius: 10px;
+        background: #f8fafc; color: var(--brand-blue);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.1rem; flex-shrink: 0; transition: 0.3s;
+    }
+    .nav-card:hover .icon-box { background: var(--brand-blue); color: white; }
+
+    .link-info { line-height: 1.2; }
+    .link-name { display: block; font-weight: 700; color: #1e293b; font-size: 0.85rem; }
+    .link-desc { font-size: 0.65rem; color: #94a3b8; text-transform: uppercase; font-weight: 600; }
+
+    /* Category Specific Colors */
+    .hub-approval .icon-box { color: #dc3545; }
+    .hub-approval .nav-card:hover { border-color: #dc3545; }
+    .hub-approval .nav-card:hover .icon-box { background: #dc3545; }
+
+    .hub-reports .icon-box { color: #6366f1; }
+    .hub-reports .nav-card:hover { border-color: #6366f1; }
+    .hub-reports .nav-card:hover .icon-box { background: #6366f1; }
+
+    /* Animations */
+    .animate-up { animation: fadeInUp 0.5s ease forwards; opacity: 0; }
+    @@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<div class="container-fluid px-4 py-4 animate-up">
+    <!-- 1. HEADER -->
+    <div class="command-header text-center">
+        <h1 class="fw-bold mb-1 tracking-tighter">IEPL ERP COMMAND CENTER</h1>
+        <p class="text-white-50 small font-monospace">Unified Access Interface | @DateTime.Now.ToString("dd MMM yyyy")</p>
+    </div>
+
+    <!-- 2. SEARCH -->
+    <div class="search-hub">
+        <i class="fas fa-search"></i>
+        <input type="text" id="masterSearch" placeholder="Type to filter processes (e.g. 'Stock', 'BOM', 'Approval')..." autocomplete="off" />
+    </div>
+
+    <div id="hubWrapper">
+        <!-- 3. HUB: MASTER REGISTRIES -->
+        <div class="hub-section">
+            <h6 class="hub-title"><i class="fas fa-database"></i> Core Masters</h6>
+            <div class="link-grid">
+                <a href="@Url.Action("itemmaster", "BOM")" class="nav-card">
+                    <div class="icon-box"><i class="fas fa-box"></i></div>
+                    <div class="link-info"><span class="link-name">Item Master</span><span class="link-desc">Raw Materials</span></div>
+                </a>
+                <a href="@Url.Action("ItemmasterFG", "Inventory")" class="nav-card">
+                    <div class="icon-box"><i class="fas fa-boxes"></i></div>
+                    <div class="link-info"><span class="link-name">Item Master FG</span><span class="link-desc">Finished Goods</span></div>
+                </a>
+                <a href="@Url.Action("SupplierMaster", "Master")" class="nav-card">
+                    <div class="icon-box"><i class="fas fa-truck"></i></div>
+                    <div class="link-info"><span class="link-name">Supplier Master</span><span class="link-desc">Vendor Registry</span></div>
+                </a>
+                <a href="@Url.Action("DepartmentMaster", "Master")" class="nav-card">
+                    <div class="icon-box"><i class="fas fa-sitemap"></i></div>
+                    <div class="link-info"><span class="link-name">Department Master</span><span class="link-desc">Org Structure</span></div>
+                </a>
+                <a href="@Url.Action("MakeMaster", "Purchase")" class="nav-card">
+                    <div class="icon-box"><i class="fas fa-copyright"></i></div>
+                    <div class="link-info"><span class="link-name">Make Master</span><span class="link-desc">Brand Definitions</span></div>
+                </a>
+                <a href="@Url.Action("UpdateItem", "Inventory")" class="nav-card">
+                    <div class="icon-box"><i class="fas fa-edit"></i></div>
+                    <div class="link-info"><span class="link-name">Technical Update</span><span class="link-desc">Specs & Stock</span></div>
+                </a>
+            </div>
+        </div>
+
+        <!-- 4. HUB: SUPPLY CHAIN (Procurement & Logistics) -->
+        <div class="hub-section">
+            <h6 class="hub-title"><i class="fas fa-shopping-cart"></i> Supply Chain & Procurement</h6>
+            <div class="link-grid">
+                <a href="@Url.Action("Indent", "Purchase")" class="nav-card">
+                    <div class="icon-box"><i class="fas fa-file-signature"></i></div>
+                    <div class="link-info"><span class="link-name">Indent Voucher</span><span class="link-desc">Manual Requisition</span></div>
+                </a>
+                <a href="@Url.Action("PurchaseOrder", "Purchase")" class="nav-card">
+                    <div class="icon-box"><i class="fas fa-cart-plus"></i></div>
+                    <div class="link-info"><span class="link-name">Purchase Order</span><span class="link-desc">New Contract</span></div>
+                </a>
+                <a href="@Url.Action("GoodsReciept", "Inventory")" class="nav-card">
+                    <div class="icon-box"><i class="fas fa-door-open"></i></div>
+                    <div class="link-info"><span class="link-name">Gate Receipt</span><span class="link-desc">Inward In-Log</span></div>
+                </a>
+                <a href="@Url.Action("PurchaseVoucher", "Purchase")" class="nav-card">
+                    <div class="icon-box"><i class="fas fa-receipt"></i></div>
+                    <div class="link-info"><span class="link-name">Material Receipt (MRN)</span><span class="link-desc">Commercial Inward</span></div>
+                </a>
+                <a href="@Url.Action("Dispatch", "Production")" class="nav-card">
+                    <div class="icon-box"><i class="fas fa-shipping-fast"></i></div>
+                    <div class="link-info"><span class="link-name">Dispatch FG</span><span class="link-desc">Packing Slip Out</span></div>
+                </a>
+                <a href="@Url.Action("DispatchReturn", "Production")" class="nav-card">
+                    <div class="icon-box"><i class="fas fa-undo"></i></div>
+                    <div class="link-info"><span class="link-name">Sale Return</span><span class="link-desc">Customer Inward</span></div>
+                </a>
+            </div>
+        </div>
+
+        <!-- 5. HUB: PRODUCTION & ENGINEERING -->
+        <div class="hub-section">
+            <h6 class="hub-title"><i class="fas fa-industry"></i> Production & Engineering</h6>
+            <div class="link-grid">
+                <a href="@Url.Action("BOM", "BOM")" class="nav-card">
+                    <div class="icon-box"><i class="fas fa-drafting-compass"></i></div>
+                    <div class="link-info"><span class="link-name">Create BOM</span><span class="link-desc">Recipe Master</span></div>
+                </a>
+                <a href="@Url.Action("BOMItemLink", "BOM")" class="nav-card">
+                    <div class="icon-box"><i class="fas fa-link"></i></div>
+                    <div class="link-info"><span class="link-name">BOM Item Linking</span><span class="link-desc">Engineering Map</span></div>
+                </a>
+                <a href="@Url.Action("BOMPlanning", "BOM")" class="nav-card">
+                    <div class="icon-box"><i class="fas fa-calendar-alt"></i></div>
+                    <div class="link-info"><span class="link-name">Production Planning</span><span class="link-desc">Schedule Hub</span></div>
+                </a>
+                <a href="@Url.Action("PendingProductionView", "Production")" class="nav-card">
+                    <div class="icon-box"><i class="fas fa-clock"></i></div>
+                    <div class="link-info"><span class="link-name">Production Status</span><span class="link-desc">Live Progress</span></div>
+                </a>
+                <a href="@Url.Action("PendingEwap", "Production")" class="nav-card">
+                    <div class="icon-box"><i class="fas fa-vial"></i></div>
+                    <div class="link-info"><span class="link-name">Update Testing</span><span class="link-desc">EWAP Entry</span></div>
+                </a>
+                <a href="@Url.Action("PendingPDI", "Production")" class="nav-card">
+                    <div class="icon-box"><i class="fas fa-clipboard-check"></i></div>
+                    <div class="link-info"><span class="link-name">PDI Clearance</span><span class="link-desc">Final Inspection</span></div>
+                </a>
+            </div>
+        </div>
+
+        <!-- 6. HUB: CENTRAL APPROVALS -->
+        <div class="hub-section hub-approval">
+            <h6 class="hub-title" style="color:#dc3545"><i class="fas fa-user-shield"></i> Executive Decision Hub</h6>
+            <div class="link-grid">
+                <a href="@Url.Action("BOMIndentApproval", "BOM")" class="nav-card">
+                    <div class="icon-box"><i class="fas fa-check-double"></i></div>
+                    <div class="link-info"><span class="link-name">Indent Approval</span><span class="link-desc">Admin Level</span></div>
+                </a>
+                <a href="@Url.Action("SAdminBOMIndentApproval", "BOM")" class="nav-card">
+                    <div class="icon-box"><i class="fas fa-crown"></i></div>
+                    <div class="link-info"><span class="link-name">Indent Final Auth.</span><span class="link-desc">Senior Admin</span></div>
+                </a>
+                <a href="@Url.Action("PurchaseOrderHODApproval", "Purchase")" class="nav-card">
+                    <div class="icon-box"><i class="fas fa-file-invoice-dollar"></i></div>
+                    <div class="link-info"><span class="link-name">PO Approval</span><span class="link-desc">Head Office</span></div>
+                </a>
+                <a href="@Url.Action("ApprovalPlantHead", "Purchase")" class="nav-card">
+                    <div class="icon-box"><i class="fas fa-user-tie"></i></div>
+                    <div class="link-info"><span class="link-name">MRN Authorization</span><span class="link-desc">Plant Admin</span></div>
+                </a>
+                <a href="@Url.Action("BOMRequisitionApproval", "BOM")" class="nav-card">
+                    <div class="icon-box"><i class="fas fa-microchip"></i></div>
+                    <div class="link-info"><span class="link-name">BOM Req. Appr.</span><span class="link-desc">Stores Release</span></div>
+                </a>
+            </div>
+        </div>
+
+        <!-- 7. HUB: ASSET MAINTENANCE -->
+        <div class="hub-section">
+            <h6 class="hub-title"><i class="fas fa-tools"></i> Asset Reliability Hub</h6>
+            <div class="link-grid">
+                <a href="@Url.Action("MachineMaster", "Asset")" class="nav-card">
+                    <div class="icon-box"><i class="fas fa-robot"></i></div>
+                    <div class="link-info"><span class="link-name">Machine Master</span><span class="link-desc">Fleet Registry</span></div>
+                </a>
+                <a href="@Url.Action("BreakdownManagement", "Asset")" class="nav-card">
+                    <div class="icon-box" style="color:#ef4444"><i class="fas fa-bolt"></i></div>
+                    <div class="link-info"><span class="link-name">Live Breakdown</span><span class="link-desc">Uptime Tracking</span></div>
+                </a>
+                <a href="@Url.Action("PendingMaintananceLogBook", "Asset")" class="nav-card">
+                    <div class="icon-box"><i class="fas fa-book-open"></i></div>
+                    <div class="link-info"><span class="link-name">Maint. Logbook</span><span class="link-desc">Service Queue</span></div>
+                </a>
+                <a href="@Url.Action("AssetAllocationMaster", "Asset")" class="nav-card">
+                    <div class="icon-box"><i class="fas fa-network-wired"></i></div>
+                    <div class="link-info"><span class="link-name">Asset Allocation</span><span class="link-desc">Task Mapping</span></div>
+                </a>
+            </div>
+        </div>
+
+        <!-- 8. HUB: ANALYTICAL BRIEFINGS (REPORTS) -->
+        <div class="hub-section hub-reports">
+            <h6 class="hub-title" style="color:#6366f1"><i class="fas fa-chart-pie"></i> Analytical Briefing Hub</h6>
+            <div class="link-grid">
+                <a href="@Url.Action("Index", "StockReport")" class="nav-card">
+                    <div class="icon-box"><i class="fas fa-warehouse"></i></div>
+                    <div class="link-info"><span class="link-name">Physical Stock</span><span class="link-desc">Live Inventory</span></div>
+                </a>
+                <a href="@Url.Action("StockMovementReport", "StockReport")" class="nav-card">
+                    <div class="icon-box"><i class="fas fa-exchange-alt"></i></div>
+                    <div class="link-info"><span class="link-name">Stock Movement</span><span class="link-desc">Flow Analysis</span></div>
+                </a>
+                <a href="@Url.Action("SaleReport", "Reports")" class="nav-card">
+                    <div class="icon-box"><i class="fas fa-chart-line"></i></div>
+                    <div class="link-info"><span class="link-name">Sale Report</span><span class="link-desc">Commercial Audit</span></div>
+                </a>
+                <a href="@Url.Action("LRReport", "Reports")" class="nav-card">
+                    <div class="icon-box" style="color:#dc3545"><i class="fas fa-filter"></i></div>
+                    <div class="link-info"><span class="link-name">Line Rejections</span><span class="link-desc">Quality Pareto</span></div>
+                </a>
+                <a href="@Url.Action("LotStockReport", "Reports")" class="nav-card">
+                    <div class="icon-box"><i class="fas fa-history"></i></div>
+                    <div class="link-info"><span class="link-name">FIFO Traceability</span><span class="link-desc">Batch Tracking</span></div>
+                </a>
+                <a href="@Url.Action("IndentStatusReport", "Purchase")" class="nav-card">
+                    <div class="icon-box"><i class="fas fa-hourglass-half"></i></div>
+                    <div class="link-info"><span class="link-name">Indent Tracking</span><span class="link-desc">Procurement Status</span></div>
+                </a>
+                <a href="@Url.Action("BOMItemList", "Reports")" class="nav-card">
+                    <div class="icon-box"><i class="fas fa-list-ol"></i></div>
+                    <div class="link-info"><span class="link-name">BOM Wise Issue</span><span class="link-desc">Production Consump.</span></div>
+                </a>
+                <a href="@Url.Action("CancelledBOMReport", "Reports")" class="nav-card">
+                    <div class="icon-box" style="color:#64748b"><i class="fas fa-trash-alt"></i></div>
+                    <div class="link-info"><span class="link-name">Cancelled BOM</span><span class="link-desc">Reversion Audit</span></div>
+                </a>
+            </div>
+        </div>
+
+        @if (userRole == "SUPERADMIN")
+        {
+            <!-- 9. HUB: TECHNICAL OPERATIONS (ADMIN) -->
+            <div class="hub-section">
+                <h6 class="hub-title"><i class="fas fa-user-cog"></i> Technical Operations</h6>
+                <div class="link-grid">
+                    <a href="@Url.Action("SQLbackup", "Master")" class="nav-card">
+                        <div class="icon-box"><i class="fas fa-server"></i></div>
+                        <div class="link-info"><span class="link-name">SQL Cloud Backup</span><span class="link-desc">Data Recovery</span></div>
+                    </a>
+                    <a href="@Url.Action("BOMAlteration", "BOM")" class="nav-card">
+                        <div class="icon-box"><i class="fas fa-tools"></i></div>
+                        <div class="link-info"><span class="link-name">BOM Alteration</span><span class="link-desc">Structure Fix</span></div>
+                    </a>
+                    <a href="@Url.Action("ManualSerialSwap", "BOM")" class="nav-card">
+                        <div class="icon-box"><i class="fas fa-sync"></i></div>
+                        <div class="link-info"><span class="link-name">Serial Swap</span><span class="link-desc">FIFO Override</span></div>
+                    </a>
+                    <a href="@Url.Action("CancelPackingSlip", "Production")" class="nav-card">
+                        <div class="icon-box" style="color:#ef4444"><i class="fas fa-ban"></i></div>
+                        <div class="link-info"><span class="link-name">Cancel Dispatch</span><span class="link-desc">Logistics Revert</span></div>
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // INSTANT HUB FILTER
+        $("#masterSearch").on("keyup", function() {
+            var value = $(this).val().toLowerCase();
+
+            $(".nav-card").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+            });
+
+            // Hide section headers if no cards are visible within them
+            $(".hub-section").each(function() {
+                var visibleCards = $(this).find(".nav-card:visible").length;
+                $(this).toggle(visibleCards > 0);
+            });
+        });
+    });
+</script>

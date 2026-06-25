@@ -1,0 +1,34 @@
+﻿
+@{
+    ViewBag.Title = "CopyData";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>CopyData From IEPL Sale to Testing</h2>
+<div class="container">
+    <label>Copy Data</label>
+    <input type="button" class="form-control form-control-sm" id="Copy"/>
+</div>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.16.2/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.2.1/exceljs.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#Copy').click(function () {
+            $.ajax({
+                url: '/Master/CopyDatatoTestingtable',
+                type: 'POST',
+                success: function (response) {
+                    console.log(response);
+                    toastr.success('Records Updated');
+
+                }
+            })
+        })
+    });
+</script>
+

@@ -1,0 +1,1599 @@
+﻿
+@{
+    ViewBag.Title = "PurchaseOrder";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if the current context is inside a Bootstrap modal
+            const isInModal = !!(document.querySelector('.modal.show'));
+
+            if (isInModal) {
+                // If inside a modal, wait for a short delay
+                setTimeout(() => {
+                    handleInvalidUser();
+                }, 500); // Adjust the delay as needed
+            } else {
+                // If not in a modal, proceed immediately
+                handleInvalidUser();
+            }
+
+            function handleInvalidUser() {
+                toastr.error("Invalid User");
+
+                setTimeout(function () {
+                    window.location.href = "@Url.Action("Index", "Login")";
+                }, 2000); // Redirect after 2 seconds
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<h3 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">Purchase Order</h3>
+<div class="container-fluid">
+
+    <div class="row col-md-12" style="justify-content:center">
+        <div class="col-md-3">
+            <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Select Supplier</label>
+            <select id="Supplier" class="form-control form-control-sm">
+                <option>
+                    Select Supplier
+                </option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Supplier Address</label>
+            <input type="text" class="form-control form-control-sm" id="SAddress" disabled="disabled" />
+        </div>
+        <div class="col-md-3">
+            <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Supplier Email</label>
+            <input type="text" id="SEmail" class="form-control form-control-sm" disabled="disabled" />
+        </div>
+        <div class="col-md-3">
+            <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Contact Number</label>
+            <input type="text" id="SContact" class="form-control form-control-sm" disabled="disabled" />
+        </div>
+
+        <div class="row" style="justify-content:center">
+            <div class="col-md-2">
+                <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Select Company</label>
+                <select id="Company" class="form-control form-control-sm">
+                    <option>
+                        Select Company
+                    </option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                    PO Number
+                </label>
+                <input type="text" class="form-control form-control-sm" id="POnumber" disabled="disabled" />
+                <input type="text" class="form-control form-control-sm" id="headid" hidden="hidden" />
+            </div>
+            <div class="col-md-2">
+                <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">PO Date</label>
+                <input type="date" id="PODate" class="form-control form-control-sm" disabled />
+            </div>
+            <div class="col-md-2">
+                <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Order Category</label>
+                <div class="form-check form-switch mt-1">
+                    <input class="form-check-input" type="checkbox" id="IsServiceOrder" style="cursor:pointer">
+                    <label class="form-check-label fw-bold" for="IsServiceOrder" id="orderTypeLabel" style="cursor:pointer">Material Order</label>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Select Indent</label>
+                <select id="indentid" class="form-control form-control-sm">
+                    <option>
+                        Select Indent
+                    </option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                    Indent Number
+                </label>
+                <input type="text" id="IndentNumber" class="form-control form-control-sm" value="0" />
+            </div>
+            <div class="col-md-1">
+                <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                    Indent Date
+                </label>
+                <input type="date" id="IndentDate" class="form-control form-control-sm" />
+            </div>
+            <div class="col-md-1">
+                <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                    Delivery Date
+                </label>
+                <input type="date" id="deliverydate" class="form-control form-control-sm" />
+            </div>
+
+        </div>
+        <div class="row" style="justify-content:center">
+            <div class="col-md-2">
+                <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                    Bill Taxable Amount
+                </label>
+                <input type="text" id="BillTaxableAmount" class="form-control form-control-sm" disabled="disabled" value="0.00" />
+            </div>
+            <div class="col-md-2">
+                <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                    Tax Type
+                </label>
+                <select id="taxtypeonbill" class="form-control form-control-sm">
+                    <option>--Select--</option>
+                    <option>IGST</option>
+                    <option>SGST|CGST</option>
+                </select>
+            </div>
+            <div class="col-md-1">
+                <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                    IGST
+                </label>
+                <input type="text" id="IGST" class="form-control form-control-sm" disabled="disabled" value="0.00" />
+            </div>
+            <div class="col-md-1">
+                <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                    CGST
+                </label>
+                <input type="text" id="CGST" class="form-control form-control-sm" disabled="disabled" value="0.00" />
+            </div>
+            <div class="col-md-1">
+                <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                    SGST
+                </label>
+                <input type="text" id="SGST" class="form-control form-control-sm" disabled="disabled" value="0.00" />
+            </div>
+
+            <div class="col-md-2">
+                <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                    Bill Tax Amount
+                </label>
+                <input type="text" id="Billtaxamount" class="form-control form-control-sm" disabled="disabled" value="0.00" />
+            </div>
+            <div class="col-md-2">
+                <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                    Bill Gross Amount
+                </label>
+                <input type="text" id="BillGrossAmount" class="form-control form-control-sm" disabled="disabled" value="0.00" />
+            </div>
+
+        </div>
+    </div>
+    <br />
+    <div class="row" style="justify-content:center">
+        <h5 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">Select PO Items</h5>
+        <div class="col-md-1">
+            <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Item Code</label>
+            <input type="text" id="ItemCode" class="form-control form-control-sm" />
+            <input type="text" id="Itemid" class="form-control form-control-sm d-none" style="visibility:hidden" />
+            <input type="text" id="lineid" class="form-control form-control-sm" hidden="hidden" value="0" />
+        </div>
+        <div class="col-md-1">
+            <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Item Name</label>
+            <input type="text" id="ItemName" class="form-control form-control-sm" disabled="disabled" />
+        </div>
+        @*<div class="col-md-1">
+            <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                Item Desc
+            </label>
+            <input type="text" id="ItemDesc" class="form-control form-control-sm" disabled="disabled" />
+        </div>
+        *@
+        <div class="col-md-1">
+            <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                Make
+            </label>
+            <select id="Make" class="form-control form-control-sm">
+                <option>
+                    Select Make
+                </option>
+            </select>
+        </div>
+        <div class="col-md-1">
+            <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">UOM</label>
+            <input type="text" id="UOM" class="form-control form-control-sm" disabled="disabled" />
+        </div>
+        <div class="col-md-1">
+            <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                Quantity
+            </label>
+            <input type="text" id="Qty" class="form-control form-control-sm" value="1" />
+        </div>
+        <div class="col-md-1">
+            <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                Tax %
+            </label>
+            <select id="Tax" class="form-control form-control-sm">
+                <option>
+                    Select Tax
+                </option>
+            </select>
+        </div>
+        <div class="col-md-1">
+            <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                List Price
+            </label>
+            <input type="text" id="BasicPrice" class="form-control form-control-sm" value="0" />
+        </div>
+        <div class="col-md-1">
+            <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                Disc %
+            </label>
+            <input type="text" id="Discount" class="form-control form-control-sm" value="0" />
+        </div>
+        <div class="col-md-1">
+            <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                Net Basic
+            </label>
+            <input type="text" id="NetBasic" class="form-control form-control-sm" disabled="disabled" />
+        </div>
+        <div class="col-md-1">
+            <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                Taxable AMT
+            </label>
+            <input type="text" id="TaxableAmount" class="form-control form-control-sm" disabled="disabled" />
+        </div>
+        <div class="col-md-1">
+            <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                Tax AMT
+            </label>
+            <input type="text" id="TaxAmount" class="form-control form-control-sm" disabled="disabled" />
+        </div>
+        <div class="col-md-1">
+            <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                Gross AMT
+            </label>
+            <input type="text" id="NetTotal" class="form-control form-control-sm" disabled="disabled" />
+        </div>
+    </div>
+    <br />
+    @*Button Code*@
+    <div class="row justify-content-center">
+        <div class="col-md-2">
+            <button type="button" id="AddItem" class="btn btn-success"><i class="fa fa-save"></i>Add Item</button>
+        </div>
+        <div class="col-md-2">
+            <button type="button" id="AddOtherCharges" class="btn btn-warning"><i class="fa fa-save"></i>Other Charges</button>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" id="SavePO" class="btn btn-danger"><i class="fa fa-save"></i>Save & Print PO</button>
+        </div>
+    </div>
+
+    <br />
+    <h5 id="heading" style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">Selected Items</h5>
+    <div class="col-md-12" style="justify-content:center">
+        <table id="POTable" class="table table-bordered table-striped table-sm">
+            <thead>
+                <tr>
+                    <th>Item Code</th>
+                    <th>Item Name</th>
+                    <th>Brand</th>
+                    <th>UOM</th>
+                    <th>Quantity</th>
+                    <th>Tax Type</th>
+                    <th>List Price</th>
+                    <th>Discount</th>
+                    <th>Net Basic</th>
+                    <th>Taxable Amount</th>
+                    <th>Tax Amount</th>
+                    <th>Gross Amount</th>
+                    <th>Edit Item</th>
+                    <th>Delete Item</th>
+                </tr>
+            </thead>
+            <tbody id="POItemsDetail">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<div class="modal fade" id="chargesModal" tabindex="-1" role="dialog" aria-labelledby="chargesModalLabel" aria-hidden="true">
+    @*Popup Modal Code*@
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="chargesModalLabel">Additional Charges</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body col-md-12">
+                <div class="row align-items-end">
+                    <div class="col-md-2">
+                        <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                            Frieght
+                        </label>
+                        <select id="frieghttype" class="form-control form-control-sm">
+                            <option>-Select-</option>
+                            <option>Inclusive</option>
+                            <option>Extra Amount</option>
+                            <option>Extra On Actual</option>
+                            <option>Nil</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="freightAmount">Freight Amount</label>
+                        <input type="text" class="form-control form-control-sm" id="freightAmount" value="0" disabled="disabled">
+                    </div>
+                    <div class="col-md-2">
+                        <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                            Tax
+                        </label>
+                        <select id="frieghttax" class="form-control form-control-sm" disabled="disabled">
+                            <option>Select Tax</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                            Frieght Tax
+                        </label>
+                        <input type="text" id="frieghttaxamount" class="form-control form-control-sm" value="0" disabled="disabled" />
+                    </div>
+                    <div class="col-md-4">
+                        <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                            Total Freight
+                        </label>
+                        <input type="text" id="ttlfrieght" class="form-control form-control-sm" value="0" disabled="disabled" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-2">
+                        <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                            Insurance
+                        </label>
+                        <select id="insurancetype" class="form-control form-control-sm">
+                            <option>-Select-</option>
+                            <option>Inclusive</option>
+                            <option>Extra Amount</option>
+                            <option>Extra On Actual</option>
+                            <option>Nil</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="insuranceAmount">Insurance Amt</label>
+                        <input type="text" class="form-control form-control-sm" id="insuranceAmount" value="0" disabled="disabled">
+                    </div>
+                    <div class="col-md-2">
+                        <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                            Select Tax
+                        </label>
+                        <select id="Insurancetax" class="form-control form-control-sm" disabled="disabled">
+                            <option>
+                                Select Tax
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                            Insurance Tax
+                        </label>
+                        <input type="text" id="insurancetaxamount" class="form-control form-control-sm" disabled="disabled" value="0" />
+                    </div>
+                    <div class="col-md-4">
+                        <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                            Total Insurance
+                        </label>
+                        <input type="text" id="ttlinsurace" class="form-control form-control-sm" disabled="disabled" value="0" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-2">
+                        <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                            P & F
+                        </label>
+                        <select id="pftype" class="form-control form-control-sm">
+                            <option>-Select-</option>
+                            <option>Inclusive</option>
+                            <option>Extra Amount</option>
+                            <option>Extra On Actual</option>
+                            <option>Nil</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="pfCharges">P&F Charges</label>
+                        <input type="text" class="form-control form-control-sm" id="pfCharges" value="0" disabled="disabled">
+                    </div>
+                    <div class="col-md-2">
+                        <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                            Select Tax
+                        </label>
+                        <select id="PFTax" class="form-control form-control-sm" disabled="disabled">
+                            <option>
+                                Select Tax
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                            PF Tax
+                        </label>
+                        <input type="text" class="form-control form-control-sm" id="pftaxamount" value="0" disabled="disabled" />
+                    </div>
+                    <div class="col-md-4">
+                        <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                            Total PF
+                        </label>
+                        <input type="text" class="form-control form-control-sm" id="ttlpf" value="0" disabled="disabled" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-2">
+                        <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                            Other Charges
+                        </label>
+                        <select id="othertype" class="form-control form-control-sm">
+                            <option>-Select-</option>
+                            <option>Inclusive</option>
+                            <option>Extra Amount</option>
+                            <option>Extra On Actual</option>
+                            <option>Nil</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="otherCharges">Other Charges</label>
+                        <input type="text" class="form-control form-control-sm" id="otherCharges" value="0" disabled="disabled">
+                    </div>
+                    <div class="col-md-2">
+                        <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                            Select Tax
+                        </label>
+                        <select id="OtherTax" class="form-control form-control-sm" disabled="disabled">
+                            <option>
+                                Select Tax
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                            Other Tax
+                        </label>
+                        <input type="text" id="othertaxamount" class="form-control form-control-sm" disabled="disabled" value="0" />
+                    </div>
+                    <div class="col-md-4">
+                        <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                            Total OtherCharges
+                        </label>
+                        <input type="text" id="ttlother" class="form-control form-control-sm" disabled="disabled" value="0" />
+                    </div>
+                </div>
+                <br />
+                <div class="row">
+                    <div class="col-md-3">
+                        <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                            Delivery Mode
+                        </label>
+                    </div>
+                    <div class="col-md-9">
+                        <input type="text" id="deliverymode" class="form-control form-control-sm" />
+                    </div>
+                </div>
+                <br />
+                <div class="row">
+                    <div class="col-md-3">
+                        <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                            Remarks
+                        </label>
+                    </div>
+                    <div class="col-md-9">
+                        <input type="text" id="remarks" class="form-control form-control-sm" />
+                    </div>
+                </div>
+                <br />
+                <div class="row">
+                    <div class="col-md-3">
+                        <label style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                            Payment Terms
+                        </label>
+                    </div>
+                    <div class="col-md-9">
+                        <input type="text" id="paymentterms" class="form-control form-control-sm" maxlength="150" />
+                    </div>
+                </div>
+                <br />
+                <div class="modal-footer">
+                    @*<button type="button" id="closemodal" class="btn btn-secondary" data-dismiss="modal">Reset & Close</button>*@
+                    <button type="button" id="saveChargesBtn" class="btn btn-primary">Add Charges | Recalculate Bill Total</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script src="~/toastr/Js/toastr.js"></script>
+    <link href="~/toastr/toastr.css" rel="stylesheet" />
+    
+    <script>
+        $(document).ready(function () {
+            $('#IsServiceOrder').on('change', function () {
+                if ($(this).is(':checked')) {
+                    $('#orderTypeLabel').text('Service Order').css('color', 'orange');
+                } else {
+                    $('#orderTypeLabel').text('Material Order').css('color', 'black');
+                }
+            });
+            //Save PO Script
+            $('#SavePO').click(function (event) {
+                event.preventDefault();
+                debugger;
+                reclculation();
+
+                if ($('#Company option:selected').text() === 'Select Company') {
+                    toastr.error('Select Company');
+                    $('#Company').focus();
+                    return false;
+                }
+                if ($('#Supplier option:selected').text() === 'Select Supplier') {
+                    toastr.error('Select Supplier');
+                    $('#Supplier').focus();
+                    return false;
+                }
+                $('#wait-sign').show();
+                let Supplierid = $('#Supplier option:selected').val();
+                let Companyid = $('#Company option:selected').val();
+                let headid = $('#headid').val();
+                // let PONumber = $('#POnumber').val() || 0;
+                let PODate = $('#PODate').val();
+                let IndentNumber = $('#IndentNumber').val();
+                let IndentDate = $('#IndentDate').val();
+                let DeliveryDate = $('#deliverydate').val();
+                let BillTaxableAmount = $('#BillTaxableAmount').val();
+                let taxtypeonbill = $('#taxtypeonbill option:Selected').val();
+                let IGST = $('#IGST').val();
+                let CGST = $('#CGST').val();
+                let SGST = $('#SGST').val();
+                let Billtaxamount = $('#Billtaxamount').val();
+                let BillGrossAmount = $('#BillGrossAmount').val();
+                let frieghttype = $('#frieghttype option:selected').val();
+                let freightAmount = $('#freightAmount').val();
+                let frieghttax = $('#frieghttax option:selected').val();
+                let frieghttaxamount = $('#frieghttaxamount').val();
+                let ttlfrieght = $('#ttlfrieght').val();
+                let insurancetype = $('#insurancetype option:selected').val();
+                let insuranceAmount = $('#insuranceAmount').val();
+                let Insurancetax = $('#Insurancetax option:selected').val();
+                let insurancetaxamount = $('#insurancetaxamount').val();
+                let ttlinsurace = $('#ttlinsurace').val();
+                let pftype = $('#pftype option:selected').val();
+                let pfCharges = $('#pfCharges').val();
+                let PFTax = $('#PFTax option:selected').val();
+                let pftaxamount = $('#pftaxamount').val();
+                let ttlpf = $('#ttlpf').val();
+                let othertype = $('#othertype option:selected').val();
+                let otherCharges = $('#otherCharges').val();
+                let OtherTax = $('#OtherTax option:selected').val();
+                let othertaxamount = $('#othertaxamount').val();
+                let ttlother = $('#ttlother').val();
+                let deliverymode = $('#deliverymode').val();
+                let remarks = $('#remarks').val();
+                let paymentterms = $('#paymentterms').val();
+                let isServiceOrder = $('#IsServiceOrder').is(':checked');
+                let POHeadData =
+                {
+                    Supplierid: Supplierid,
+                    Companyid: Companyid,
+                    headid: headid,
+                    // PONumber: PONumber,
+                    PODate: PODate,
+                    IndentNumber: IndentNumber,
+                    IndentDate: IndentDate,
+                    DeliveryDate: DeliveryDate,
+                    BillTaxableAmount: BillTaxableAmount,
+                    BillGrossAmount: BillGrossAmount,
+                    frieghttype: frieghttype,
+                    freightAmount: freightAmount,
+                    frieghttax: frieghttax,
+                    ttlfrieght: ttlfrieght,
+                    insurancetype: insurancetype,
+                    insuranceAmount: insuranceAmount,
+                    Insurancetax: Insurancetax,
+                    ttlinsurace: ttlinsurace,
+                    pftype: pftype,
+                    pfCharges: pfCharges,
+                    PFTax: PFTax,
+                    ttlpf: ttlpf,
+                    othertype: othertype,
+                    otherCharges: otherCharges,
+                    OtherTax: OtherTax,
+                    ttlother: ttlother,
+                    deliverymode: deliverymode,
+                    remarks: remarks,
+                    taxtypeonbill: taxtypeonbill,
+                    IGST: IGST,
+                    CGST: CGST,
+                    SGST: SGST,
+                    Billtaxamount: Billtaxamount,
+                    frieghttaxamount: frieghttaxamount,
+                    insurancetaxamount: insurancetaxamount,
+                    pftaxamount: pftaxamount,
+                    othertaxamount: othertaxamount,
+                    paymentterms: paymentterms,
+                    IsServiceOrder: isServiceOrder,
+                };
+
+                let POTableData = [];
+                $('#POItemsDetail tr').each(function () {
+                    let row = $(this);
+                    // let itemcode = row.find('td:eq(0)').text;
+                    //let make = row.find('td:eq(2)').text;
+                    let make = row.find('td:eq(2)').text();
+                    let itemcode = row.find('td:eq(0)').text();
+                    let quantity = row.find('td:eq(4)').text();
+                    let tax = row.find('td:eq(5)').text();
+                    let listprice = row.find('td:eq(6)').text();
+                    let discount = row.find('td:eq(7)').text();
+                    let netbasic = row.find('td:eq(8)').text();
+                    let taxableamount = row.find('td:eq(9)').text();
+                    let taxamount = row.find('td:eq(10)').text();
+                    let grossamount = row.find('td:eq(11)').text();
+                    let taxid = row.find('td:eq(12)').text();
+                    let itemid = row.find('td:eq(13)').text();
+                    let makeid = row.find('td:eq(14)').text();
+                    let lineid = row.find('td:eq(15)').text();
+
+                    POTableData.push({
+                        itemcode: itemcode,
+                        make: make,
+                        quantity: quantity,
+                        tax: tax,
+                        listprice: listprice,
+                        discount: discount,
+                        netbasic: netbasic,
+                        taxableamount: taxableamount,
+                        taxamount: taxamount,
+                        grossamount: grossamount,
+                        taxid: taxid,
+                        itemid: itemid,
+                        makeid: makeid,
+                        lineid: lineid,
+                    });
+                });
+                debugger;
+                $.ajax({
+                    type: 'POST',
+                    url: '/Purchase/SavePurchaseOrder',
+                    data: JSON.stringify({ HeadData: POHeadData, TableData: POTableData }), // Note the change here
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data.success) {
+                            $('#wait-sign').hide();
+                            var poId = data.Printid;
+
+                            // Open the POPrint page in a new window/tab with the poId as a query parameter
+                            window.location.href = '/Purchase/POPrint?poId=' + poId;
+                            //Refresh Existing Page
+                            //window.close();
+                        } else {
+                            toastr.error(data.message);
+                            $('#wait-sign').hide();
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        // Handle errors gracefully
+                        console.error('AJAX error:', error);
+                        toastr.error('An error occurred while saving the Purchase Order.');
+                        $('#wait-sign').hide();
+                    }
+                });
+            });
+            function reclculation() {
+                //Do Reclculations before save
+                {
+                    var taxableAmountSum = 0;
+                    var taxamountsum = 0;
+                    var grossAmountSum = 0;
+                    $("#POItemsDetail tr").each(function () {
+                        debugger;
+                        // Get the values from the Taxable Amount and Gross Amount cells
+                        var taxableAmount = parseFloat($(this).find("td:eq(9)").text()) || 0; // Assuming Taxable Amount is in the 10th column (index 9)
+                        var taxamount = parseFloat($(this).find("td:eq(10)").text()) || 0;
+                        var grossAmount = parseFloat($(this).find("td:eq(11)").text()) || 0;  // Assuming Gross Amount is in the 11th column (index 10)
+
+                        // Add the values to the respective sums
+                        taxableAmountSum += taxableAmount;
+                        taxamountsum += taxamount;
+                        grossAmountSum += grossAmount;
+                    });
+
+                    //Get Taxable Amounts
+                    var Frieght = parseFloat($('#freightAmount').val());
+                    var insurance = parseFloat($('#insuranceAmount').val());
+                    var Pf = parseFloat($('#pfCharges').val());
+                    var other = parseFloat($('#otherCharges').val());
+
+                    $('#BillTaxableAmount').val((Frieght + insurance + Pf + other + taxableAmountSum).toFixed(2));
+
+                    //Get TaxAMount
+
+                    var frieghttaxamount = parseFloat($('#frieghttaxamount').val());
+                    var insurancetaxamount = parseFloat($('#insurancetaxamount').val());
+                    var pftaxamount = parseFloat($('#pftaxamount').val());
+                    var othertaxamount = parseFloat($('#othertaxamount').val());
+
+                    $('#Billtaxamount').val(frieghttaxamount + insurancetaxamount + pftaxamount + othertaxamount + taxamountsum);
+
+                    // Get Gross Bill Amount
+                    var frieghttotal = parseFloat($('#ttlfrieght').val());
+                    var insurancetotal = parseFloat($('#ttlinsurace').val());
+                    var pftotal = parseFloat($('#ttlpf').val());
+                    var othertotal = parseFloat($('#ttlother').val());
+
+                    $('#BillGrossAmount').val((frieghttotal + insurancetotal + pftotal + othertotal + grossAmountSum).toFixed(2));
+
+                    //Update CGST \ SGST \ IGST After Other Detail Submission
+                    if ($('#taxtypeonbill option:selected').val() === 'IGST') {
+                        $('#IGST').val((frieghttaxamount + insurancetaxamount + pftaxamount + othertaxamount + taxamountsum).toFixed(2));
+                        $('#CGST').val('0.00');
+                        $('#SGST').val('0.00');
+                    }
+                    else if ($('#taxtypeonbill option:selected').val() === 'SGST|CGST') {
+                        $('#IGST').val('0.00');
+                        $('#CGST').val(((frieghttaxamount + insurancetaxamount + pftaxamount + othertaxamount + taxamountsum) / 2).toFixed(2));
+                        $('#SGST').val(((frieghttaxamount + insurancetaxamount + pftaxamount + othertaxamount + taxamountsum) / 2).toFixed(2));
+
+                    }
+                }
+            }
+        });
+    </script>
+    <script>
+        //Conditions for Other Detail in Purchase order
+
+        $(document).ready(function () {
+            $('#frieghttype, #pftype, #othertype, #insurancetype').on('input', function () {
+                //Condition for Frieght
+                if ($('#frieghttype option:selected').val() === 'Extra Amount') {
+                    $('#freightAmount').prop('disabled', false);
+                    $('#frieghttax').prop('disabled', false);
+                }
+                else {
+                    $('#freightAmount').prop('disabled', true);
+                    $('#frieghttax').prop('disabled', true);
+                };
+                //Condition for PF Type
+                if ($('#pftype option:selected').val() === 'Extra Amount') {
+                    $('#pfCharges').prop('disabled', false);
+                    $('#PFTax').prop('disabled', false);
+                }
+                else {
+                    $('#pfCharges').prop('disabled', true);
+                    $('#PFTax').prop('disabled', true);
+                };
+                //Condition for Insurance Amount
+                if ($('#insurancetype option:selected').val() === 'Extra Amount') {
+                    $('#insuranceAmount').prop('disabled', false);
+                    $('#Insurancetax').prop('disabled', false);
+                }
+                else {
+                    $('#insuranceAmount').prop('disabled', true);
+                    $('#Insurancetax').prop('disabled', true);
+                };
+                //Conditions for Other Charges
+                if ($('#othertype option:selected').val() === 'Extra Amount') {
+                    $('#otherCharges').prop('disabled', false);
+                    $('#OtherTax').prop('disabled', false);
+                }
+                else {
+                    $('#otherCharges').prop('disabled', true);
+                    $('#OtherTax').prop('disabled', true);
+                };
+
+
+            })
+
+
+        });
+
+
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            //Add Items in Table
+            //Add Item into Table
+            $('#AddItem').click(function () {
+
+                //Check if Taxtype of bill is selected or not
+                if ($('#taxtypeonbill option:selected').val() === '--Select--') {
+                    toastr.error('Select Tax on Bill');
+                    $('#taxtypeonbill').focus();
+                    return false;
+                }
+                debugger;
+                if ($('#Make option:selected').text() === 'Select Make') {
+                    toastr.error('Select Make For Item');
+                    $('#Make').focus();
+                    return false;
+                }
+
+
+                var ItemCode = $('#ItemCode').val();
+                var ItemName = $('#ItemName').val();
+                var Brand = $('#Make option:selected').text();
+                // var Brandid = $('#Make option:selected').val();
+                var UOM = $('#UOM').val();
+                var Quantity = $('#Qty').val();
+                var TaxType = $('#Tax option:selected').text();
+                var ListPrice = $('#BasicPrice').val();
+                var Discount = $('#Discount').val();
+                var NetBasic = $('#NetBasic').val();
+                var TaxableAmount = parseFloat($('#TaxableAmount').val());
+                var ItemTaxAmount = parseFloat($('#TaxAmount').val());
+                var GrossAmount = parseFloat($('#NetTotal').val());
+                var taxid = $('#Tax option:selected').val();
+                var Makeid = $('#Make option:selected').val();
+                Makeid = Makeid.replace('="', '').replace('"', '');
+                var itemid = $('#Itemid').val();
+                var lineid = $('#lineid').val() || 0;
+                // var makeid = $('#Make option:selected').val();
+
+                if (ItemCode === null || ItemCode.trim() === "" ||
+                    ItemName === null || ItemName.trim() === "" ||
+                    Brand === null || Brand.trim() === "" ||
+                    UOM === null || UOM.trim() === "" ||
+                    Quantity === null || Quantity.trim() === "" ||
+                    TaxType === null || TaxType.trim() === "" ||
+                    ListPrice === null || ListPrice.trim() === "" ||
+                    Discount === null || Discount.trim() === "" ||
+                    NetBasic === null || NetBasic.trim() === "" ||
+                    isNaN(TaxableAmount) ||
+                    isNaN(GrossAmount)) {
+
+                    // Stop the AJAX request (you'll need to adapt this to your actual AJAX code)
+                    // Example using jQuery:
+                    // $.ajax(...).abort();
+
+                    // Or you might display an error message to the user
+                    toastr.error('Check Item Line Data');
+                    return false;
+                }
+
+                //Store Bill Total
+                var Billtaxable = parseFloat($('#BillTaxableAmount').val() || 0);
+                var BillGross = parseFloat($('#BillGrossAmount').val() || 0);
+                var billtax = parseFloat($('#Billtaxamount').val() || 0);
+                var IGSTtax = parseFloat($('#IGST').val() || 0);
+                var SGSTtax = parseFloat($('#SGST').val() || 0);
+                var CGSTtax = parseFloat($('#CGST').val() || 0);
+
+                debugger;
+
+                var newrow = '<tr>' +
+                    '<td>' + ItemCode + '</td>' +
+                    '<td>' + ItemName + '</td>' +
+                    '<td>' + Brand + '</td>' +
+                    '<td>' + UOM + '</td>' +
+                    '<td>' + Quantity + '</td>' +
+                    '<td>' + TaxType + '</td>' +
+                    '<td>' + ListPrice + '</td>' +
+                    '<td>' + Discount + '</td>' +
+                    '<td>' + NetBasic + '</td>' +
+                    '<td>' + TaxableAmount + '</td>' +
+                    '<td>' + ItemTaxAmount + '</td>' +
+                    '<td>' + GrossAmount + '</td>' +
+                    '<td style="display: none;">' + taxid + '</td>' +
+                    '<td style="display: none;">' + itemid + '</td>' +
+                    '<td style="display: none;">' + Makeid + '</td>' +
+                    '<td style="display: none;">' + lineid + '</td>' +
+                    '<td><button class="edit-row btn btn-primary">Edit</button></td>' +
+                    '<td><button class="delete-row btn btn-danger">Delete</button></td>' + // Delete button
+                    '</tr>';
+
+                $('#POItemsDetail').append(newrow); // Append to the tbody with id "POItemsDetail"
+
+                //Add Amount to Bill Total
+                let newBillTaxable = parseFloat(Billtaxable + TaxableAmount);
+                let newGrossAmount = parseFloat(BillGross + GrossAmount);
+                let newbilltaxamount = parseFloat(billtax + ItemTaxAmount);
+                let newIGST = parseFloat(IGSTtax + ItemTaxAmount);
+                let newCGST = parseFloat(CGSTtax + (ItemTaxAmount / 2));
+                let newSGST = parseFloat(SGSTtax + (ItemTaxAmount / 2));
+                $('#BillTaxableAmount').val(newBillTaxable.toFixed(2));
+                $('#BillGrossAmount').val(newGrossAmount.toFixed(2));
+                $('#Billtaxamount').val(newbilltaxamount.toFixed(2));
+                //Insert Tax Amount into IGST \ CSGT \ SGST
+                if ($('#taxtypeonbill option:selected').val() === 'IGST') {
+                    $('#IGST').val(newIGST.toFixed(2));
+                    $('#CGST').val('0.00');
+                    $('#SGST').val('0.00');
+                }
+                else if ($('#taxtypeonbill option:selected').val() === 'SGST|CGST') {
+                    $('#IGST').val('0.00');
+                    $('#CGST').val(newCGST.toFixed(2));
+                    $('#SGST').val(newSGST.toFixed(2));
+
+                }
+
+                //Disable Tax Type Field After 1 Input
+                $('#taxtypeonbill').prop('disabled', true);
+
+
+                $('#ItemCode, #ItemName,#UOM, #Qty, #ItemDesc, #BasicPrice, #Discount, #NetBasic, #TaxableAmount, #NetTotal,#TaxAmount').val('');
+                $('#Discount').val(0);
+                $('#ItemCode').focus();
+
+
+            });
+            //Edit click handler
+            $('#POItemsDetail').on('click', '.edit-row', function () {
+                var row = $(this).closest('tr');
+
+                // Extract values from the row and populate the text boxes
+                $('#ItemCode').val(row.find('td:eq(0)').text());
+                $('#ItemName').val(row.find('td:eq(1)').text());
+                $('#Make').val(row.find('td:eq(14)').text()); // Assuming Makeid is in the 15th column (index 14)
+                $('#UOM').val(row.find('td:eq(3)').text());
+                $('#Qty').val(row.find('td:eq(4)').text());
+                $('#Tax').val(row.find('td:eq(12)').text()); // Assuming taxid is in the 13th column (index 12)
+                $('#BasicPrice').val(row.find('td:eq(6)').text());
+                $('#Discount').val(row.find('td:eq(7)').text());
+                $('#NetBasic').val(row.find('td:eq(8)').text());
+                $('#TaxableAmount').val(row.find('td:eq(9)').text());
+                $('#TaxAmount').val(row.find('td:eq(10)').text());
+                $('#NetTotal').val(row.find('td:eq(11)').text());
+                $('#Itemid').val(row.find('td:eq(13)').text()); // Assuming itemid is in the 14th column (index 13)
+                $('#lineid').val(row.find('td:eq(15)').text());
+
+                row.remove();
+                var taxableAmountToDelete = parseFloat(row.find('td:eq(9)').text());
+                var taxamounttodelete = parseFloat(row.find('td:eq(10)').text());
+                var grossAmountToDelete = parseFloat(row.find('td:eq(11)').text());
+                var IGSTtodelete = taxamounttodelete;
+
+                var currentBillTaxable = parseFloat($('#BillTaxableAmount').val()) || 0;
+                var updatedBillTaxable = currentBillTaxable - taxableAmountToDelete;
+                var currentbilltaxamount = parseFloat($('#Billtaxamount').val()) || 0;
+                var updatedbilltaxamount = currentbilltaxamount - taxamounttodelete;
+                var currentGrossAmount = parseFloat($('#BillGrossAmount').val()) || 0;
+                var updatedGrossAmount = currentGrossAmount - grossAmountToDelete;
+                var currentIGST = parseFloat($('#IGST').val()) || 0;
+                var updatedIGST = currentIGST - IGSTtodelete;
+                var currentSGST = parseFloat($('#SGST').val()) || 0;
+                var updatedSGST = currentSGST - (IGSTtodelete / 2);
+                var currentCGST = parseFloat($('#CGST').val()) || 0;
+                var updatedCGST = currentCGST - (IGSTtodelete / 2);
+
+
+                $('#BillTaxableAmount').val(updatedBillTaxable.toFixed(2));
+                $('#BillGrossAmount').val(updatedGrossAmount.toFixed(2));
+                $('#Billtaxamount').val(updatedbilltaxamount.toFixed(2));
+
+                //check whether its IGST or CGST/SGST and updated Deleted values
+                if ($('#taxtypeonbill option:selected').val() === 'IGST') {
+                    $('#IGST').val(updatedIGST.toFixed(2));
+                    $('#CGST').val('0.00');
+                    $('#SGST').val('0.00');
+                }
+                else if ($('#taxtypeonbill option:selected').val() === 'SGST|CGST') {
+                    $('#IGST').val('0.00');
+                    $('#CGST').val(updatedCGST.toFixed(2));
+                    $('#SGST').val(updatedSGST.toFixed(2));
+
+                }
+
+            });
+
+            // Attach click event handler to delete buttons (delegated event)
+            $('#POItemsDetail').on('click', '.delete-row', function () {
+                // Get the row being deleted
+                var row = $(this).closest('tr');
+
+                // Extract TaxableAmount and GrossAmount from the row
+                var taxableAmountToDelete = parseFloat(row.find('td:eq(9)').text());
+                var taxamounttodelete = parseFloat(row.find('td:eq(10)').text());
+                var grossAmountToDelete = parseFloat(row.find('td:eq(11)').text());
+                var IGSTtodelete = taxamounttodelete;
+
+                // Remove the row
+                row.remove();
+
+                var currentBillTaxable = parseFloat($('#BillTaxableAmount').val()) || 0;
+                var updatedBillTaxable = currentBillTaxable - taxableAmountToDelete;
+                var currentbilltaxamount = parseFloat($('#Billtaxamount').val()) || 0;
+                var updatedbilltaxamount = currentbilltaxamount - taxamounttodelete;
+                var currentGrossAmount = parseFloat($('#BillGrossAmount').val()) || 0;
+                var updatedGrossAmount = currentGrossAmount - grossAmountToDelete;
+                var currentIGST = parseFloat($('#IGST').val()) || 0;
+                var updatedIGST = currentIGST - IGSTtodelete;
+                var currentSGST = parseFloat($('#SGST').val()) || 0;
+                var updatedSGST = currentSGST - (IGSTtodelete / 2);
+                var currentCGST = parseFloat($('#CGST').val()) || 0;
+                var updatedCGST = currentCGST - (IGSTtodelete / 2);
+
+
+                $('#BillTaxableAmount').val(updatedBillTaxable.toFixed(2));
+                $('#BillGrossAmount').val(updatedGrossAmount.toFixed(2));
+                $('#Billtaxamount').val(updatedbilltaxamount.toFixed(2));
+
+                //check whether its IGST or CGST/SGST and updated Deleted values
+                if ($('#taxtypeonbill option:selected').val() === 'IGST') {
+                    $('#IGST').val(updatedIGST.toFixed(2));
+                    $('#CGST').val('0.00');
+                    $('#SGST').val('0.00');
+                }
+                else if ($('#taxtypeonbill option:selected').val() === 'SGST|CGST') {
+                    $('#IGST').val('0.00');
+                    $('#CGST').val(updatedCGST.toFixed(2));
+                    $('#SGST').val(updatedSGST.toFixed(2));
+
+                }
+
+            });
+
+            $('#AddOtherCharges').click(function () {
+                // Show the modal
+                $('#chargesModal').modal('show');
+            });
+            $('#closemodal').click(function () {
+                $('#chargesModal').modal('close');
+            });
+            $('#saveChargesBtn').click(function () {
+                var taxableAmountSum = 0;
+                var taxamountsum = 0;
+                var grossAmountSum = 0;
+                $("#POItemsDetail tr").each(function () {
+                    debugger;
+                    // Get the values from the Taxable Amount and Gross Amount cells
+                    var taxableAmount = parseFloat($(this).find("td:eq(9)").text()) || 0; // Assuming Taxable Amount is in the 10th column (index 9)
+                    var taxamount = parseFloat($(this).find("td:eq(10)").text()) || 0;
+                    var grossAmount = parseFloat($(this).find("td:eq(11)").text()) || 0;  // Assuming Gross Amount is in the 11th column (index 10)
+
+                    // Add the values to the respective sums
+                    taxableAmountSum += taxableAmount;
+                    taxamountsum += taxamount;
+                    grossAmountSum += grossAmount;
+                });
+
+                //Get Taxable Amounts
+                var Frieght = parseFloat($('#freightAmount').val());
+                var insurance = parseFloat($('#insuranceAmount').val());
+                var Pf = parseFloat($('#pfCharges').val());
+                var other = parseFloat($('#otherCharges').val());
+
+                $('#BillTaxableAmount').val((Frieght + insurance + Pf + other + taxableAmountSum).toFixed(2));
+
+                //Get TaxAMount
+
+                var frieghttaxamount = parseFloat($('#frieghttaxamount').val());
+                var insurancetaxamount = parseFloat($('#insurancetaxamount').val());
+                var pftaxamount = parseFloat($('#pftaxamount').val());
+                var othertaxamount = parseFloat($('#othertaxamount').val());
+
+                $('#Billtaxamount').val(frieghttaxamount + insurancetaxamount + pftaxamount + othertaxamount + taxamountsum);
+
+                // Get Gross Bill Amount
+                var frieghttotal = parseFloat($('#ttlfrieght').val());
+                var insurancetotal = parseFloat($('#ttlinsurace').val());
+                var pftotal = parseFloat($('#ttlpf').val());
+                var othertotal = parseFloat($('#ttlother').val());
+
+                $('#BillGrossAmount').val((frieghttotal + insurancetotal + pftotal + othertotal + grossAmountSum).toFixed(2));
+
+                //Update CGST \ SGST \ IGST After Other Detail Submission
+                if ($('#taxtypeonbill option:selected').val() === 'IGST') {
+                    $('#IGST').val((frieghttaxamount + insurancetaxamount + pftaxamount + othertaxamount + taxamountsum).toFixed(2));
+                    $('#CGST').val('0.00');
+                    $('#SGST').val('0.00');
+                }
+                else if ($('#taxtypeonbill option:selected').val() === 'SGST|CGST') {
+                    $('#IGST').val('0.00');
+                    $('#CGST').val(((frieghttaxamount + insurancetaxamount + pftaxamount + othertaxamount + taxamountsum) / 2).toFixed(2));
+                    $('#SGST').val(((frieghttaxamount + insurancetaxamount + pftaxamount + othertaxamount + taxamountsum) / 2).toFixed(2));
+
+                }
+
+
+                $('#chargesModal').modal('hide');
+
+                //$('#AddOtherCharges').prop('disabled', true);
+            });
+        });
+
+
+    </script>
+    <script>
+    $(document).ready(function () {
+        //Get Supplier List
+
+        //Get Taxes On Load
+        // Find the close button within the modal header and remove it
+        $('#chargesModal .modal-header .close').remove();
+        //});
+
+        //Get Supplier Detail
+        $('#Supplier').on('change', function () {
+            var supplierid = $(this).val();
+            $.ajax({
+                url: '@Url.Action("GetSupplierDetail", "Purchase")',
+                type: 'GET',
+                data: { Supplierid: supplierid },
+                //datatype: 'JSON',
+                success: function (data)
+                {
+                    debugger;
+                    $('#SAddress').val(data.Address);
+                    $('#SEmail').val(data.Email);
+                    $('#SContact').val(data.Contact);
+
+                }
+            })
+        })
+        $('#indentid').on('change', function () {
+            //Get Indent Date
+            var indno = $('#indentid option:selected').text();
+            var indid = $('#indentid option:selected').val();
+            $.ajax({
+                type: 'GET',
+                url: '/Purchase/GetIndentDate',
+                data: { indid: indid },
+                success: function (data) {
+                    if (data && data.IndentDate) {
+                        // Parse the date from the provided format
+                        var dateString = data.IndentDate;
+                        var milliseconds = parseInt(dateString.match(/\d+/)[0]);
+                        var momentDate = moment(milliseconds);
+
+                        if (momentDate.isValid()) {
+                            var formattedDate = momentDate.format('YYYY-MM-DD');
+                            // Display the formatted date
+                            $('#IndentDate').val(formattedDate);
+                        } else {
+                            console.error("Invalid date received from server.");
+                            $('#IndentDate').val(""); // Clear the input if the date is invalid.
+                        }
+
+                    } else {
+                        console.error("Invalid date data received.");
+                        $('#IndentDate').val(""); // Clear the input if the data is invalid.
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("AJAX Error:", status, error);
+                    $('#IndentDate').val(""); // Clear the input if the ajax fails.
+                }
+            });
+
+            $('#IndentNumber').val(indno);
+        });
+        //retrieve item details
+        $('#ItemCode').on('change', function () {
+            var itemcode = $('#ItemCode').val();
+            $.ajax({
+                url: '/Purchase/getItemDetails',
+                type: 'GET',
+                data: { itemCode: itemcode },
+                success: function (data) {
+                    if (data.success) {
+                        $('#ItemName').val(data.itemname);
+                        $('#Itemid').val(data.itemid);
+                        $('#UOM').val(data.uomText);
+                        $('#ItemDesc').val(data.itemdesc);
+                        $('#BasicPrice').val(data.Basic);
+                        $('#Qty').focus();
+                        toastr.success('Details Retrieved');
+                        var audio = new Audio('/Sound/Save.mp3');
+                        audio.play();
+                    } else {
+                        // Handle the "Item code not found" error
+                        toastr.error(data.error);
+                        $('#ItemCode').focus();
+                        // Display the error message using toastr
+                        // You might also want to clear the other item detail fields here
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('AJAX error:', error);
+                    // Display a generic error message to the user
+                    toastr.error('An error occurred while fetching item details.');
+                }
+            });
+        });
+
+        //item line scan
+        $('#BasicPrice, #Qty, #Discount, #Tax').on('input', function () {
+
+            var BasicPrice = $('#BasicPrice').val();
+            var Quantity = $('#Qty').val();
+            var DiscountPercentage = $('#Discount').val();
+            var Taxpercent = $('#Tax option:selected').attr('data-percent') || 0;
+            var taxType = $('#Tax option:selected').attr('data-type');
+            debugger;
+
+
+            var TotalPrice = parseFloat(BasicPrice * Quantity);
+            var NetBasicAmount = parseFloat(BasicPrice - (BasicPrice * DiscountPercentage / 100));
+            var NetBasic = parseFloat((BasicPrice-((BasicPrice / 100) * DiscountPercentage)));
+            var DiscountAmount = parseFloat((TotalPrice / 100) * DiscountPercentage);
+            var NetTotal = parseFloat(TotalPrice - DiscountAmount);
+            var NetBasicTaxable = parseFloat((NetBasic * Taxpercent / 100) + (NetBasic));
+            var NetTotalTaxable = parseFloat((NetTotal * Taxpercent / 100) + (NetTotal));
+            var Taxamount = parseFloat(NetTotal * Taxpercent / 100);
+            if (taxType === 'Inclusive') {
+                toastr.warning('Inclusive Calculation Not Defined in System');
+            }
+            else if (taxType === 'Exclusive') {
+                $('#NetBasic').val(NetBasicAmount.toFixed(2));
+                $('#NetTotal').val(NetTotalTaxable.toFixed(2));
+                $('#TaxableAmount').val(NetTotal.toFixed(2));
+                $('#TaxAmount').val(Taxamount.toFixed(2));
+            }
+            else
+            {
+                toastr.error('Select Tax');
+            }
+
+        })
+
+        $('#freightAmount, #insuranceAmount, #pfCharges, #otherCharges , #OtherTax, #PFTax, #Insurancetax, #frieghttax ').on('input', function () {
+
+            //Calculation is for Exclusive taxes only
+
+            //Existing TaxonBill & Total Amount
+
+            var Billtaxable = parseFloat($('#BillTaxableAmount').val() || 0);
+            var BillGross = parseFloat($('#BillGrossAmount').val() || 0);
+
+
+            var freight = parseFloat($('#freightAmount').val());
+            var insurance = parseFloat($('#insuranceAmount').val());
+            var pf = parseFloat($('#pfCharges').val());
+            var other = parseFloat($('#otherCharges').val());
+
+            //selected taxtype
+            var freighttax = $('#frieghttax option:selected').attr('data-percent') || 0;
+            var insurancetax = $('#Insurancetax option:selected').attr('data-percent') || 0;
+            var pftax = $('#PFTax option:selected').attr('data-percent') || 0;
+            var othertax = $('#OtherTax option:selected').attr('data-percent') || 0;
+
+            //Calculate tax only
+            var totalfrieghttax = parseFloat((freight * freighttax / 100));
+            var totalinsurancetax = parseFloat((insurance * insurancetax / 100));
+            var totalpftax = parseFloat((pf * pftax / 100));
+            var totalothertax = parseFloat((other * othertax / 100));
+
+            //Calculate Total for Other Detail Modal
+            var totalfrieght = parseFloat((freight * freighttax / 100) + freight);
+            var totalinsurance = parseFloat((insurance * insurancetax / 100) + insurance);
+            var totalpf = parseFloat((pf * pftax / 100) + pf);
+            var totalother = parseFloat((other * othertax / 100) + other);
+            //Show Tax Only
+            $('#frieghttaxamount').val(totalfrieghttax.toFixed(2));
+            $('#insurancetaxamount').val(totalinsurancetax.toFixed(2));
+            $('#pftaxamount').val(totalpftax.toFixed(2));
+            $('#othertaxamount').val(totalothertax.toFixed(2));
+
+            //Show Total
+            $('#ttlfrieght').val(totalfrieght.toFixed(2));
+            $('#ttlinsurace').val(totalinsurance.toFixed(2));
+            $('#ttlpf').val(totalpf.toFixed(2));
+            $('#ttlother').val(totalother.toFixed(2));
+
+
+        })
+
+    })
+
+    </script>
+    @* Load Data and also check if oiid is coming in this section*@
+    <script>
+
+
+    // Check if you are in edit mode (assuming you pass an ID in the query string)
+        $(document).ready(function () {
+            //  var poId = '@Request.QueryString["id"]';
+            var poId = '@ViewContext.RouteData.Values["id"]';
+            $('#headid').val(poId);
+            $('#wait-sign').show();
+
+
+
+            // Example usage (call the function directly):
+
+            //Used Async await to run ajax in sequence so that load dropdon first them select values
+            (async () => {
+                try {
+
+                    //Get Company on Load
+                    await $.ajax({
+                        type: 'GET',
+                        url: '/Purchase/GetCompanies',
+                        //datatype: 'JSON',
+                        success: function (data) {
+                            $('#Company').empty();
+                            $('#Company').append('<option value="' + '0' + '">' + 'Select Company' + '</option>');
+                            $.each(data, function (index, item) {
+                                $('#Company').append('<option value="' + item.value + '">' + item.text + '</option>');
+                            });
+                            setTimeout(function () {
+                                //$('#Supplier').trigger('change');
+                                toastr.success('Company Detail Succesfully Retrieved');
+                                var audio = new Audio('/Sound/Save.mp3');
+                                audio.play();
+                            }, 500);
+
+                        }
+                    });
+                    //Get Taxes
+                    await $.ajax({
+                        type: 'GET',
+                        url: '@Url.Action("GetTaxes", "Purchase")',
+                        datatype: 'JSON',
+                        success: function (data) {
+                            $('#Tax').empty();
+                            $('#OtherTax').empty();
+                            $('#PFTax').empty();
+                            $('#Insurancetax').empty();
+                            $('#frieghttax').empty();
+
+                            //$('#Tax').append('Select Tax');
+                            $('#Tax').append('<option value="' + '0' + '">' + 'Select Tax' + '</option>');
+                            $('#OtherTax').append('<option value="' + '0' + '">' + 'Select Tax' + '</option>');
+                            $('#PFTax').append('<option value="' + '0' + '">' + 'Select Tax' + '</option>');
+                            $('#Insurancetax').append('<option value="' + '0' + '">' + 'Select Tax' + '</option>');
+                            $('#frieghttax').append('<option value="' + '0' + '">' + 'Select Tax' + '</option>');
+                            $.each(data, function (index, item) {
+                                $("#Tax").append("<option value='" + item.value + "' data-percent='" + item.percent + "' data-type='" + item.type + "'>" + item.text + "</option>");
+                            });
+                            $.each(data, function (index, item) {
+                                $("#OtherTax").append("<option value='" + item.value + "' data-percent='" + item.percent + "' data-type='" + item.type + "'>" + item.text + "</option>");
+                            });
+                            $.each(data, function (index, item) {
+                                $("#PFTax").append("<option value='" + item.value + "' data-percent='" + item.percent + "' data-type='" + item.type + "'>" + item.text + "</option>");
+                            });
+                            $.each(data, function (index, item) {
+                                $("#Insurancetax").append("<option value='" + item.value + "' data-percent='" + item.percent + "' data-type='" + item.type + "'>" + item.text + "</option>");
+                            });
+                            $.each(data, function (index, item) {
+                                $("#frieghttax").append("<option value='" + item.value + "' data-percent='" + item.percent + "' data-type='" + item.type + "'>" + item.text + "</option>");
+                            });
+                            setTimeout(function () {
+                                //$('#Supplier').trigger('change');
+                                toastr.success('Taxes Succesfully Retrieved');
+                                var audio = new Audio('/Sound/Save.mp3');
+                                audio.play();
+                            }, 500);
+                        }
+                    });
+                    //Get Supplier
+                    await $.ajax({
+                        url: '@Url.Action("GetSupplier", "Purchase")',
+                        type: 'GET',
+                        datatype: 'JSON',
+                        success: function (data) {
+                            $('#Supplier').empty(); // clear existing options
+                            $('#Supplier').append('<option value="' + '0' + '">' + 'Select Supplier' + '</option>');
+                            $.each(data, function (index, item) {
+                                $('#Supplier').append('<option value="' + item.value + '">' + item.text + '</option>');
+                            });
+                            setTimeout(function () {
+                                $('#Supplier').trigger('change');
+                                toastr.success('Supplier Detail Succesfully Retrieved');
+                                var audio = new Audio('/Sound/Save.mp3');
+                                audio.play();
+                            }, 500);
+                        }
+
+                    });
+                    //Get Makes
+                    await $.ajax({
+                        type: 'GET',
+                        url: '/Purchase/GetMake',
+                        success: function (data) {                            
+                            $('#Make').empty();
+                            $('#Make').append('<option value="' + '0' + '">' + 'Select Make' + '</option>');
+                            $.each(data, function (index, item) {
+                                $('#Make').append('<option value="' + item.value + '">' + item.text + '</option>');
+                            });
+                            setTimeout(function () {
+                                // $('#Supplier').trigger('change');
+                                toastr.success('Makes Succesfully Retrieved');
+                                var audio = new Audio('/Sound/Save.mp3');
+                                audio.play();
+                            }, 500);
+                        }
+
+                    });
+                    //Get Last PO Number
+                    await $.ajax({
+                        type: 'get',
+                        url: '/Purchase/NewPONumber',
+                        success: function (data) {
+                            const today = new Date();
+
+                            // Format the date as yyyy-MM-dd
+                            const year = today.getFullYear();
+                            const month = ('0' + (today.getMonth() + 1)).slice(-2); // Month is 0-indexed
+                            const day = ('0' + today.getDate()).slice(-2);
+                            const formattedDate = `${year}-${month}-${day}`;
+
+                            // Set the value of the input field (assuming the ID is 'PODate')
+                            $('#PODate').val(formattedDate); 
+                            $('#POnumber').val(data.poNumber);
+
+                        }
+
+                    });    
+                    //Get Indent Number
+                    await $.ajax({
+                        type: 'get',
+                        url: '/Purchase/GetIndentNumbers',
+                        success: function (data) {
+                            $('#indentid').empty();
+                            $('#indentid').append('<option value="' + '0' + '">' + 'Select Indent' + '</option>');
+                            $.each(data.indent, function (index, item) {
+                                $('#indentid').append('<option value="' + item.value + '">' + item.text + '</option>');
+                            });
+                            setTimeout(function () {
+                                // $('#Supplier').trigger('change');
+                                toastr.success('Indent Succesfully Retrieved');
+                                var audio = new Audio('/Sound/Save.mp3');
+                                audio.play();
+                            }, 500);
+                        }
+
+                    });
+
+                    if (poId) {
+                        // $('#wait-sign').show();
+                        $('#Company').prop('disabled', true);
+                        $('#Supplier').prop('disabled', true);
+                        $.ajax({
+                            url: '/Purchase/EditPurchaseOrder/' + poId,
+                            type: 'GET',
+                            dataType: 'json',
+                            success: function (data) {
+                                debugger;
+                                // Populate header fields
+                                $('#POId').val(data.poHead.id);
+                                $('#POnumber').val(data.poHead.PONumber);
+                                $('#Supplier').val(data.poHead.Supplierid);
+                                $('#Company').val(data.poHead.Companyid);
+                                $('#PODate').val(data.poHead.PODate);
+                                $('#IndentNumber').val(data.poHead.IndentNumber);
+                                $('#IndentDate').val(data.poHead.IndentDate);
+                                $('#deliverydate').val(data.poHead.DeliveryDate);
+                                $('#BillTaxableAmount').val(data.poHead.BillTaxableAmount);
+                                $('#taxtypeonbill').val(data.poHead.taxtypeonbill);
+                                $('#IGST').val(data.poHead.IGST);
+                                $('#CGST').val(data.poHead.CGST);
+                                $('#SGST').val(data.poHead.SGST);
+                                $('#Billtaxamount').val(data.poHead.Billtaxamount);
+                                $('#BillGrossAmount').val(data.poHead.BillGrossAmount);
+                                $('#frieghttype').val(data.poHead.frieghttype);
+                                $('#freightAmount').val(data.poHead.freightAmount);
+                                $('#frieghttax').val(data.poHead.frieghttax);
+                                $('#frieghttaxamount').val(data.poHead.frieghttaxamount);
+                                $('#ttlfrieght').val(data.poHead.ttlfrieght);
+                                $('#insurancetype').val(data.poHead.insurancetype);
+                                $('#insuranceAmount').val(data.poHead.insuranceAmount);
+                                $('#Insurancetax').val(data.poHead.Insurancetax);
+                                $('#insurancetaxamount').val(data.poHead.insurancetaxamount);
+                                $('#ttlinsurace').val(data.poHead.ttlinsurace);
+                                $('#pftype').val(data.poHead.pftype);
+                                $('#pfCharges').val(data.poHead.pfCharges);
+                                $('#PFTax').val(data.poHead.PFTax);
+                                $('#pftaxamount').val(data.poHead.pftaxamount);
+                                $('#ttlpf').val(data.poHead.ttlpf);
+                                $('#othertype').val(data.poHead.othertype);
+                                $('#otherCharges').val(data.poHead.otherCharges);
+                                $('#OtherTax').val(data.poHead.OtherTax);
+                                $('#othertaxamount').val(data.poHead.othertaxamount);
+                                $('#ttlother').val(data.poHead.ttlother);
+                                $('#deliverymode').val(data.poHead.deliverymode);
+                                $('#remarks').val(data.poHead.remarks);
+                                $('#paymentterms').val(data.poHead.paymentterms);
+                                $('#IsServiceOrder').prop('checked', data.poHead.IsServiceOrder).trigger('change');
+                                setTimeout(function () {
+                                    //$('#Supplier').trigger('change');
+                                    toastr.warning('Purchase Order Data Succesfully Retrieved');
+                                    var audio = new Audio('/Sound/Save.mp3');
+                                    audio.play();
+                                }, 500);
+                                // Populate item table
+                                var tableHtml = '';
+                                $.each(data.poItems, function (index, item) {
+                                    tableHtml += '<tr>';
+                                    tableHtml += '<td>' + item.itemcode + '</td>';
+                                    tableHtml += '<td>' + item.itemname + '</td>';
+                                    tableHtml += '<td>' + item.make + '</td>';
+                                    tableHtml += '<td>' + item.uomText + '</td>';
+                                    tableHtml += '<td>' + item.quantity + '</td>';
+                                    tableHtml += '<td>' + item.tax + '</td>';
+                                    tableHtml += '<td>' + item.listprice + '</td>';
+                                    tableHtml += '<td>' + item.discount + '</td>';
+                                    tableHtml += '<td>' + item.netbasic + '</td>';
+                                    tableHtml += '<td>' + item.taxableamount + '</td>';
+                                    tableHtml += '<td>' + item.taxamount + '</td>';
+                                    tableHtml += '<td>' + item.grossamount + '</td>';
+                                    // Include hidden fields for item ID, tax ID, and make ID
+                                    tableHtml += '<td style="display: none;">' + item.taxid + '</td>';
+                                    tableHtml += '<td style="display: none;">' + item.itemid + '</td>';
+                                    tableHtml += '<td style="display: none;">' + item.makeid + '</td>';
+                                    tableHtml += '<td style="display: none;">' + item.lineid + '</td>';
+                                    tableHtml += '<td><button class="edit-row btn btn-primary">Edit</button></td>';
+                                    tableHtml += '<td><button class="delete-row btn btn-danger">Delete</button></td>';
+                                    tableHtml += '</tr>';
+                                });
+                                setTimeout(function () {
+                                    //$('#Supplier').trigger('change');
+                                    toastr.warning('Purchase Item Succesfully Retrieved');
+                                    var audio = new Audio('/Sound/Save.mp3');
+                                    audio.play();
+                                }, 500);
+                                debugger;
+                                $('#POItemsDetail').html(tableHtml);
+
+                                setTimeout(function () {
+                                    $('#Supplier').trigger('change');
+                                    toastr.warning('Supplier Information Succesfully Retrieved');
+                                    var audio = new Audio('/Sound/Save.mp3');
+                                    audio.play();
+                                }, 500); // Adjust the delay (in milliseconds) as needed
+                                // Trigger change events to update dependent fields (e.g., Supplier details)
+                                // $('#Supplier').trigger('change');
+
+                                // Disable the Tax Type dropdown if it's already been set
+                                if (data.poHead.taxtypeonbill !== '--Select--') {
+                                    $('#taxtypeonbill').prop('disabled', true);
+                                }
+
+                                // Enable/disable other charge fields based on their types
+                                updateOtherChargeFields();
+                                //$('#wait-sign').hide();
+                            },
+                            error: function (xhr, status, error) {
+                                console.error('AJAX error:', error);
+                                // Display an error message
+                            }
+                        });
+                    }
+
+
+                    // ... (rest of your JavaScript code)
+
+                    // Function to enable/disable other charge fields
+                    function updateOtherChargeFields() {
+                        $('#freightAmount').prop('disabled', $('#frieghttype option:selected').val() !== 'Extra Amount');
+                        $('#frieghttax').prop('disabled', $('#frieghttype option:selected').val() !== 'Extra Amount');
+                        $('#pfCharges').prop('disabled', $('#pftype option:selected').val() !== 'Extra Amount');
+                        $('#PFTax').prop('disabled', $('#pftype option:selected').val() !== 'Extra Amount');
+                        $('#insuranceAmount').prop('disabled', $('#insurancetype option:selected').val() !== 'Extra Amount');
+                        $('#Insurancetax').prop('disabled', $('#insurancetype option:selected').val() !== 'Extra Amount');
+                        $('#otherCharges').prop('disabled', $('#othertype option:selected').val() !== 'Extra Amount');
+                        $('#OtherTax').prop('disabled', $('#othertype option:selected').val() !== 'Extra Amount');
+
+                    }
+
+
+                    // Call the function initially to set the correct state of the fields
+                    updateOtherChargeFields();
+                    $('#wait-sign').hide();
+                } catch (error) {
+                    console.error('One or more AJAX calls failed:', error);
+                    // Handle errors appropriately
+                    $('#wait-sign').hide();
+                }
+            })();
+
+            // ... (Rest of your JavaScript code, including updateOtherChargeFields)
+        });
+
+    </script>
+</div>
+<img id="wait-sign" src="~/images/wait.gif" class="wait-sign-image" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);" />
+
+
+<style>
+    .wait-sign-image {
+        width: 200px;
+        height: 200px;
+    }
+</style>

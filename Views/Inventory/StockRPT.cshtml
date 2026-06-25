@@ -1,0 +1,76 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Stock Report</title>
+    <style>
+        .report-header {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .report-table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+            .report-table th, .report-table td {
+                border: 1px solid #ccc;
+                padding: 10px;
+                text-align: center;
+            }
+
+            .report-table th {
+                background-color: #f0f0f0;
+            }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="report-header">
+            <h2>Stock Report</h2>
+        </div>
+        <table class="report-table">
+            <tr>
+                <th>Company</th>
+                <th>Item Name</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Phase</th>
+                <th>Norms</th>
+                <th>Unit</th>
+                <th>Transit</th>
+                <th>Phy Logistics</th>
+                <th>Phy Plant</th>
+                <th>Ready For Allocation</th>
+                <th>WIP</th>
+                <th>Testing</th>
+                <th>Stock</th>
+                <th>Rejected Stock</th>
+            </tr>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.company</td>
+                    <td>@item.Itemname</td>
+                    <td>@item.itemdesc</td>
+                    <td>@item.Itemcategory</td>
+                    <td>@item.Phase</td>
+                    <td>@item.norms</td>
+                    <td>@item.unitofmeasurement</td>
+                    <td>@item.transit</td>
+                    <td>@item.phylogistic</td>
+                    <td>@item.phyplant</td>
+                    <td>@item.readyforallocation</td>
+                    <td>@item.wip</td>
+                    <td>@item.testing</td>
+                    <td>@item.presentstock</td>
+                    <td>@item.rejected</td>
+                </tr>
+            }
+        </table>
+    </div>
+</body>
+</html>

@@ -1,0 +1,270 @@
+﻿@{
+    ViewBag.Title = "Sales Intelligence Center";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+<style>
+    :root {
+        --brand-blue: #00698f;
+        --brand-dark: #1e293b;
+        --glass-bg: rgba(255, 255, 255, 0.98);
+    }
+
+    body {
+        background-color: #f1f5f9;
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* KPI Cards */
+    .kpi-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        border: none;
+        transition: transform 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .kpi-card:hover {
+            transform: translateY(-3px);
+        }
+
+    .kpi-label {
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #64748b;
+    }
+
+    .kpi-value {
+        font-size: 22px;
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    /* Glass Panels */
+    .glass-panel {
+        background: var(--glass-bg);
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 20px;
+        border: 1px solid #d1d5db;
+    }
+
+    /* Tabs Styling */
+    .nav-tabs {
+        border: none;
+        margin-bottom: 20px;
+        gap: 10px;
+    }
+
+        .nav-tabs .nav-link {
+            border: none;
+            border-radius: 8px;
+            color: #64748b;
+            font-weight: 700;
+            padding: 12px 25px;
+            transition: 0.3s;
+            background: #e2e8f0;
+        }
+
+            .nav-tabs .nav-link.active {
+                background: var(--brand-blue) !important;
+                color: white !important;
+                box-shadow: 0 4px 12px rgba(0, 105, 143, 0.3);
+            }
+
+    /* Table Design */
+    .report-table thead th {
+        background: #f8fafc;
+        color: var(--brand-blue);
+        font-weight: 800;
+        text-transform: uppercase;
+        font-size: 11px;
+        padding: 15px;
+        border: none;
+    }
+
+    .pro-label {
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #0f172a !important;
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    .search-container {
+        position: relative;
+    }
+
+        .search-container i {
+            position: absolute;
+            left: 15px;
+            top: 12px;
+            color: #64748b;
+        }
+
+    .search-input {
+        padding-left: 40px !important;
+        height: 40px !important;
+        border-radius: 8px;
+        border: 2px solid #cbd5e1;
+    }
+</style>
+
+<div class="container-fluid py-4 px-lg-5 animate__animated animate__fadeIn">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="fw-800 text-dark mb-0">Sales Intelligence Center</h4>
+        <ul class="nav nav-tabs" id="reportTabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="bill-tab" data-bs-toggle="tab" href="#billWise" role="tab"><i class="fa fa-file-invoice me-2"></i>Bill-Wise Summary</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="item-tab" data-bs-toggle="tab" href="#itemWise" role="tab"><i class="fa fa-boxes me-2"></i>Item-Wise Traceability</a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="glass-panel shadow-sm">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-2">
+                <label class="pro-label">From Date</label>
+                <input type="date" id="from-date" class="form-control" value="@DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-md-2">
+                <label class="pro-label">To Date</label>
+                <input type="date" id="to-date" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-md-5">
+                <label class="pro-label">Quick Filter</label>
+                <div class="search-container">
+                    <i class="fa fa-search"></i>
+                    <input type="text" id="quick-search" class="form-control search-input" placeholder="Search anything..." />
+                </div>
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-primary w-100 fw-bold h-100" style="background:var(--brand-blue); border:none;" onclick="refreshReports()">
+                    <i class="fa fa-sync-alt me-2"></i> GENERATE REPORTS
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="billWise" role="tabpanel">
+            <div class="row g-3 mb-4">
+                <div class="col-md-4"><div class="kpi-card"><div class="kpi-label">Basic Revenue</div><div class="kpi-value" id="kpi-basic">₹ 0.00</div></div></div>
+                <div class="col-md-4"><div class="kpi-card"><div class="kpi-label">Total TCS Collected</div><div class="kpi-value text-warning" id="kpi-tcs">₹ 0.00</div></div></div>
+                <div class="col-md-4"><div class="kpi-card"><div class="kpi-label">Net Realization</div><div class="kpi-value text-success" id="kpi-net">₹ 0.00</div></div></div>
+            </div>
+            <div class="glass-panel p-0 overflow-hidden">
+                <table class="table report-table mb-0" id="tblBillWise">
+                    <thead>
+                        <tr>
+                            <th>Invoice No</th>
+                            <th>Date</th>
+                            <th>Customer</th>
+                            <th class="text-end">Basic Amount</th>
+                            <th class="text-end">GST Amt</th>
+                            <th class="text-center">TCS %</th>
+                            <th class="text-end">TCS Amt</th>
+                            <th class="text-end">Grand Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bill-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="itemWise" role="tabpanel">
+            <div class="glass-panel p-0 overflow-hidden">
+                <table class="table report-table mb-0" id="tblItemWise">
+                    <thead>
+                        <tr>
+                            <th>Bill Ref</th>
+                            <th>Date</th>
+                            <th>Item Code</th>
+                            <th>Description</th>
+                            <th class="text-end">Qty</th>
+                            <th class="text-end">Rate</th>
+                            <th class="text-end">Total</th>
+                            <th>Customer</th>
+                        </tr>
+                    </thead>
+                    <tbody id="item-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<script>
+    $(document).ready(function() {
+        refreshReports();
+
+        // Instant search for both tables
+        $("#quick-search").on("keyup", function() {
+            var value = $(this).val().toLowerCase();
+            $(".report-table tbody tr").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+    });
+
+    function refreshReports() {
+        let f = $('#from-date').val();
+        let t = $('#to-date').val();
+
+        // 1. Fetch Bill-Wise Data
+        $.getJSON('@Url.Action("GetBillWiseReport", "Reports")', { fromDate: f, toDate: t }, function(res) {
+            let rows = '';
+            let basicSum = 0, tcsSum = 0, netSum = 0;
+
+            $.each(res.data, function(i, it) {
+                basicSum += it.TotalBasic;
+                tcsSum += it.TCS_Amount;
+                netSum += it.NetAmount;
+
+                        rows += `<tr class="animate__animated animate__fadeIn">
+            <td class="fw-bold text-primary">${it.InvoiceNo}</td>
+            <td>${it.InvoiceDate}</td>
+            <td class="fw-bold">${it.CustomerName}</td>
+            <td class="text-end">${(it.TotalBasic || 0).toFixed(2)}</td>
+            <td class="text-end">${(it.TotalTax || 0).toFixed(2)}</td>
+            <td class="text-center"><span class="badge bg-dark">${it.TCS || '0%'}</span></td>
+            <td class="text-end text-warning fw-bold">${(it.TCS_Amount || 0).toFixed(2)}</td>
+            <td class="text-end fw-bold">${(it.NetAmount || 0).toFixed(2)}</td>
+        </tr>`;
+            });
+            $('#bill-body').html(rows || '<tr><td colspan="8" class="text-center py-4">No Data Found</td></tr>');
+            $('#kpi-basic').text('₹ ' + basicSum.toLocaleString('en-IN'));
+            $('#kpi-tcs').text('₹ ' + tcsSum.toLocaleString('en-IN'));
+            $('#kpi-net').text('₹ ' + netSum.toLocaleString('en-IN'));
+        });
+
+        // 2. Fetch Item-Wise Data
+        $.getJSON('@Url.Action("GetItemWiseReport", "Reports")', { fromDate: f, toDate: t }, function(res) {
+            let rows = '';
+            $.each(res.data, function(i, it) {
+                rows += `<tr class="animate__animated animate__fadeIn">
+            <td class="fw-bold text-primary">${it.InvoiceNo}</td>
+            <td>${it.Date}</td>
+            <td><span class="badge bg-secondary">${it.ItemCode}</span></td>
+            <td class="fw-bold text-dark">${it.ItemDescription}</td>
+            <td class="text-end">${it.Qty || 0}</td>
+            <td class="text-end">${(it.Rate || 0).toFixed(2)}</td>
+            <td class="text-end fw-bold">${(it.LineTotal || 0).toFixed(2)}</td>
+            <td class="small text-muted">${it.CustomerName}</td>
+        </tr>`;
+            });
+            $('#item-body').html(rows || '<tr><td colspan="8" class="text-center py-4">No Data Found</td></tr>');
+        });
+    }
+</script>

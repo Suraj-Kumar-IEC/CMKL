@@ -1,0 +1,337 @@
+﻿@model CMKL.Models.ItemMasterGFE
+
+@{
+    ViewBag.Title = "Global Item Master";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const isInModal = !!(document.querySelector('.modal.show'));
+            const handleInvalidUser = () => {
+                toastr.error("Invalid User Session");
+                setTimeout(function () { window.location.href = "@Url.Action("Index", "Login")"; }, 2000);
+            };
+            setTimeout(handleInvalidUser, isInModal ? 500 : 0);
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<style>
+    :root {
+        --brand-blue: #00698f;
+        --border-color: #e2e8f0;
+        --bg-light: #f8fafc;
+    }
+
+    body {
+        background-color: var(--bg-light);
+        font-family: 'Inter', sans-serif;
+        color: #334155;
+    }
+
+    .master-header {
+        background: white;
+        padding: 15px 30px;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid var(--border-color);
+    }
+
+    .section-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+        margin-bottom: 25px;
+    }
+
+    .section-header {
+        background: #f8fafc;
+        padding: 15px 25px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .section-title {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: var(--brand-blue);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin: 0;
+    }
+
+    /* Professional Pill Labels */
+    .form-label-pill {
+        font-weight: 700;
+        font-size: 0.65rem;
+        color: #ffffff !important;
+        text-transform: uppercase;
+        background-color: var(--brand-blue);
+        padding: 2px 10px;
+        border-radius: 4px;
+        display: inline-block;
+        margin-bottom: 5px;
+    }
+
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1.5px solid var(--border-color);
+        padding: 10px 15px;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+        .form-control:focus {
+            border-color: var(--brand-blue);
+            box-shadow: 0 0 0 4px rgba(0, 105, 143, 0.1);
+        }
+
+    .btn-brand {
+        background-color: var(--brand-blue);
+        color: white;
+        font-weight: 700;
+        border-radius: 10px;
+        border: none;
+        padding: 12px 30px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.8rem;
+        transition: 0.3s;
+    }
+
+        .btn-brand:hover {
+            background-color: #005676;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 105, 143, 0.2);
+        }
+
+    /* Animation */
+    .animate-up {
+        animation: fadeInUpItem 0.6s ease forwards;
+        opacity: 0;
+    }
+
+    @@keyframes fadeInUpItem {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="container-fluid py-4 px-lg-5 animate-up">
+
+    <!-- 1. Page Header -->
+    <div class="master-header shadow-sm">
+        <div>
+            <h3 class="fw-bold m-0 text-dark">Item Master Registry</h3>
+            <p class="text-muted small m-0">Define core component specifications and technical standards.</p>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-light text-primary border px-3 py-2 rounded-pill fw-bold">
+                <i class="fas fa-database me-1"></i> Technical Inventory
+            </span>
+        </div>
+    </div>
+
+    <!-- 2. Entry Portal -->
+    <div class="section-card shadow-sm">
+        <div class="section-header">
+            <h6 class="section-title"><i class="fas fa-plus-circle me-2"></i>Product Definition Entry</h6>
+        </div>
+        <div class="card-body p-4 bg-light">
+            <form id="myForm">
+                <div class="row g-4">
+                    <!-- Entity & Identity -->
+                    <div class="col-md-3">
+                        <label class="form-label-pill">Target Entity</label>
+                        <select class="form-select shadow-sm fw-bold" id="company" name="company">
+                            <option value="">Select Company</option>
+                            <option>GFE-Kathua</option>
+                            <option>IEC-Barwala</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label-pill">Part Identity (Code)</label>
+                        @Html.TextBoxFor(x => x.Productcode, new { placeholder = "e.g. ENG-001", @class = "form-control shadow-sm fw-bold text-primary" })
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label-pill">Item Name</label>
+                        @Html.TextBoxFor(x => x.Itemname, new { placeholder = "Display Name", @class = "form-control shadow-sm" })
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label-pill">Norms / Standards</label>
+                        @Html.TextBoxFor(x => x.norms, new { placeholder = "Compliance Logic", @class = "form-control shadow-sm" })
+                    </div>
+
+                    <!-- Description -->
+                    <div class="col-md-12">
+                        <label class="form-label-pill bg-secondary">Technical Description</label>
+                        @Html.TextBoxFor(x => x.itemdesc, new { placeholder = "Detailed functional specifications...", @class = "form-control shadow-sm" })
+                    </div>
+
+                    <!-- Categorization -->
+                    <div class="col-md-3">
+                        <label class="form-label-pill bg-warning text-dark">Material Category</label>
+                        <select class="form-select shadow-sm" id="Itemcategory" name="Itemcategory">
+                            <option value="">Select Category</option>
+                            <option>Engine</option>
+                            <option>Alternator</option>
+                            <option>Canopy</option>
+                            <option>Battery</option>
+                            <option>Panel</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label-pill bg-warning text-dark">Technical Phase</label>
+                        <select class="form-select shadow-sm" id="phase" name="phase">
+                            <option>NA</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label-pill bg-warning text-dark">Stocking Unit</label>
+                        <select class="form-select shadow-sm" id="unit" name="unit">
+                            <option value="">Select Unit</option>
+                            <option>Each</option>
+                            <option>Ltr</option>
+                            <option>Kg</option>
+                            <option>Mtr</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3 d-flex align-items-end justify-content-end">
+                        <button type="button" id="add" class="btn-brand shadow w-100">
+                            <i class="fas fa-check-double me-2"></i> Add Product
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. Dynamic List Hub -->
+    <div class="section-card shadow-lg mt-4">
+        <div class="section-header bg-white">
+            <h6 class="section-title text-dark"><i class="fas fa-list-ul me-2"></i>Active Item Directory</h6>
+            <div class="badge bg-light text-muted border px-3 py-1">Synced Live</div>
+        </div>
+        <div id="divList" class="p-0">
+            <!-- Loaded via AJAX -->
+            <div class="text-center py-5 text-muted italic">
+                <div class="spinner-border spinner-border-sm text-primary me-2"></div>
+                Initializing master directory...
+            </div>
+        </div>
+    </div>
+</div>
+
+<img id="wait-sign" src="~/images/wait.gif" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10001; width:80px;" />
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+
+<script>
+    $(document).ready(function () {
+        GetData();
+
+        // 1. DYNAMIC DROPDOWN LOGIC (Phase based on Category)
+        $('#Itemcategory').change(function () {
+            var selectedValue = $(this).val();
+            if(!selectedValue) {
+                $('#phase').empty().append('<option value="NA">NA</option>');
+                return;
+            }
+
+            $('#wait-sign').show();
+            $.ajax({
+                url: '@Url.Action("dropdown", "Inventory")',
+                type: 'GET',
+                dataType: 'json',
+                data: { selectedValue: selectedValue },
+                success: function (data) {
+                    $('#wait-sign').hide();
+                    var $phase = $('#phase').empty();
+                    $phase.append('<option value="-1">-- Select Phase --</option>');
+                    $.each(data, function(i, item) {
+                        $phase.append(new Option(item, item));
+                    });
+                },
+                error: function() { $('#wait-sign').hide(); }
+            });
+        });
+
+        // 2. PRODUCT ADDITION LOGIC
+        $("#add").click(function () {
+            var data = $("#myForm").serialize();
+
+            // Validation
+            if(!$('#Itemname').val() || !$('#Productcode').val() || !$('#Itemcategory').val()) {
+                toastr.warning("Please complete all mandatory identity fields.");
+                return;
+            }
+
+            $('#wait-sign').show();
+            $.ajax({
+                type: "POST",
+                url: "/Inventory/AddProduct",
+                data: data,
+                success: function (response) {
+                    $('#wait-sign').hide();
+                    if (response.success == true) {
+                        toastr.success(response.message);
+                        resetEntryForm();
+                        GetData();
+                    } else {
+                        toastr.error(response.message || "Operation failed.");
+                    }
+                },
+                error: function () {
+                    $('#wait-sign').hide();
+                    toastr.error('Server synchronization error.');
+                }
+            });
+        });
+    });
+
+    function GetData() {
+        $.ajax({
+            type: "get",
+            url: "/Inventory/itemmasternew",
+            success: function (response) {
+                $("#divList").html(response);
+            }
+        });
+    }
+
+    function resetEntryForm() {
+        $('#myForm')[0].reset();
+        $('#phase').empty().append('<option value="NA">NA</option>');
+        // Set default values back for selects if needed
+        $('#company').val("");
+        $('#Itemcategory').val("");
+        $('#unit').val("");
+    }
+</script>

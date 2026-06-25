@@ -1,0 +1,137 @@
+﻿/* Salesforce-like design */
+
+/*.slds-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: #f7f7f7;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}*/
+
+.slds-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.slds-col {
+    flex-basis: 0;
+    flex-grow: 1;
+    max-width: 100%;
+}
+
+.slds-size-1-of-2 {
+    flex-basis: 50%;
+}
+
+.slds-size-1-of-1 {
+    flex-basis: 100%;
+}
+
+.slds-card {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.slds-card__header {
+    background-color: #337ab7;
+    color: #fff;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.slds-card__body {
+    padding: 20px;
+}
+
+.slds-form-element {
+    margin-bottom: 20px;
+}
+
+.slds-form-element__label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+.slds-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.slds-select {
+    width: 100%;
+    padding: 5px; /* Reduced padding */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px; /* Reduced font size */
+    height: 30px; /* Adjust height as needed */
+}
+
+    .slds-select option {
+        font-size: 14px; /* Reduced font size for options */
+    }
+
+.slds-button {
+    background-color: #337ab7;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+    .slds-button:hover {
+        background-color: #23527c;
+    }
+
+/* Styles for labels */ .form-group label,
+label { /* Include standalone labels */
+    background-color: #00698f;
+    padding: 4px 8px;
+    color: #ffffff;
+    border-radius: 4px;
+    font-size: 14px; /* Adjust font size as needed */
+    margin-bottom: 5px; /* Add some spacing below the label */
+    display: inline-block; /* Prevent label from taking full width */
+}
+
+/* Styles for small form controls (inputs, selects, etc.) */ .form-control-sm,
+select.form-control-sm { /* Target select elements specifically */
+    font-size: 14px; /* Adjust font size */
+    padding: 5px; /* Adjust padding */
+    height: 30px; /* Adjust height */
+}
+
+    /* Styles for select options (if needed) */ .form-control-sm option,
+    select.form-control-sm option {
+        font-size: 14px; /* Adjust font size for options */
+    }
+
+/* Optional: Adjust width of select if needed */
+select.form-control-sm {
+    width: 200px; /* Or a percentage, e.g., width: 50%; */
+}
+
+.form-group { /* Adjust margin between form groups */
+    margin-bottom: 10px; /* Reduced margin */
+}
+.sticky-header {
+    position: sticky;
+    top: 0;
+    background-color: #f0f0f0;
+    z-index: 1;
+}
+
+.table-sm td, .table-sm th {
+    font-size: 0.7rem; /* Adjust the value as needed */
+}
+
+
+

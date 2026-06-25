@@ -1,0 +1,164 @@
+﻿
+@{
+    ViewBag.Title = "CreateBreakdown";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if the current context is inside a Bootstrap modal
+            const isInModal = !!(document.querySelector('.modal.show'));
+
+            if (isInModal) {
+                // If inside a modal, wait for a short delay
+                setTimeout(() => {
+                    handleInvalidUser();
+                }, 500); // Adjust the delay as needed
+            } else {
+                // If not in a modal, proceed immediately
+                handleInvalidUser();
+            }
+
+            function handleInvalidUser() {
+                toastr.error("Invalid User");
+
+                setTimeout(function () {
+                    window.location.href = "@Url.Action("Index", "Login")";
+                }, 2000); // Redirect after 2 seconds
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+<style>
+    #save {
+        background-color: #00698f;
+        color: #ffffff;
+        border-color: #0070d2;
+    }
+</style>
+<h3 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">Machine BreakDown Form</h3>
+
+<div class="container">
+    <div class="card">
+        <div class="card-header text-center">
+            Machine Breakdown Details
+        </div>
+        <div class="card-body">
+            <div id="form-status-message" class="alert d-none" role="alert"></div>
+            <form id="breakdownForm">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="MachineName" class="form-label">Machine Name</label>
+                        <select id="MachineId" class="form-control form-control-sm"></select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="SubunitName" class="form-label">Subunit</label>
+                        <select id="SubunitId" class="form-control form-control-sm"></select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="ProblemDescription" class="form-label">Problem Description</label>
+                        <textarea class="form-control" id="ProblemDescription" name="ProblemDescription" rows="2" required></textarea>
+                    </div>
+
+                </div>
+                <div class="row">
+                    <div class="text-end">
+                        <button type="submit" id="save" class="btn btn-primary">Submit Complaint</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add jQuery and Bootstrap scripts to ensure they are loaded before your custom script -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script>
+    $(document).ready(function () {
+        Getdata();
+        //GetRecords();
+        function Getdata() {
+            $.ajax({
+                url: '/Asset/GetmachineData',
+                type: 'GET',
+                success: function (data) {
+                    $('#MachineId').empty();
+                    $('#MachineId').append('<option value"">-- Select Machine --</option>')
+
+                    // Add a default blank option
+                    $.each(data.machine, function (index, item) {
+                        $('#MachineId').append('<option value="' + item.value + '">' + item.text + '</option>');
+                    });
+
+                }
+            })
+
+        }
+        $('#MachineId').change(function () {
+            var MachineID = $('#MachineId').val();
+            $.ajax({
+                type: 'GET',
+                url: '/Asset/GetSubUnit', // Assuming this returns { success: bool, subunit: [...] }
+                data: { MachineID: MachineID },
+                success: function (response) { // Use 'response' for consistency
+                    $('#SubunitId').empty();
+                    $('#SubunitId').append('<option value="">-- Select Subunit --</option>'); // Add default option
+                    if (response.success && response.subunit && response.subunit.length > 0) { // Check for success and data
+                        $.each(response.subunit, function (index, item) {
+                            $('#SubunitId').append('<option value="' + item.value + '">' + item.text + '</option>');
+                        });
+                        //$('#SubunitId').prop('disabled', false); // Enable dropdown
+                    } else {
+                        toastr.info(response.message || 'No SubUnits linked with this Machine.');
+                        // $('#SubunitId').prop('disabled', false); // Enable dropdown even if empty
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("AJAX Error fetching subunits:", status, error, xhr.responseText);
+                    toastr.error('Error loading Subunits. Please try again.', 'Error');
+                    $('#SubunitId').empty().append('<option value="">-- Error Loading Subunits --</option>').prop('disabled', false);
+                }
+            });
+        })
+    })
+</script>
+<script>
+    $('#breakdownForm').on('submit', function (e) {
+        e.preventDefault();
+        var breakdownmodel = {
+            machineid: $('#MachineId').val(),
+            subunitid: $('#SubunitId').val(),
+            ProblemDescription: $('#ProblemDescription').val()
+        };
+    var formData = $(this).serialize();
+    var statusMessage = $('#form-status-message');
+
+    $.ajax({
+        url: '@Url.Action("SubmitBreakdown", "Asset")',
+        type: 'POST',
+        data: breakdownmodel,
+        success: function (response) {
+            if (response.success) {
+                toastr.success(response.message);
+                statusMessage.removeClass('d-none alert-danger').addClass('alert-success').text(response.message);
+                $('#breakdownForm')[0].reset();
+            } else {
+                statusMessage.removeClass('d-none alert-success').addClass('alert-danger').text(response.message);
+            }
+            statusMessage.removeClass('d-none');
+        },
+        error: function () {
+            statusMessage.removeClass('d-none alert-success').addClass('alert-danger').text('An unexpected error occurred.');
+            statusMessage.removeClass('d-none');
+        }
+    });
+    });
+</script>
+
+

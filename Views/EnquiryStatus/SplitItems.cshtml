@@ -1,0 +1,164 @@
+﻿@model CMKL.VMModels.Splitjobclass
+
+
+<br />
+<hr />
+@{
+    //string URole = "";
+    if (Session["U_Role"] == null)
+    {
+        Response.Redirect("~/Login/Index");
+        ViewBag.logout = "User Logged Out, Please Login Again";
+        // URole = Session["U_Role"].ToString();
+    }
+    else
+    {
+    }
+
+}
+@Html.TextBox("NENT", (object)ViewBag.NEN, new { id = "NENT" })
+
+<input type="text" id="NENT" name="NENT" @ViewBag.NEN>
+
+@if (ViewBag.Delete != null)
+
+{
+    <script src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script src="~/toastr/Js/toastr.js"></script>
+    <link href="~/toastr/toastr.css" rel="stylesheet" />
+
+    <script type="text/javascript">
+        window.onload = function () {
+            toastr.success("@ViewBag.Delete")
+            //this.alert("@ViewBag.Delete")
+        }
+    </script>
+}
+@if (ViewBag.msg != null)
+
+{
+    <script src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script src="~/toastr/Js/toastr.js"></script>
+    <link href="~/toastr/toastr.css" rel="stylesheet" />
+
+    <script type="text/javascript">
+        window.onload = function () {
+            toastr.success("@ViewBag.msg")
+            //this.alert("@ViewBag.Delete")
+        }
+    </script>
+}
+
+@if (Model.CEI != null)
+{
+    <p>
+        @*  @Html.ActionLink("Add New", "Create")*@
+    </p>
+
+
+    <table class="table table-striped">
+        <tr>
+            <th>
+                ID
+            </th>
+            <th>
+                Enquiry No
+            </th>
+            <th>
+                Description
+            </th>
+            <th>
+                Quantity
+            </th>
+            <th>
+                Unit Price
+            </th>
+            <th>
+                Total Price
+            </th>
+            <th>
+                HSN
+            </th>
+            <th>
+                R1
+            </th>
+            <th>
+                R2
+            </th>
+            <th>
+                R3
+            </th>
+            <th>
+                R4
+            </th>
+            <th>
+                R5
+            </th>
+
+            <th></th>
+        </tr>
+
+        @foreach (var item in Model.CEI)
+        {
+            <tr>
+
+                <td>
+                    @item.ID
+
+                </td>
+                <td>
+                    @item.EnquiryN
+
+                </td>
+                <td>
+                    @item.Item_Desc
+
+                </td>
+                <td>
+                    @item.Qty
+
+                </td>
+                <td>
+                    @item.Unitprice
+
+                </td>
+                <td>
+                    @item.Total_Price
+
+                </td>
+                <td>
+                    @item.HSNCode
+
+                </td>
+                <td>
+                    @item.Rone
+
+                </td>
+                <td>
+                    @item.RTwo
+
+                </td>
+                <td>
+                    @item.Rthree
+
+                </td>
+                <td>
+                    @item.Rfour
+
+                </td>
+                <td>
+                    @item.Rfive
+
+                </td>
+                <td>
+                    @*  @Html.ActionLink("Edit", "Edit", new { id = item.id }) |*@
+                    @*  @Html.ActionLink("Details", "EmailManage", new { id = item.id }) |*@ |
+                    @Html.ActionLink("Move", "MoveItems", new { id = item.ID, item = ViewBag.NEN, masterid = ViewBag.ONEN, HID=ViewBag.HID })
+                </td>
+            </tr>
+        }
+
+    </table>
+}

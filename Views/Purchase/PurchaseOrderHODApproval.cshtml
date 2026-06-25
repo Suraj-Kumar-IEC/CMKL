@@ -1,0 +1,274 @@
+﻿@{
+    ViewBag.Title = "PO Admin Approval Console";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const isInModal = !!(document.querySelector('.modal.show'));
+            if (isInModal) {
+                setTimeout(() => { handleInvalidUser(); }, 500);
+            } else {
+                handleInvalidUser();
+            }
+            function handleInvalidUser() {
+                toastr.error("Invalid User Session");
+                setTimeout(function () { window.location.href = "@Url.Action("Index", "Login")"; }, 2000);
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<style>
+    /* Scoped Container for Professional Aesthetic */
+    .approval-container {
+        background-color: #f1f5f9;
+        font-family: 'Inter', sans-serif;
+        color: #334155;
+        font-size: 0.8rem;
+    }
+
+    .report-header {
+        background: white; padding: 15px 30px; border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); margin-bottom: 20px;
+        display: flex; justify-content: space-between; align-items: center;
+        border: 1px solid #e2e8f0;
+    }
+
+    .section-card {
+        background: white; border-radius: 12px; padding: 20px;
+        margin-bottom: 20px; border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    /* KPI Tiles */
+    .stat-card {
+        background: white; border-radius: 10px; padding: 12px 20px;
+        border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        display: flex; flex-direction: column; height: 100%;
+        transition: transform 0.2s ease;
+    }
+    .stat-card:hover { transform: translateY(-3px); }
+    .stat-label { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; }
+    .stat-value { font-size: 1.4rem; font-weight: 800; color: #00698f; }
+
+    /* Modern Table Style */
+    .table thead th {
+        background-color: #f8fafc; color: #00698f; font-weight: 800;
+        font-size: 0.7rem; text-transform: uppercase; padding: 12px 10px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .table tbody td {
+        vertical-align: middle; padding: 12px 10px; font-size: 0.8rem;
+    }
+
+    .btn-action {
+        border-radius: 6px; font-weight: 700; font-size: 0.7rem; padding: 8px 14px;
+        transition: 0.3s; text-transform: uppercase; letter-spacing: 0.5px;
+        display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        width: 100%;
+        max-width: 180px;
+    }
+
+    /* Mobile Responsive Card-Flip Logic */
+    @@media (max-width: 768px) {
+        .report-header { flex-direction: column; text-align: center; gap: 10px; padding: 15px; }
+        .stat-value { font-size: 1.1rem; }
+
+        /* Table to Cards */
+        #PO thead { display: none; }
+        #PO, #PO tbody, #PO tr, #PO td { display: block; width: 100%; }
+        #PO tr { margin-bottom: 15px; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        #PO td { text-align: right; padding-left: 50%; position: relative; border-bottom: 1px solid #f1f5f9; min-height: 40px; border-top: 0; }
+        #PO td:last-child { border-bottom: 0; padding-left: 0; text-align: center; margin-top: 10px; }
+
+        #PO td::before {
+            content: attr(data-label); position: absolute; left: 10px; width: 45%;
+            text-align: left; font-weight: 800; color: #64748b; font-size: 0.65rem; text-transform: uppercase;
+        }
+
+        .btn-action { max-width: none; margin-bottom: 10px; padding: 12px; }
+    }
+
+    .wait-sign-image { width: 80px; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10001; }
+</style>
+
+<div class="approval-container container-fluid py-4 px-lg-5 animate-up">
+
+    <!-- 1. Executive Header -->
+    <div class="report-header shadow-sm">
+        <div>
+            <h4 class="fw-bold m-0 text-dark">Purchase Admin Approval</h4>
+            <p class="text-muted small m-0">Authorized review for pending procurement contracts.</p>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-light text-primary border px-3 py-2 rounded-pill fw-bold">
+                <i class="fas fa-shield-alt me-1"></i> Admin Verification
+            </span>
+        </div>
+    </div>
+
+    <!-- 2. KPI Section (Redesigned with 4 Tiles) -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #00698f;">
+                <span class="stat-label">Pending Vouchers</span>
+                <span class="stat-value" id="kpi-count">0</span>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #198754;">
+                <span class="stat-label">Active Suppliers</span>
+                <span class="stat-value text-success" id="kpi-suppliers">0</span>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #6366f1;">
+                <span class="stat-label">Approval Level</span>
+                <span class="stat-value" style="color: #6366f1;">HOD</span>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #fd7e14;">
+                <span class="stat-label">System Feed</span>
+                <span class="stat-value text-warning" id="engineStatus">Live</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Approval Table -->
+    <div class="section-card shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-bold m-0 text-primary uppercase small"><i class="fas fa-clock me-2"></i>Orders Awaiting Authorization</h6>
+            <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="fetchAndUpdateTable()">
+                <i class="fas fa-sync-alt me-1"></i> Sync Now
+            </button>
+        </div>
+        <div class="table-responsive">
+            <table id="PO" class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>PO Number</th>
+                        <th>PO Date</th>
+                        <th>Supplier Name</th>
+                        <th>Created By</th>
+                        <th class="text-center">Technical Review</th>
+                        <th class="text-center">Authorization</th>
+                    </tr>
+                </thead>
+                <tbody id="POitems">
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <div class="spinner-border spinner-border-sm text-primary"></div>
+                            <div class="mt-2 small fw-bold text-muted">Scanning for pending approvals...</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<img id="wait-sign" src="~/images/wait.gif" class="wait-sign-image" style="display: none;" />
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+
+<script>
+    $(document).ready(function () {
+        fetchAndUpdateTable();
+        setInterval(fetchAndUpdateTable, 5000);
+    });
+
+    function fetchAndUpdateTable() {
+        $.ajax({
+            type: 'get',
+            url: '/Purchase/PurchaseOrderPendingAdmin',
+            success: function (data) {
+                var tablebody = $('#POitems');
+                var currentCount = tablebody.find('tr[data-id]').length;
+
+                tablebody.empty();
+
+                // Update Dashboard KPIs
+                $('#kpi-count').text(data.length);
+
+                // Calculate Unique Suppliers
+                let suppliers = new Set();
+                data.forEach(item => suppliers.add(item.SupplierName));
+                $('#kpi-suppliers').text(suppliers.size);
+
+                if (data.length > 0) {
+                    if (data.length > currentCount) {
+                        var audio = new Audio('/Sound/Save.mp3');
+                        audio.play().catch(e => { });
+                    }
+
+                    $.each(data, function (index, item) {
+                        var date = moment(parseInt(item.PODate.substr(6)));
+                        var formattedPODate = date.format('DD-MM-YYYY');
+
+                        var row = `<tr data-id="${item.id}">
+                            <td data-label="PO Number" class="fw-bold text-dark">${item.PONumber}</td>
+                            <td data-label="PO Date"><span class="badge bg-light text-muted border">${formattedPODate}</span></td>
+                            <td data-label="Supplier Name" class="fw-bold text-primary">${item.SupplierName}</td>
+                            <td data-label="Created By"><small class="fw-bold text-muted">${item.EnteredBy}</small></td>
+                            <td data-label="Review" class="text-center">
+                                <div class="d-flex flex-column flex-md-row gap-2 justify-content-center">
+                                    <a href="/Purchase/POPrint?poId=${item.id}" target="_blank" class="btn btn-action btn-primary shadow-sm">
+                                        <i class="fas fa-print"></i> VIEW & PRINT
+                                    </a>
+                                </div>
+                            </td>
+                            <td data-label="Action" class="text-center">
+                                <div class="d-flex flex-column flex-md-row gap-2 justify-content-center">
+                                    <button type="button" onclick="approveOrder(${item.id}, this)" class="btn btn-action btn-success shadow-sm">
+                                        <i class="fas fa-check-circle"></i> APPROVE PO
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>`;
+                        tablebody.append(row);
+                    });
+                } else {
+                    tablebody.append('<tr><td colspan="6" class="text-center py-5 text-muted italic">No pending orders found in the system.</td></tr>');
+                }
+            }
+        });
+    }
+
+    function approveOrder(id, btn) {
+        var $btn = $(btn);
+
+        // Disable to prevent double click and provide visual feedback
+        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i> PROCESSING...');
+        $('#wait-sign').show();
+
+        $.ajax({
+            url: '/Purchase/ApprovePurchaseOrderAdmin',
+            type: 'post',
+            data: { id: id },
+            success: function (data) {
+                $('#wait-sign').hide();
+                if (data.success) {
+                    toastr.success(data.message || "Purchase Order Authorized.");
+                    fetchAndUpdateTable();
+                } else {
+                    toastr.error(data.message || "Approval transaction failed.");
+                    $btn.prop('disabled', false).html('<i class="fas fa-check-circle me-2"></i> APPROVE PO');
+                }
+            },
+            error: function () {
+                $('#wait-sign').hide();
+                toastr.error("Server connection error.");
+                $btn.prop('disabled', false).html('<i class="fas fa-check-circle me-2"></i> APPROVE PO');
+            }
+        });
+    }
+</script>

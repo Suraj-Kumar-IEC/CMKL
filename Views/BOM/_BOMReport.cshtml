@@ -1,0 +1,23 @@
+﻿@model List<CMKL.Models.BOMItem>
+
+<h2>BOM Report</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Item Code</th>
+            <th>Item Name</th>
+            <th>Quantity</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.ItemCode</td>
+                <td>@item.ItemName</td>
+                <td>@item.Quantity</td>
+            </tr>
+        }
+    </tbody>
+</table>

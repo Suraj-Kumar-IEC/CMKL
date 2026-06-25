@@ -1,0 +1,65 @@
+﻿
+@{
+    ViewBag.Title = "Photography";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Photography</h2>
+
+@*@page
+    @model BufferedSingleFileUploadPhysicalModel*@
+
+<h1>Image Scanner</h1>
+
+<form method="post" enctype="multipart/form-data">
+    <input asp-for="FileUpload.FormFiles" type="file" multiple>
+    <button type="submit">Scan Images</button>
+</form>
+
+@if (Model.ScannedImages != null)
+{
+    <h2>Scanned Images</h2>
+    <ul>
+        @foreach (var image in Model.ScannedImages)
+        {
+            <li>
+                <img src="@image.ImageUrl" alt="@image.ImageName" />
+                <p>Image Name: @image.ImageName</p>
+                <p>Image Type: @image.ImageType</p>
+            </li>
+        }
+    </ul>
+}
+
+@section Scripts {
+    <script>
+        // Use Fetch API or XMLHttpRequest to send the file to the server
+        // and get the scanned images
+        async function scanImages() {
+            const formData = new FormData();
+            formData.append('FileUpload.FormFiles', document.querySelector('input[type="file"]').files[0]);
+
+            try {
+                const response = await fetch('/ScanImages', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const scannedImages = await response.json();
+                // Update the UI with the scanned images
+                const imageList = document.getElementById('image-list');
+                scannedImages.forEach(image => {
+                    const imageElement = document.createElement('li');
+                    imageElement.innerHTML = `
+                                <img src="${image.ImageUrl}" alt="${image.ImageName}" />
+                                <p>Image Name: ${image.ImageName}</p>
+                                <p>Image Type: ${image.ImageType}</p>
+                            `;
+                    imageList.appendChild(imageElement);
+                });
+            } catch (error) {
+                console.error(error);
+            }
+        }
+    </script>
+}

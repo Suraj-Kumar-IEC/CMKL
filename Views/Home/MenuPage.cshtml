@@ -1,0 +1,373 @@
+﻿@{
+    ViewBag.Title = "ERP Management Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    /* 1. Dashboard Theme Colors */
+    :root {
+        --brand-blue: #00698f;
+        --brand-red: #dc3545;
+        --bg-light: #f8fbfe;
+        --card-shadow: 0 10px 30px rgba(0, 105, 143, 0.08);
+    }
+
+    body {
+        background-color: var(--bg-light);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* 2. Entrance Animations */
+    .animate-tile {
+        opacity: 0;
+        transform: translateY(30px);
+        animation: fadeInUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+
+    @@keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Staggered delays for a "wave" effect */
+    .delay-1 {
+        animation-delay: 0.05s;
+    }
+
+    .delay-2 {
+        animation-delay: 0.1s;
+    }
+
+    .delay-3 {
+        animation-delay: 0.15s;
+    }
+
+    .delay-4 {
+        animation-delay: 0.2s;
+    }
+
+    .delay-5 {
+        animation-delay: 0.25s;
+    }
+
+    .delay-6 {
+        animation-delay: 0.3s;
+    }
+
+    .delay-7 {
+        animation-delay: 0.35s;
+    }
+
+    .delay-8 {
+        animation-delay: 0.4s;
+    }
+
+    .delay-9 {
+        animation-delay: 0.45s;
+    }
+
+    /* 3. Card Styling */
+    .module-card {
+        background: #ffffff;
+        border: 1px solid #eef2f6;
+        border-radius: 20px;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        padding: 2rem 1.5rem;
+    }
+
+        .module-card:hover {
+            transform: translateY(-12px);
+            box-shadow: var(--card-shadow);
+            border-color: var(--brand-blue);
+        }
+
+    .icon-box {
+        width: 70px;
+        height: 70px;
+        background: #f0f7f9;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+        .icon-box i {
+            font-size: 1.8rem;
+            color: var(--brand-blue);
+            transition: all 0.3s ease;
+        }
+
+    .module-card:hover .icon-box {
+        background: var(--brand-blue);
+        transform: rotate(-5deg) scale(1.1);
+    }
+
+        .module-card:hover .icon-box i {
+            color: #ffffff;
+        }
+
+    .module-title {
+        font-weight: 800;
+        font-size: 1.15rem;
+        color: #2d3436;
+        text-align: center;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* 4. Link List (Hidden until hover) */
+    .link-container {
+        max-height: 0;
+        opacity: 0;
+        overflow-y: auto;
+        transition: all 0.5s ease;
+        scrollbar-width: thin;
+    }
+
+    .module-card:hover .link-container {
+        max-height: 350px;
+        opacity: 1;
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid #f1f4f8;
+    }
+
+    .dashboard-link {
+        display: block;
+        padding: 8px 12px;
+        color: #636e72;
+        text-decoration: none;
+        font-size: 0.88rem;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+        .dashboard-link:hover {
+            background: #e7f3f7;
+            color: var(--brand-blue);
+            padding-left: 1.5rem;
+            font-weight: 600;
+        }
+
+    /* 5. Special Admin Theme */
+    .admin-theme:hover .icon-box {
+        background: var(--brand-red);
+    }
+
+    .admin-theme:hover {
+        border-color: var(--brand-red);
+    }
+
+    .admin-theme .icon-box i {
+        color: var(--brand-red);
+    }
+
+    .admin-theme .dashboard-link:hover {
+        background: #fff0f1;
+        color: var(--brand-red);
+    }
+
+    .welcome-banner {
+        background: linear-gradient(135deg, #00698f 0%, #004d69 100%);
+        border-radius: 25px;
+        padding: 3rem;
+        color: white;
+        margin-bottom: 4rem;
+        box-shadow: 0 15px 35px rgba(0, 105, 143, 0.2);
+    }
+</style>
+
+<div class="container py-5">
+    <!-- Header Section -->
+    <div class="welcome-banner text-center animate-entrance">
+        <h1 class="display-5 fw-bold mb-2">Management Command Center</h1>
+        <p class="lead opacity-75">Welcome, <span class="fw-bold">@Session["U_Name"]</span>. Please select a module to begin your workflow.</p>
+    </div>
+
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+
+        @if (Session["EndCustomer"] != null && Session["EndCustomer"].ToString() == "ADMIN")
+        {
+            <!-- 1. Master Data Tile -->
+            <div class="col animate-tile delay-1">
+                <div class="module-card shadow-sm">
+                    <div class="icon-box"><i class="fas fa-id-card"></i></div>
+                    <div class="module-title">Masters</div>
+                    <div class="link-container">
+                        @Html.ActionLink("Item Master", "itemmaster", "BOM", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Item Master FG", "ItemmasterFG", "Inventory", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Supplier Master", "SupplierMaster", "Master", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Department Master", "DepartmentMaster", "Master", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Make Master", "MakeMaster", "Purchase", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Update Item Detail", "UpdateItem", "Inventory", null, new { @class = "dashboard-link" })
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Inventory Tile -->
+            <div class="col animate-tile delay-2">
+                <div class="module-card shadow-sm">
+                    <div class="icon-box"><i class="fas fa-warehouse"></i></div>
+                    <div class="module-title">Inventory</div>
+                    <div class="link-container">
+                        @Html.ActionLink("Purchase Order", "PurchaseOrder", "Purchase", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("PO Pending", "PONotApproved", "Purchase", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("PO Approved", "ApprovedPurchaseOrders", "Purchase", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Gate Receipt", "GoodsReciept", "Inventory", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Material Voucher", "PurchaseVoucher", "Purchase", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Stock Issue", "Stockissue", "Inventory", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Production Planning", "BOMPlanning", "BOM", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Dispatch FG", "Dispatch", "Production", null, new { @class = "dashboard-link" })
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Quality Tile -->
+            <div class="col animate-tile delay-3">
+                <div class="module-card shadow-sm">
+                    <div class="icon-box"><i class="fas fa-vial"></i></div>
+                    <div class="module-title">Quality Control</div>
+                    <div class="link-container">
+                        @Html.ActionLink("Pending Quality Bills", "GetHeads", "Inventory", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Rejection Return", "QualityRejectionReturn", "Inventory", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Line Rejection", "LineRejection", "Inventory", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Update Testing Detail", "PendingEwap", "Production", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Pending PDI Cases", "PendingPDI", "Production", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Dispatch Return QC", "FGReturnQualityAction", "Production", null, new { @class = "dashboard-link" })
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. BOM Tile -->
+            <div class="col animate-tile delay-4">
+                <div class="module-card shadow-sm">
+                    <div class="icon-box"><i class="fas fa-sitemap"></i></div>
+                    <div class="module-title">BOM & Production</div>
+                    <div class="link-container">
+                        @Html.ActionLink("BOM Item Linking", "BOMItemLink", "BOM", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Create BOM", "BOM", "BOM", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Return BOM Creation", "FGReturnBOMCreation", "Production", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Cancel BOM", "BOMCancellation", "BOM", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Change Requisition", "BOMChangeRequisition", "BOM", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Update Prod Status", "PendingProductionView", "Production", null, new { @class = "dashboard-link" })
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Approvals Tile -->
+            <div class="col animate-tile delay-5">
+                <div class="module-card shadow-sm">
+                    <div class="icon-box"><i class="fas fa-stamp"></i></div>
+                    <div class="module-title">Approvals</div>
+                    <div class="link-container">
+                        @Html.ActionLink("BOM Req. Approval", "BOMRequisitionApproval", "BOM", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Sale Return BOM", "ReturnBomApproval", "Production", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Indent Approval", "BOMIndentApproval", "BOM", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("PO Admin Approval", "PurchaseOrderHODApproval", "Purchase", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Line Rejection Appr", "PendingLineRejectionApproval", "Inventory", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Asset Admin Appr", "PendingApproval", "Asset", null, new { @class = "dashboard-link" })
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. Asset Management Tile -->
+            <div class="col animate-tile delay-6">
+                <div class="module-card shadow-sm">
+                    <div class="icon-box"><i class="fas fa-cogs"></i></div>
+                    <div class="module-title">Asset Mgmt</div>
+                    <div class="link-container">
+                        @Html.ActionLink("Machine Master", "MachineMaster", "Asset", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("SubUnit Master", "SubUnitMaster", "Asset", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Task Master", "TaskMaster", "Asset", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Asset Allocation", "AssetAllocationMaster", "Asset", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Maintenance Log", "PendingMaintananceLogBook", "Asset", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Report Breakdown", "CreateBreakdown", "Asset", null, new { @class = "dashboard-link" })
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. Reports Tile (Categorized List) -->
+            <div class="col animate-tile delay-7">
+                <div class="module-card shadow-sm">
+                    <div class="icon-box"><i class="fas fa-file-chart-line"></i></div>
+                    <div class="module-title">Reports</div>
+                    <div class="link-container">
+                        @Html.ActionLink("Stock Report", "Index", "StockReport", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Stock WIP", "Stockinprocess", "StockReport", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Ready to Dispatch", "ReadytoDispatch", "StockReport", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Stock Movement", "StockMovementReport", "StockReport", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("PO Itemwise Report", "PurchaseOrderItemsReport", "Reports", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Quality Rejection", "QualityRejectionReturnReport", "Reports", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Item Consumption", "ItemConsumptionReport", "Reports", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Sale Report", "SaleReport", "Reports", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("FIFO Traceability", "LotStockReport", "Reports", null, new { @class = "dashboard-link" })
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (Session["U_Role"] != null && Session["U_Role"].ToString() == "SUPERADMIN")
+        {
+            <!-- 8. System Admin Tile -->
+            <div class="col animate-tile delay-8">
+                <div class="module-card admin-theme shadow-sm">
+                    <div class="icon-box"><i class="fas fa-shield-alt"></i></div>
+                    <div class="module-title">System Admin</div>
+                    <div class="link-container">
+                        @Html.ActionLink("Vendor Contacts", "Create", "Vendors", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("SQL Backup", "SQLbackup", "Master", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("BOM Alteration", "BOMAlteration", "BOM", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Reverse Ewap Case", "ReverseEwap", "Production", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("CMKL Docs Upload", "CMKLDocumentUpload", "CMKLProduct", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Cancel Packing Slip", "CancelPackingSlip", "Production", null, new { @class = "dashboard-link" })
+                    </div>
+                </div>
+            </div>
+
+            <!-- 9. Configuration & Utilities Tile -->
+            <div class="col animate-tile delay-9">
+                <div class="module-card admin-theme shadow-sm">
+                    <div class="icon-box"><i class="fas fa-sliders-h"></i></div>
+                    <div class="module-title">OE & Utilities</div>
+                    <div class="link-container">
+                        @Html.ActionLink("CPCBII Permission", "CPCBPermission", "OE", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Enquiry Revision", "ReverseEnquiry", "EnquiryStatus", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Travelling Allowance", "TAView", "TA", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Dealer Payment Update", "DealerView", "OE", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Logistic Stock In", "BPRPendingCases", "Inventory", null, new { @class = "dashboard-link" })
+                        @Html.ActionLink("Generate MRN", "MRNPrint", "Purchase", null, new { @class = "dashboard-link" })
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+
+<script>
+    $(document).ready(function () {
+        // Accessibility: Allow tile click to expand on mobile/touch
+        $('.module-card').on('click', function (e) {
+            if (e.target.tagName !== 'A') {
+                $(this).find('.link-container').css('max-height', '350px').css('opacity', '1');
+            }
+        });
+    });
+</script>

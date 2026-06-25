@@ -1,0 +1,338 @@
+﻿@{
+    ViewBag.Title = "Pending Purchase Order Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const isInModal = !!(document.querySelector('.modal.show'));
+            if (isInModal) {
+                setTimeout(() => { handleInvalidUser(); }, 500);
+            } else {
+                handleInvalidUser();
+            }
+            function handleInvalidUser() {
+                toastr.error("Invalid User Session");
+                setTimeout(function () { window.location.href = "@Url.Action("Index", "Login")"; }, 2000);
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<style>
+    /* 1. Global Refinements */
+    .po-report-container {
+        background-color: #f8fafc;
+        font-family: 'Inter', sans-serif;
+        color: #334155;
+    }
+
+    .report-header {
+        background: white;
+        padding: 15px 30px;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid #e2e8f0;
+    }
+
+    /* 2. KPI Stat Cards */
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.2s;
+        height: 100%;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+    .stat-label {
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #64748b;
+        letter-spacing: 0.5px;
+        margin-bottom: 5px;
+    }
+
+    .stat-value {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: #00698f;
+    }
+
+    /* 3. Table Aesthetics */
+    .table-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    .table thead th {
+        background: #f1f5f9;
+        color: #00698f;
+        font-weight: 800;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border: none;
+        padding: 15px;
+    }
+
+    .table tbody td {
+        vertical-align: middle;
+        padding: 12px 15px;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.8rem;
+    }
+
+    /* 4. Search Component */
+    .search-pill {
+        border-radius: 20px;
+        border: 1.5px solid #e2e8f0;
+        padding: 8px 20px;
+        outline: none;
+        width: 300px;
+        transition: 0.3s;
+    }
+
+        .search-pill:focus {
+            border-color: #00698f;
+            box-shadow: 0 0 0 4px rgba(0, 105, 143, 0.1);
+        }
+
+    /* 5. Status Badges */
+    .badge-pill {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        display: inline-block;
+    }
+
+    .bg-approved {
+        background: #dcfce7;
+        color: #16a34a;
+        border: 1px solid #bbf7d0;
+    }
+
+    .bg-pending {
+        background: #fee2e2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+    }
+
+    .po-number-tag {
+        font-weight: 700;
+        color: #00698f;
+        background: #e0f2fe;
+        padding: 2px 8px;
+        border-radius: 6px;
+    }
+
+    .animate-up {
+        animation: fadeInUp 0.5s ease forwards;
+        opacity: 0;
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="po-report-container container-fluid py-4 px-lg-5">
+
+    <!-- Header Area -->
+    <div class="report-header animate-up">
+        <div>
+            <h4 class="fw-bold m-0 text-dark">Pending Purchase Order Registry</h4>
+            <p class="text-muted small m-0">Live audit of procurement vouchers awaiting multi-level authorization.</p>
+        </div>
+        <div class="d-flex gap-3 align-items-center">
+            <input type="text" id="quickSearch" class="search-pill shadow-sm" placeholder="Quick Search (Supplier, PO, User)..." />
+            <button class="btn btn-success rounded-pill px-4 fw-bold shadow-sm" onclick="exportToExcel()">
+                <i class="fas fa-file-excel me-2"></i> Export Analysis
+            </button>
+        </div>
+    </div>
+
+    <!-- KPI Section -->
+    <div class="row g-4 mb-4 animate-up" style="animation-delay: 0.1s;">
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #00698f;">
+                <span class="stat-label">Orders in Queue</span>
+                <span class="stat-value" id="kpi-count">0 Records</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #10b981;">
+                <span class="stat-label">Total Value (Pending)</span>
+                <span class="stat-value text-success" id="kpi-value">₹ 0.00</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #ef4444;">
+                <span class="stat-label">Admin Approval Pending</span>
+                <span class="stat-value text-danger" id="kpi-admin-pending">0 Units</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #fd7e14;">
+                <span class="stat-label">S-Admin Authorization</span>
+                <span class="stat-value text-warning" id="kpi-sadmin-pending">0 Units</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Table -->
+    <div class="table-card shadow-lg animate-up" style="animation-delay: 0.2s;">
+        <div class="table-responsive" style="max-height: 65vh;">
+            <table id="pendingPoTable" class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th class="text-center"># ID</th>
+                        <th>PO Reference</th>
+                        <th class="text-center">PO Date</th>
+                        <th>Supplier Entity</th>
+                        <th class="text-end">Gross Amount</th>
+                        <th class="text-center">Admin Appr.</th>
+                        <th class="text-center">S-Admin Appr.</th>
+                        <th>Entered By</th>
+                        <th class="text-center">System Log</th>
+                    </tr>
+                </thead>
+                <tbody id="poDataBody">
+                    <tr>
+                        <td colspan="9" class="text-center py-5">
+                            <div class="spinner-border spinner-border-sm text-primary me-2"></div>
+                            Retrieving procurement queue...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<img id="wait-sign" src="~/images/wait.gif" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999; width: 80px;" />
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            fetchPendingPurchaseOrders();
+
+            // REAL-TIME QUICK SEARCH
+            $("#quickSearch").on("keyup", function() {
+                var value = $(this).val().toLowerCase();
+                $("#poDataBody tr").filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+
+        function fetchPendingPurchaseOrders() {
+            $('#wait-sign').show();
+            $.ajax({
+                url: '@Url.Action("GetPendingPurchaseOrders", "Reports")',
+                type: 'GET',
+                dataType: 'json',
+                success: function (response) {
+                    $('#wait-sign').hide();
+                    var tbody = $('#poDataBody');
+                    tbody.empty();
+
+                    if (response.success && response.data.length > 0) {
+                        let totalValue = 0;
+                        let adminPending = 0;
+                        let sadminPending = 0;
+
+                        $.each(response.data, function (index, po) {
+                            var poDate = po.PODate ? moment(parseInt(po.PODate.substr(6))).format('DD/MM/YYYY') : '---';
+                            var enteredOn = po.EnteredOn ? moment(parseInt(po.EnteredOn.substr(6))).format('DD/MM/YYYY HH:mm') : '---';
+                            var amount = parseFloat(po.BillGrossAmount || 0);
+
+                            // Accumulate KPI Data
+                            totalValue += amount;
+                            if (po.AdminApproval === 0) adminPending++;
+                            if (po.SAdminApproval === 0) sadminPending++;
+
+                            var row = `<tr>
+                                <td class="text-center text-muted small">#${po.Id}</td>
+                                <td><span class="po-number-tag">${po.PONumber}</span></td>
+                                <td class="text-center small">${poDate}</td>
+                                <td class="fw-bold text-dark text-truncate" style="max-width: 250px;" title="${po.SupplierName}">${po.SupplierName}</td>
+                                <td class="text-end fw-bold text-primary">₹ ${amount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                                <td class="text-center">${getBadge(po.AdminApproval)}</td>
+                                <td class="text-center">${getBadge(po.SAdminApproval)}</td>
+                                <td><small class="fw-bold text-muted">${po.EnteredBy}</small></td>
+                                <td class="text-center small text-muted">${enteredOn}</td>
+                            </tr>`;
+                            tbody.append(row);
+                        });
+
+                        // Update KPI Tiles
+                        $('#kpi-count').text(response.data.length + " Records");
+                        $('#kpi-value').text("₹ " + totalValue.toLocaleString('en-IN', {maximumFractionDigits: 0}));
+                        $('#kpi-admin-pending').text(adminPending + " Units");
+                        $('#kpi-sadmin-pending').text(sadminPending + " Units");
+
+                        toastr.success("Procurement queue synchronized.");
+                    } else {
+                        tbody.append('<tr><td colspan="9" class="text-center py-5 text-muted italic">No pending purchase orders found.</td></tr>');
+                        updateKPIsEmpty();
+                    }
+                },
+                error: function () {
+                    $('#wait-sign').hide();
+                    toastr.error("Failed to connect to the report server.");
+                }
+            });
+        }
+
+        function getBadge(status) {
+            if (status === 1) return '<span class="badge-pill bg-approved">Approved</span>';
+            return '<span class="badge-pill bg-pending">Pending</span>';
+        }
+
+        function updateKPIsEmpty() {
+            $('#kpi-count').text("0 Records");
+            $('#kpi-value').text("₹ 0.00");
+            $('#kpi-admin-pending, #kpi-sadmin-pending').text("0 Units");
+        }
+
+        function exportToExcel() {
+            var table = document.getElementById("pendingPoTable");
+            var wb = XLSX.utils.table_to_book(table, { raw: true });
+            XLSX.writeFile(wb, 'Pending_PO_Report_' + new Date().getTime() + '.xlsx');
+            toastr.info("Generating Excel document...");
+        }
+    </script>
+}

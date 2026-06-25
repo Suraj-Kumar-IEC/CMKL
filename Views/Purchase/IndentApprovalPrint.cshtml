@@ -1,0 +1,351 @@
+﻿@{
+    ViewBag.Title = "Approved Indent Intelligence";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const isInModal = !!(document.querySelector('.modal.show'));
+            const handleInvalidUser = () => {
+                toastr.error("Session Expired. Please Login.");
+                setTimeout(() => { window.location.href = "@Url.Action("Index", "Login")"; }, 2000);
+            };
+            setTimeout(handleInvalidUser, isInModal ? 500 : 0);
+        });
+    </script>
+    <div class="vh-100 vw-100 bg-white"></div>
+}
+
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+<style>
+    :root {
+        --brand-blue: #00698f;
+        --brand-dark: #004d69;
+        --light-bg: #f8fafc;
+        --border-color: #e2e8f0;
+    }
+
+    body {
+        background-color: var(--light-bg);
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+    }
+
+    /* Page Header with Gradient */
+    .report-header {
+        background: linear-gradient(135deg, var(--brand-blue) 0%, var(--brand-dark) 100%);
+        color: white;
+        padding: 1.5rem 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    /* Dashboard KPI Tiles */
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 18px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.2s ease;
+        height: 100%;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--brand-blue);
+        }
+
+    .stat-label {
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #64748b;
+        letter-spacing: 0.5px;
+        margin-bottom: 5px;
+    }
+
+    .stat-value {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: var(--brand-blue);
+    }
+
+    /* Main Table Container */
+    .custom-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .card-header-custom {
+        background: #fff;
+        padding: 15px 20px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .card-title-line {
+        font-weight: 700;
+        color: var(--brand-blue);
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        margin: 0;
+    }
+
+    /* Quick Search Bar */
+    .search-wrapper {
+        position: relative;
+        width: 350px;
+    }
+
+        .search-wrapper i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+
+    .search-input {
+        border-radius: 25px !important;
+        padding-left: 40px !important;
+        background: #f8fafc !important;
+        border: 1.5px solid var(--border-color) !important;
+        height: 38px !important;
+        font-size: 0.85rem;
+    }
+
+    /* Table Enhancements */
+    .table thead th {
+        background: #f1f5f9;
+        color: var(--brand-blue);
+        font-weight: 800;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        border: none;
+        padding: 12px 15px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .table tbody td {
+        vertical-align: middle;
+        font-size: 0.8rem;
+        padding: 12px 15px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .voucher-pill {
+        font-weight: 700;
+        font-size: 0.7rem;
+        color: #ffffff;
+        background-color: var(--brand-blue);
+        padding: 3px 10px;
+        border-radius: 4px;
+        display: inline-block;
+    }
+
+    .btn-print {
+        background-color: #198754;
+        color: white;
+        font-weight: 700;
+        border: none;
+        border-radius: 6px;
+        padding: 6px 15px;
+        font-size: 0.7rem;
+        transition: 0.2s;
+        text-transform: uppercase;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .btn-print:hover {
+            background-color: #157347;
+            transform: translateY(-1px);
+            color: white;
+            text-decoration: none;
+        }
+
+    .animate-up {
+        animation: fadeInUp 0.5s ease forwards;
+        opacity: 0;
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="container-fluid px-4 py-4">
+    <!-- Header -->
+    <div class="report-header d-flex justify-content-between align-items-center animate-up">
+        <div>
+            <h2 class="mb-0 fw-bold"><i class="fas fa-file-invoice-dollar mr-3"></i> Approved Indent Repository</h2>
+            <small class="text-white-50">Authorized material requisitions ready for procurement processing</small>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-white text-primary border px-3 py-2 rounded-pill fw-bold shadow-sm">
+                <i class="fas fa-check-double mr-2"></i> Verified Stream
+            </span>
+        </div>
+    </div>
+
+    <!-- Dashboard KPI Tiles -->
+    <div class="row g-3 mb-4 animate-up" style="animation-delay: 0.1s;">
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid var(--brand-blue);">
+                <span class="stat-label">Total Approved Indents</span>
+                <span class="stat-value" id="kpi-total">0</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #10b981;">
+                <span class="stat-label">Total Material Items</span>
+                <span class="stat-value text-success" id="kpi-items">0</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #6366f1;">
+                <span class="stat-label">Active Initiators</span>
+                <span class="stat-value" id="kpi-users" style="color: #6366f1;">0</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #f59e0b;">
+                <span class="stat-label">Last Approved On</span>
+                <span class="stat-value text-warning" id="kpi-date">---</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Card -->
+    <div class="custom-card shadow-sm animate-up" style="animation-delay: 0.2s;">
+        <div class="card-header-custom">
+            <h6 class="card-title-line"><i class="fas fa-list-check mr-2"></i> Authorization Archive</h6>
+            <div class="search-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" id="quickSearch" class="form-control search-input" placeholder="Quick find voucher, staff or item count...">
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table id="indentsTable" class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 180px;">Voucher Number</th>
+                        <th class="text-center">Item Volume</th>
+                        <th>Created By</th>
+                        <th class="text-center">Approval Date</th>
+                        <th class="text-center">Management Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="indentsBody">
+                    <tr><td colspan="5" class="text-center py-5 text-muted">Initialising secure ledger...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<img id="wait-sign" src="~/images/wait.gif" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10005; width: 80px;" />
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            loadApprovedIndents();
+
+            // Real-time Instant Search
+            $("#quickSearch").on("keyup", function() {
+                var value = $(this).val().toLowerCase();
+                $("#indentsBody tr").filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+
+        function loadApprovedIndents() {
+            $('#wait-sign').show();
+            $('#indentsBody').html('<tr><td colspan="5" class="text-center py-5 text-muted"><i class="fas fa-sync fa-spin mr-2"></i> Accessing authorized records...</td></tr>');
+
+            $.ajax({
+                url: '@Url.Action("GetIndents", "Purchase")',
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    $('#wait-sign').hide();
+                    var tbody = $('#indentsBody');
+                    tbody.empty();
+
+                    if (data && data.length > 0) {
+                        let stats = { totalItems: 0, users: new Set(), lastDate: null };
+
+                        $.each(data, function (index, item) {
+                            // Logic for KPI Tracking
+                            stats.totalItems += parseInt(item.TotalItems || 0);
+                            if (item.CreatedBy) stats.users.add(item.CreatedBy);
+
+                            // Date Formatting
+                            var vdt = new Date(parseInt(item.CreatedOn.substr(6)));
+                            var formattedDate = moment(vdt).format('DD/MM/YYYY');
+
+                            // Keep track of most recent date
+                            if (!stats.lastDate || vdt > stats.lastDate) stats.lastDate = vdt;
+
+                            var row = `
+                                <tr>
+                                    <td><span class="voucher-pill shadow-sm">${item.VoucherNumber}</span></td>
+                                    <td class="text-center"><span class="badge bg-light text-primary border px-3 py-1 rounded-pill fw-bold">${item.TotalItems} Lines</span></td>
+                                    <td class="fw-bold text-dark">${item.CreatedBy || 'System'}</td>
+                                    <td class="text-center text-muted small">${formattedDate}</td>
+                                    <td class="text-center">
+                                        <a href="/Purchase/IndentPrint?id=${item.id}" target="_blank" class="btn-print shadow-sm">
+                                            <i class="fas fa-print"></i> Generate Document
+                                        </a>
+                                    </td>
+                                </tr>`;
+                            tbody.append(row);
+                        });
+
+                        // Update KPI Dashboard
+                        $('#kpi-total').text(data.length);
+                        $('#kpi-items').text(stats.totalItems);
+                        $('#kpi-users').text(stats.users.size);
+                        $('#kpi-date').text(stats.lastDate ? moment(stats.lastDate).format('DD MMM') : '---');
+
+                    } else {
+                        tbody.append('<tr><td colspan="5" class="text-center py-5 text-muted italic">No authorized indents identified in the current reporting period.</td></tr>');
+                    }
+                },
+                error: function () {
+                    $('#wait-sign').hide();
+                    toastr.error('System synchronization failure. Please refresh.');
+                }
+            });
+        }
+    </script>
+}

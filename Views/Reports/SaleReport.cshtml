@@ -1,0 +1,600 @@
+﻿@using System.Globalization
+@{
+    ViewBag.Title = "Executive Sale Analytics";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const isInModal = !!(document.querySelector('.modal.show'));
+            const handleInvalidUser = () => {
+                toastr.error("Session Expired. Please Login.");
+                setTimeout(() => { window.location.href = "@Url.Action("Index", "Login")"; }, 2000);
+            };
+            setTimeout(handleInvalidUser, isInModal ? 500 : 0);
+        });
+    </script>
+    <div class="vh-100 vw-100 bg-white"></div>
+}
+
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+
+<style>
+    :root {
+        --brand-blue: #00698f;
+        --brand-dark: #004d69;
+        --light-bg: #f8fafc;
+        --border-color: #e2e8f0;
+    }
+
+    body {
+        background-color: var(--light-bg);
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+    }
+
+    /* Header Styling */
+    .report-header {
+        background: linear-gradient(135deg, var(--brand-blue) 0%, var(--brand-dark) 100%);
+        color: white;
+        padding: 1.5rem 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    /* Dashboard KPI Tiles */
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 15px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.2s ease;
+        height: 100%;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--brand-blue);
+        }
+
+    .stat-label {
+        font-size: 0.6rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #64748b;
+        letter-spacing: 0.5px;
+        margin-bottom: 5px;
+    }
+
+    .stat-value {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: var(--brand-blue);
+    }
+
+    /* Filter & Table Sections */
+    .custom-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .card-header-custom {
+        background: #f8fafc;
+        padding: 15px 20px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .card-title-line {
+        font-weight: 700;
+        color: var(--brand-blue);
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        margin: 0;
+    }
+
+    .form-control-sm {
+        border-radius: 6px;
+        border: 1.5px solid var(--border-color);
+        height: 38px;
+    }
+
+    .btn-generate {
+        background-color: var(--brand-blue);
+        color: white;
+        font-weight: 700;
+        border: none;
+        padding: 0 25px;
+        border-radius: 6px;
+        height: 38px;
+        transition: 0.2s;
+    }
+
+        .btn-generate:hover {
+            background-color: var(--brand-dark);
+            transform: translateY(-1px);
+        }
+
+    /* Independent Search Bar */
+    .search-wrapper {
+        position: relative;
+        width: 300px;
+    }
+
+        .search-wrapper i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+
+    .search-input {
+        border-radius: 20px !important;
+        padding-left: 35px !important;
+        background: #fff !important;
+    }
+
+    /* Table Enhancements */
+    .table-responsive {
+        max-height: 600px;
+        overflow: auto;
+    }
+
+    .table thead th {
+        position: sticky;
+        top: 0;
+        background: #f1f5f9;
+        color: var(--brand-blue);
+        font-weight: 800;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        border: none;
+        padding: 12px 10px;
+        z-index: 10;
+    }
+
+    .table tbody td {
+        vertical-align: middle;
+        font-size: 0.75rem;
+        padding: 10px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .total-row {
+        background-color: #f1f5f9 !important;
+        font-weight: 800;
+        color: var(--brand-blue);
+    }
+</style>
+
+<div class="container-fluid px-4 py-4">
+    <!-- Header -->
+    <div class="report-header d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="mb-0 fw-bold"><i class="fas fa-chart-line mr-3"></i> Sale Report Analytics</h2>
+            <small class="text-white-50">Comprehensive audit of outbound logistics and commercial returns</small>
+        </div>
+        <div>
+            <button type="button" class="btn btn-success btn-sm rounded-pill px-4 fw-bold shadow-sm" onclick="exportToExcel()" id="btnExport" style="display:none;">
+                <i class="fas fa-file-excel mr-2"></i> Export to Excel
+            </button>
+        </div>
+    </div>
+
+    <!-- Dashboard KPI Tiles -->
+    <div class="row g-3 mb-4">
+        <div class="col-md">
+            <div class="stat-card" style="border-left: 5px solid var(--brand-blue);">
+                <span class="stat-label">Gross Sales Value</span>
+                <span class="stat-value" id="tileTotalSale">₹ 0.00</span>
+            </div>
+        </div>
+        <div class="col-md">
+            <div class="stat-card" style="border-left: 5px solid #dc3545;">
+                <span class="stat-label">Returns Value</span>
+                <span class="stat-value text-danger" id="tileTotalReturn">₹ 0.00</span>
+            </div>
+        </div>
+        <div class="col-md">
+            <div class="stat-card" style="border-left: 5px solid #10b981;">
+                <span class="stat-label">Net Sale Units (DG)</span>
+                <span class="stat-value text-success" id="tileNetQty">0 Units</span>
+            </div>
+        </div>
+        <div class="col-md">
+            <div class="stat-card" style="border-left: 5px solid #f59e0b;">
+                <span class="stat-label">Net Battery Units</span>
+                <span class="stat-value" style="color:#f59e0b" id="tileBatteryQty">0 Units</span>
+            </div>
+        </div>
+        <div class="col-md">
+            <div class="stat-card" style="border-left: 5px solid #6366f1;">
+                <span class="stat-label">Consolidated Tax</span>
+                <span class="stat-value" style="color:#6366f1" id="tileTotalTax">₹ 0.00</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="custom-card mb-4">
+        <div class="card-header-custom">
+            <h6 class="card-title-line"><i class="fas fa-filter mr-2"></i> Report Parameters</h6>
+        </div>
+        <div class="card-body bg-light">
+            <div class="row g-3 align-items-end justify-content-center">
+                <div class="col-md-3">
+                    <label class="small fw-bold text-muted uppercase">From Date</label>
+                    <input type="date" id="fromDate" class="form-control form-control-sm" />
+                </div>
+                <div class="col-md-3">
+                    <label class="small fw-bold text-muted uppercase">To Date</label>
+                    <input type="date" id="toDate" class="form-control form-control-sm" />
+                </div>
+                <div class="col-md-2">
+                    <button type="button" id="generate" class="btn btn-generate w-100 shadow-sm">
+                        <i class="fas fa-sync-alt mr-2"></i> Run Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Sales Table Section -->
+    <div class="custom-card shadow-sm">
+        <div class="section-header p-3 d-flex justify-content-between align-items-center bg-white border-bottom">
+            <h6 class="card-title-line text-primary"><i class="fas fa-file-invoice-dollar mr-2"></i> Invoiced Sales Summary</h6>
+            <div class="search-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchSales" class="form-control form-control-sm search-input" placeholder="Search customer, invoice or serial...">
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table id="salereport" class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Invoice No</th>
+                        <th>OA</th>
+                        <th class="text-center">Inv. Date</th>
+                        <th>Customer Name</th>
+                        <th>Billing Address</th>
+                        <th>Shipping Address</th>
+                        <th>GST No</th>
+                        <th>Rating</th>
+                        <th>Engine Model</th>
+                        <th>Engine Sr No</th>
+                        <th>Alternator</th>
+                        <th>KRM</th>
+                        <th class="text-center">DG Qty</th>
+                        <th>Battery Rating</th>
+                        <th>Battery S/No</th>
+                        <th class="text-center">B.Qty</th>
+                        <th>Panel Serial</th>
+                        <th>Control Panel</th>
+                        <th class="text-end">Basic Price</th>
+                        <th class="text-end">Freight</th>
+                        <th class="text-end">IGST</th>
+                        <th class="text-end">CGST</th>
+                        <th class="text-end">SGST</th>
+                        <th class="text-end text-primary">Grand Total</th>
+                        <th>Transport</th>
+                        <th>Vehicle</th>
+                        <th>Item</th>
+                    </tr>
+                </thead>
+                <tbody id="salelines">
+                    <tr><td colspan="26" class="text-center py-5 text-muted italic">Configure filters and run report to view sales data.</td></tr>
+                </tbody>
+                <tfoot class="total-row">
+                    <tr>
+                        <td colspan="12" class="text-end">REPORT TOTALS:</td>
+                        <td id="totalsalequantity" class="text-center">0</td>
+                        <td colspan="2"></td>
+                        <td id="totalbatteryquantity" class="text-center">0</td>
+                        <td colspan="2"></td>
+                        <td id="totalBasicPrice" class="text-end">0.00</td>
+                        <td id="totalFrieght" class="text-end">0.00</td>
+                        <td id="totalTaxAmount" class="text-end">0.00</td>
+                        <td id="CGST" class="text-end">0.00</td>
+                        <td id="SGST" class="text-end">0.00</td>
+                        <td id="totalGrandTotal" class="text-end">0.00</td>
+                        <td colspan="2"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <!-- Sale Return Table Section -->
+    <div class="custom-card shadow-sm border-danger" style="border-top-width: 4px;">
+        <div class="section-header p-3 d-flex justify-content-between align-items-center bg-white border-bottom">
+            <h6 class="card-title-line text-danger"><i class="fas fa-undo-alt mr-2"></i> Sales Return & Credit Notes</h6>
+            <div class="search-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchReturns" class="form-control form-control-sm search-input" placeholder="Search return voucher or customer...">
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table id="salereturnreport" class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Ret. Voucher</th>
+                        <th class="text-center">Ret. Date</th>
+                        <th>Inv. No</th>
+                        <th>OA</th>
+                        <th class="text-center">Inv. Date</th>
+                        <th>Customer Name</th>
+                        <th>Billing Address</th>
+                        <th>Shipping Address</th>
+                        <th>GST No</th>
+                        <th>Genset Rating</th>
+                        <th>Engine Model</th>
+                        <th>Engine S/No</th>
+                        <th>Alternator</th>
+                        <th>KRM No</th>
+                        <th class="text-center">Qty</th>
+                        <th>Battery Rating</th>
+                        <th>Battery S/No</th>
+                        <th class="text-center">B.Qty</th>
+                        <th>Panel Serial</th>
+                        <th>Control Panel</th>
+                        <th>Problem Statement</th>
+                        <th class="text-end">Basic Price</th>
+                        <th class="text-end">Freight</th>
+                        <th class="text-end">IGST</th>
+                        <th class="text-end">CGST</th>
+                        <th class="text-end">SGST</th>
+                        <th class="text-end text-danger">Grand Total</th>                       
+                        <th>Return BOM</th>
+                        <th>New BOM</th>
+                    </tr>
+                </thead>
+                <tbody id="salereturnlines">
+                    <tr><td colspan="29" class="text-center py-5 text-muted italic">No return records found for current selection.</td></tr>
+                </tbody>
+                <tfoot class="total-row">
+                    <tr>
+                        <td colspan="14" class="text-end">RETURN TOTALS:</td>
+                        <td id="totalsalereturnquantity" class="text-center">0</td>
+                        <td colspan="2"></td>
+                        <td id="totalreturnbatteryquantity" class="text-center">0</td>
+                        <td colspan="3"></td>
+                        <td id="totalReturnBasicPrice" class="text-end">0.00</td>
+                        <td id="totalReturnFrieght" class="text-end">0.00</td>
+                        <td id="totalReturnTaxAmount" class="text-end">0.00</td>
+                        <td id="ReturnCGST" class="text-end">0.00</td>
+                        <td id="ReturnSGST" class="text-end">0.00</td>
+                        <td id="totalReturnGrandTotal" class="text-end">0.00</td>
+                        <td colspan="2"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Loader -->
+<img id="wait-sign" src="~/images/wait.gif" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10001; width:80px;" />
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        // Default Dates (Current Month)
+        var firstDay = moment().startOf('month').format('YYYY-MM-DD');
+        var today = moment().format('YYYY-MM-DD');
+        $('#fromDate').val(firstDay);
+        $('#toDate').val(today);
+
+        // Independent Search Implementation
+        $("#searchSales").on("keyup", function() {
+            var value = $(this).val().toLowerCase();
+            $("#salelines tr").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+
+        $("#searchReturns").on("keyup", function() {
+            var value = $(this).val().toLowerCase();
+            $("#salereturnlines tr").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+
+        $('#generate').click(function () {
+            const fromdt = $('#fromDate').val();
+            const to = $('#toDate').val();
+
+            if (!fromdt || !to) {
+                toastr.warning('Please select a valid date range.');
+                return;
+            }
+
+            $('#wait-sign').show();
+            $('#salelines').empty().append('<tr><td colspan="26" class="text-center py-5"><i class="fas fa-spinner fa-spin mr-2"></i> Analyzing sales data...</td></tr>');
+            $('#salereturnlines').empty().append('<tr><td colspan="29" class="text-center py-5"><i class="fas fa-spinner fa-spin mr-2"></i> Analyzing returns...</td></tr>');
+
+            $.ajax({
+                url: '@Url.Action("SaleReportData", "Reports")',
+                type: 'GET',
+                data: { fromdt: fromdt, to: to },
+                success: function (response) {
+                    $('#wait-sign').hide();
+                    $('#salelines').empty();
+                    $('#salereturnlines').empty();
+
+                    let stats = { sBasic: 0, sFreight: 0, sTax: 0, sCGST: 0, sSGST: 0, sGross: 0, sQty: 0, sBatQty: 0 };
+                    let rStats = { rBasic: 0, rFreight: 0, rTax: 0, rCGST: 0, rSGST: 0, rGross: 0, rQty: 0, rBatQty: 0 };
+
+                    // 1. Populate Sales Table
+                    if (response.sale && response.sale.length > 0) {
+                        $.each(response.sale, function (index, item) {
+                            const Billdt = item.Billdt ? moment(item.Billdt).format('DD/MM/YYYY') : 'N/A';
+
+                            stats.sBasic += parseFloat(item.BasicPrice || 0);
+                            stats.sFreight += parseFloat(item.Frieght || 0);
+                            stats.sTax += parseFloat(item.TaxAmount || 0);
+                            stats.sCGST += parseFloat(item.CGST || 0);
+                            stats.sSGST += parseFloat(item.SGST || 0);
+                            stats.sGross += parseFloat(item.Total || 0);
+                            stats.sQty += parseFloat(item.Quantity || 0);
+                            stats.sBatQty += parseFloat(item.BatteryQty || 0);
+
+                            $('#salelines').append(`
+                                <tr>
+                                    <td class="fw-bold text-primary">${item.Billno || 'N/A'}</td>
+                                    <td class="small fw-bold">${item.OA || 'N/A'}</td>
+                                    <td class="text-center text-muted">${Billdt}</td>
+                                    <td class="fw-bold">${item.CustomerName || 'N/A'}</td>
+                                    <td class="small text-truncate" style="max-width:150px;">${item.Billing || 'N/A'}</td>
+                                    <td class="small text-truncate" style="max-width:150px;">${item.Shipping || 'N/A'}</td>
+                                    <td class="small font-monospace">${item.CustomerGST || 'N/A'}</td>
+                                    <td><span class="badge bg-light text-dark border">${item.Rating || 'N/A'}</span></td>
+                                    <td class="small">${item.Emodel || 'N/A'}</td>
+                                    <td class="small font-monospace">${item.ESerial || 'N/A'}</td>
+                                    <td class="small font-monospace">${item.AlternatorSerial || 'N/A'}</td>
+                                    <td class="small">${item.KRM || 'N/A'}</td>
+                                    <td class="text-center fw-bold">${item.Quantity || '0'}</td>
+                                    <td class="small">${item.BRating || 'N/A'}</td>
+                                    <td class="small">${item.BSerial || 'N/A'}</td>
+                                    <td class="text-center">${item.BatteryQty || '0'}</td>
+                                    <td class="small">${item.PSerial || 'N/A'}</td>
+                                    <td class="small">${item.ControlPanel || 'N/A'}</td>
+                                    <td class="text-end">${parseFloat(item.BasicPrice || 0).toFixed(2)}</td>
+                                    <td class="text-end">${parseFloat(item.Frieght || 0).toFixed(2)}</td>
+                                    <td class="text-end">${parseFloat(item.TaxAmount || 0).toFixed(2)}</td>
+                                    <td class="text-end">${parseFloat(item.CGST || 0).toFixed(2)}</td>
+                                    <td class="text-end">${parseFloat(item.SGST || 0).toFixed(2)}</td>
+                                    <td class="text-end fw-bold text-success">₹${parseFloat(item.Total || 0).toLocaleString('en-IN', {minimumFractionDigits:2})}</td>
+                                    <td class="small">${item.Transport || 'N/A'}</td>
+                                    <td class="small">${item.VehicleNumber || 'N/A'}</td>
+                                    <td class="small text-truncate" style="max-width:150px;">${item.IM || 'N/A'}</td>
+                                    
+                                </tr>`);
+                        });
+                        $('#btnExport').fadeIn();
+                    } else {
+                        $('#salelines').append('<tr><td colspan="26" class="text-center py-5 text-muted">No sales records matched your search.</td></tr>');
+                    }
+
+                    // 2. Populate Returns Table
+                    if (response.returnData && response.returnData.length > 0) {
+                        $.each(response.returnData, function (index, item) {
+                            const returnDate = item.ReturnDate ? moment(item.ReturnDate).format('DD/MM/YYYY') : 'N/A';
+                            const invDate = item.InvoiceDate ? moment(item.InvoiceDate).format('DD/MM/YYYY') : 'N/A';
+
+                            rStats.rBasic += parseFloat(item.BasicPrice || 0);
+                            rStats.rFreight += parseFloat(item.Frieght || 0);
+                            rStats.rTax += parseFloat(item.TaxAmount || 0);
+                            rStats.rCGST += parseFloat(item.CGST || 0);
+                            rStats.rSGST += parseFloat(item.SGST || 0);
+                            rStats.rGross += parseFloat(item.Total || 0);
+                            rStats.rQty += parseFloat(item.Quantity || 0);
+                            rStats.rBatQty += parseFloat(item.BatteryQty || 0);
+
+                            $('#salereturnlines').append(`
+                                <tr>
+                                    <td class="fw-bold text-danger">${item.ReturnVoucher || 'N/A'}</td>
+                                    <td class="text-center">${returnDate}</td>
+                                    <td class="fw-bold">${item.InvoiceNo || 'N/A'}</td>
+                                    <td class="small fw-bold">${item.OA || 'N/A'}</td>
+                                    <td class="text-center">${invDate}</td>
+                                    <td class="fw-bold">${item.CustomerName || 'N/A'}</td>
+                                    <td class="small text-truncate" style="max-width:120px;">${item.Billing || 'N/A'}</td>
+                                    <td class="small text-truncate" style="max-width:120px;">${item.Shipping || 'N/A'}</td>
+                                    <td class="small">${item.CustomerGST || 'N/A'}</td>
+                                    <td>${item.Rating || 'N/A'}</td>
+                                    <td class="small">${item.Emodel || 'N/A'}</td>
+                                    <td class="small">${item.ESerial || 'N/A'}</td>
+                                    <td class="small">${item.AlternatorSerial || 'N/A'}</td>
+                                    <td class="small">${item.KRM || 'N/A'}</td>
+                                    <td class="text-center fw-bold">${item.Quantity || '0'}</td>
+                                    <td class="small">${item.BRating || 'N/A'}</td>
+                                    <td class="small">${item.BSerial || 'N/A'}</td>
+                                    <td class="text-center">${item.BatteryQty || '0'}</td>
+                                    <td class="small">${item.PSerial || 'N/A'}</td>
+                                    <td class="small">${item.ControlPanel || 'N/A'}</td>
+                                    <td class="small italic text-danger">${item.Problem || 'N/A'}</td>
+                                    <td class="text-end">${parseFloat(item.BasicPrice || 0).toFixed(2)}</td>
+                                    <td class="text-end">${parseFloat(item.Frieght || 0).toFixed(2)}</td>
+                                    <td class="text-end">${parseFloat(item.TaxAmount || 0).toFixed(2)}</td>
+                                    <td class="text-end">${parseFloat(item.CGST || 0).toFixed(2)}</td>
+                                    <td class="text-end">${parseFloat(item.SGST || 0).toFixed(2)}</td>
+                                    <td class="text-end fw-bold text-danger">₹${parseFloat(item.Total || 0).toLocaleString('en-IN', {minimumFractionDigits:2})}</td>
+                                    <td class="small">${item.DispatchReturnBOM || 'N/A'}</td>
+                                    <td class="small">${item.NewBOM || 'N/A'}</td>
+                                </tr>`);
+                        });
+                    } else {
+                        $('#salereturnlines').append('<tr><td colspan="29" class="text-center py-5 text-muted">No return vouchers found for this period.</td></tr>');
+                    }
+
+                    updateTableFooters(stats, rStats);
+                    updateDashboardTiles(stats, rStats);
+
+                    toastr.success('Sales Analytics report synchronized.');
+                }
+            });
+        });
+    });
+
+    function updateTableFooters(s, r) {
+        $('#totalBasicPrice').text(s.sBasic.toFixed(2));
+        $('#totalFrieght').text(s.sFreight.toFixed(2));
+        $('#totalTaxAmount').text(s.sTax.toFixed(2));
+        $('#CGST').text(s.sCGST.toFixed(2));
+        $('#SGST').text(s.sSGST.toFixed(2));
+        $('#totalGrandTotal').text(s.sGross.toFixed(2));
+        $('#totalsalequantity').text(s.sQty.toFixed(2));
+        $('#totalbatteryquantity').text(s.sBatQty.toFixed(2));
+
+        $('#totalReturnBasicPrice').text(r.rBasic.toFixed(2));
+        $('#totalReturnFrieght').text(r.rFreight.toFixed(2));
+        $('#totalReturnTaxAmount').text(r.rTax.toFixed(2));
+        $('#ReturnCGST').text(r.rCGST.toFixed(2));
+        $('#ReturnSGST').text(r.rSGST.toFixed(2));
+        $('#totalReturnGrandTotal').text(r.rGross.toFixed(2));
+        $('#totalsalereturnquantity').text(r.rQty.toFixed(2));
+        $('#totalreturnbatteryquantity').text(r.rBatQty.toFixed(2));
+    }
+
+    function updateDashboardTiles(s, r) {
+        const totalTax = s.sTax + s.sCGST + s.sSGST;
+        const netBattery = s.sBatQty - r.rBatQty;
+
+        $('#tileTotalSale').text("₹ " + s.sGross.toLocaleString('en-IN', { maximumFractionDigits: 0 }));
+        $('#tileTotalReturn').text("₹ " + r.rGross.toLocaleString('en-IN', { maximumFractionDigits: 0 }));
+        $('#tileNetQty').text((s.sQty - r.rQty).toFixed(0) + " Units");
+        $('#tileBatteryQty').text(netBattery.toFixed(0) + " Units");
+        $('#tileTotalTax').text("₹ " + totalTax.toLocaleString('en-IN', { maximumFractionDigits: 0 }));
+    }
+
+    function exportToExcel() {
+        // 1. Initialize a new workbook
+        var wb = XLSX.utils.book_new();
+
+        // 2. Convert tables to sheets with 'raw: true' to preserve date formatting
+        // Applying raw: true here stops Excel from guessing the date format
+        var ws1 = XLSX.utils.table_to_sheet(document.getElementById("salereport"), { raw: true });
+        var ws2 = XLSX.utils.table_to_sheet(document.getElementById("salereturnreport"), { raw: true });
+
+        // 3. Append sheets to the workbook
+        XLSX.utils.book_append_sheet(wb, ws1, "Sales_Report");
+        XLSX.utils.book_append_sheet(wb, ws2, "Returns_Report");
+
+        // 4. Write and download the file
+        XLSX.writeFile(wb, 'Sale_Performance_Analysis_' + moment().format('DDMMYYYY') + '.xlsx');
+    }
+</script>

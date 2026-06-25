@@ -1,0 +1,279 @@
+﻿@{
+    ViewBag.Title = "Department Master";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const isInModal = !!(document.querySelector('.modal.show'));
+            if (isInModal) {
+                setTimeout(() => { handleInvalidUser(); }, 500);
+            } else {
+                handleInvalidUser();
+            }
+            function handleInvalidUser() {
+                toastr.error("Invalid User Session");
+                setTimeout(function () { window.location.href = "@Url.Action("Index", "Login")"; }, 2000);
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<style>
+    :root {
+        --brand-blue: #00698f;
+        --border-color: #e2e8f0;
+        --bg-light: #f1f5f9;
+    }
+
+    body {
+        background-color: var(--bg-light);
+        font-family: 'Inter', sans-serif;
+        color: #334155;
+    }
+
+    .master-header {
+        background: white;
+        padding: 15px 30px;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid var(--border-color);
+    }
+
+    .section-card {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 20px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        height: 100%;
+    }
+
+    .section-title {
+        font-size: 0.8rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: var(--brand-blue);
+        letter-spacing: 0.5px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-bottom: 1px solid #f1f5f9;
+        padding-bottom: 8px;
+    }
+
+    .form-label {
+        font-weight: 700;
+        font-size: 0.65rem;
+        color: #ffffff !important;
+        margin-bottom: 5px;
+        text-transform: uppercase;
+        background-color: var(--brand-blue);
+        padding: 2px 10px;
+        border-radius: 4px;
+        display: inline-block;
+        letter-spacing: 0.5px;
+    }
+
+    .form-control {
+        border-radius: 8px;
+        border: 1.5px solid var(--border-color);
+        padding: 10px 14px;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+        .form-control:focus {
+            border-color: var(--brand-blue);
+            box-shadow: 0 0 0 3px rgba(0, 105, 143, 0.1);
+        }
+
+    .btn-save {
+        background: var(--brand-blue);
+        border: none;
+        color: white;
+        border-radius: 8px;
+        padding: 10px 25px;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        transition: 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .btn-save:hover {
+            background: #005676;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 105, 143, 0.2);
+        }
+
+    /* Modern Table Style */
+    .table-container {
+        max-height: 450px;
+        overflow-y: auto;
+    }
+
+    .table thead th {
+        background-color: #f8fafc;
+        color: var(--brand-blue);
+        font-weight: 800;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        border: none;
+        padding: 12px;
+    }
+
+    .table tbody td {
+        padding: 12px;
+        vertical-align: middle;
+    }
+</style>
+
+<div class="container-fluid py-4 px-lg-5">
+
+    <div class="master-header animate-up">
+        <div>
+            <h4 class="fw-bold m-0 text-dark">Department Configuration</h4>
+            <p class="text-muted small m-0">Define organizational units for workflow and resource management.</p>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-light text-primary border px-3 py-2 rounded-pill fw-bold">
+                <i class="fas fa-sitemap me-1"></i> Org Hierarchy
+            </span>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Entry Column -->
+        <div class="col-md-5">
+            <div class="section-card animate-up stagger-1 shadow-sm">
+                <div class="section-title"><i class="fas fa-plus-circle"></i> Create New Department</div>
+                <form id="departmentForm">
+                    <div class="mb-4">
+                        <label for="departmentName" class="form-label">Department Name</label>
+                        <input type="text" id="departmentName" class="form-control shadow-sm" placeholder="e.g. Production, Accounts, HR" required />
+                    </div>
+                    <div class="text-end">
+                        <button type="button" id="saveButton" class="btn-save shadow-sm">
+                            <i class="fas fa-check-double"></i> Save Department
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Directory Column -->
+        <div class="col-md-7">
+            <div class="section-card animate-up stagger-2 shadow-sm">
+                <div class="section-title d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-list-ul"></i> Department Directory</span>
+                    <span class="badge bg-light text-muted border" id="deptCount">...</span>
+                </div>
+                <div class="table-container shadow-sm border rounded">
+                    <table id="departmentTable" class="table table-hover mb-0">
+                        <thead class="sticky-top">
+                            <tr>
+                                <th class="text-center" style="width: 100px;">Index</th>
+                                <th>Department Name</th>
+                            </tr>
+                        </thead>
+                        <tbody id="departmentList">
+                            <tr>
+                                <td colspan="2" class="text-center py-5">
+                                    <div class="spinner-border spinner-border-sm text-primary"></div>
+                                    <div class="mt-2 small text-muted">Loading Directory...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<img id="wait-sign" src="~/images/wait.gif" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10001; width:60px;" />
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            loadDepartments();
+
+            $('#saveButton').click(function (e) {
+                e.preventDefault();
+                var departmentName = $('#departmentName').val().trim();
+
+                if (!departmentName) {
+                    toastr.warning("Department name is required.");
+                    return;
+                }
+
+                $('#wait-sign').show();
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("SaveDepartment")',
+                    data: { departmentName: departmentName },
+                    success: function (data) {
+                        $('#wait-sign').hide();
+                        if (data.indexOf('error:') === 0) {
+                            toastr.error(data.substring(7));
+                        } else {
+                            $('#departmentName').val('');
+                            loadDepartments();
+                            toastr.success(data || "Department registered successfully.");
+                        }
+                    },
+                    error: function() {
+                        $('#wait-sign').hide();
+                        toastr.error("Server connection failed.");
+                    }
+                });
+            });
+        });
+
+        function loadDepartments() {
+            $.ajax({
+                type: 'GET',
+                url: '@Url.Action("GetDepartments")',
+                success: function (data) {
+                    var tbody = $('#departmentList');
+                    tbody.empty();
+
+                    if (data && data.length > 0) {
+                        $('#deptCount').text(data.length + " Units");
+                        $.each(data, function (index, department) {
+                            var row = '<tr>' +
+                                '<td class="text-center text-muted small">#' + (index + 1) + '</td>' +
+                                '<td class="fw-bold text-dark">' + department.DepartmentName + '</td>' +
+                                '</tr>';
+                            tbody.append(row);
+                        });
+                    } else {
+                        $('#deptCount').text("0 Units");
+                        tbody.append('<tr><td colspan="2" class="text-center py-5 text-muted italic">No departments configured yet.</td></tr>');
+                    }
+                },
+                error: function() {
+                    $('#departmentList').html('<tr><td colspan="2" class="text-center py-5 text-danger">Error fetching data.</td></tr>');
+                }
+            });
+        }
+    </script>
+}

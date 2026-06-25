@@ -1,0 +1,430 @@
+﻿@{ Layout = null; }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Delivery Challan - @ViewBag.VoucherID</title>
+    <script src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        :root {
+            --brand-blue: #00698f;
+            --border-black: #000;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        @@page {
+            size: A4;
+            margin: 0;
+        }
+
+        body {
+            background-color: #f1f5f9;
+            padding: 0;
+            margin: 0;
+        }
+
+        .page-container {
+            width: 210mm;
+            height: 297mm;
+            background: #fff;
+            margin: 0 auto;
+            padding: 10mm;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .main-border {
+            border: 2.5px solid var(--border-black);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-table, .info-table, .meta-table {
+            width: 100%;
+            border-collapse: collapse;
+            border-bottom: 2px solid var(--border-black);
+        }
+
+            .header-table td {
+                padding: 10px;
+                vertical-align: top;
+            }
+
+        .comp-name {
+            font-size: 18px;
+            font-weight: 900;
+            color: var(--brand-blue);
+            text-transform: uppercase;
+        }
+
+        .comp-info {
+            font-size: 9px;
+            line-height: 1.3;
+        }
+
+        .title-box {
+            width: 30%;
+            text-align: right;
+            border-left: 2px solid var(--border-black);
+            background: #f8fafc;
+            padding: 10px;
+        }
+
+        .doc-title {
+            font-size: 22px;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        /* FIXED HEIGHT ADDRESS CONTAINERS TO PREVENT FOOTER DISTURBANCE */
+        .info-table {
+            table-layout: fixed;
+        }
+
+            .info-table td {
+                width: 50%;
+                padding: 8px;
+                border-right: 2px solid var(--border-black);
+                vertical-align: top;
+            }
+
+                .info-table td:last-child {
+                    border-right: none;
+                }
+
+        .address-box {
+            height: 75px; /* Fixed height for long address strings */
+            overflow-y: hidden; /* Prevents text from leaking out */
+            font-size: 9px;
+            line-height: 1.3;
+            word-wrap: break-word;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: var(--brand-blue);
+            text-transform: uppercase;
+            font-size: 9px;
+            display: block;
+            border-bottom: 1.5px solid #000;
+            margin-bottom: 4px;
+            padding-bottom: 2px;
+        }
+
+        .meta-table td {
+            padding: 4px 10px;
+            border-right: 1px solid var(--border-black);
+            font-size: 10px;
+            width: 25%;
+        }
+
+        .meta-lbl {
+            font-weight: bold;
+            background: #f1f5f9;
+            text-transform: uppercase;
+            font-size: 8.5px;
+        }
+
+        .bilty-bar {
+            background: #fffbeb;
+            border-bottom: 2px solid var(--border-black);
+            padding: 5px 15px;
+            font-size: 10px;
+            display: flex;
+            justify-content: space-around;
+            font-weight: bold;
+        }
+
+        .content-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            flex-grow: 1;
+        }
+
+            .items-table th {
+                background: #f1f5f9;
+                border: 1.5px solid var(--border-black);
+                padding: 6px;
+                font-size: 9px;
+                text-transform: uppercase;
+            }
+
+            .items-table td {
+                border-left: 1.5px solid var(--border-black);
+                border-right: 1.5px solid var(--border-black);
+                padding: 4px 8px;
+                font-size: 11px;
+                vertical-align: top;
+            }
+
+        .remarks-row td {
+            border-top: 2px solid var(--border-black);
+            border-bottom: 2px solid var(--border-black);
+            padding: 8px;
+            font-size: 10px;
+        }
+
+        .footer-section {
+            border-top: 2px solid var(--border-black);
+            width: 100%;
+            margin-top: auto;
+        }
+
+        .footer-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+            .footer-table td {
+                border: 1px solid var(--border-black);
+                padding: 10px;
+                font-size: 10px;
+                vertical-align: top;
+            }
+
+        .sig-container {
+            text-align: right;
+            height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .sig-line {
+            border-top: 2px solid #000;
+            width: 220px;
+            margin-left: auto;
+            padding-top: 5px;
+            text-align: center;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .bottom-footer td {
+            text-align: center;
+            height: 35px;
+            vertical-align: middle;
+            font-weight: bold;
+            text-transform: uppercase;
+            background: #fff;
+            border-top: 2px solid #000;
+        }
+
+        .btn-print {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 25px;
+            background: var(--brand-blue);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 1000;
+        }
+
+        @@media print {
+            body {
+                background: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .btn-print {
+                display: none;
+            }
+
+            .page-container {
+                margin: 0;
+                box-shadow: none;
+                width: 210mm;
+                height: 297mm;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <button class="btn-print" onclick="window.print()"><i class="fas fa-print me-2"></i> PRINT CHALLAN</button>
+
+    <div class="page-container">
+        <div class="main-border">
+
+            <table class="header-table">
+                <tr>
+                    <td>
+                        <div class="comp-name" id="lComp"></div>
+                        <div class="comp-info">
+                            <span id="lAddr"></span><br>
+                            <strong>GSTIN:</strong> <span id="lGST"></span> | <strong>PAN:</strong> <span id="lPAN"></span>
+                        </div>
+                    </td>
+                    <td class="title-box">
+                        <div class="doc-title">CHALLAN</div>
+                        <div id="lType" style="font-weight:bold; font-size:9px; margin-top:5px;"></div>
+                    </td>
+                </tr>
+            </table>
+
+            <table class="info-table">
+                <tr>
+                    <td>
+                        <span class="info-label"><i class="fas fa-warehouse me-1"></i> DISPATCH FROM</span>
+                        <div id="boxFrom" class="address-box"></div>
+                    </td>
+                    <td>
+                        <span class="info-label"><i class="fas fa-truck-loading me-1"></i> Customer Address</span>
+                        <div id="boxTo" class="address-box"></div>
+                    </td>
+                </tr>
+            </table>
+
+            <table class="meta-table">
+                <tr>
+                    <td class="meta-lbl">Challan No.</td>
+                    <td id="vNo" style="font-weight:bold;"></td>
+                    <td class="meta-lbl">Date</td>
+                    <td id="vDate"></td>
+                </tr>
+                <tr>
+                    <td class="meta-lbl">Vehicle No.</td>
+                    <td id="vVeh" style="text-transform:uppercase; font-weight:bold;"></td>
+                    <td class="meta-lbl">Transporter</td>
+                    <td id="vTrans"></td>
+                </tr>
+                <tr>
+                    <td class="meta-lbl">GR No.</td>
+                    <td id="vGR" style="font-weight:bold;"></td>
+                    <td class="meta-lbl">Customer Contact.</td>
+                    <td id="vCustGST"></td>
+                </tr>
+            </table>
+
+            <div class="bilty-bar" id="bStrip" style="display:none;">
+                <span>GR DATE: <span id="bDt"></span></span>
+                <span>TOTAL VALUE: ₹<span id="bVl"></span></span>
+            </div>
+
+            <div class="content-area">
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th width="5%">Sr.</th>
+                            <th width="15%">Part No.</th>
+                            <th width="15%">HSN Code</th>
+                            <th width="50%">Description of Goods</th>
+                            <th width="15%">Qty / Unit</th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemBody"></tbody>
+                    <tfoot>
+                        <tr class="remarks-row">
+                            <td colspan="5">
+                                <strong>Remarks:</strong> <span id="vRem"></span>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <div class="footer-section">
+                <table class="footer-table">
+                    <tr>
+                        <td width="55%">
+                            <strong style="display:block; margin-bottom:5px;">DECLARATION:</strong>
+                            Goods received in good condition. This is a non-commercial transfer for internal use only.
+                        </td>
+                        <td width="45%">
+                            <div class="sig-container">
+                                <div style="font-weight:bold;">For <span id="lCompFoot"></span></div>
+                                <div class="sig-line">Authorized Signatory</div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+                <table class="footer-table bottom-footer">
+                    <tr>
+                        <td width="55%">RECEIVER'S SIGNATURE</td>
+                        <td width="45%">GATE SECURITY OUT-PASS</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            var vId = '@ViewBag.VoucherID';
+            $.get('/Inventory/GetChallanPrintData', { id: vId }, function (res) {
+                if (res.success) {
+                    $('#lComp, #lCompFoot').text(res.company.CompanyName);
+                    $('#lAddr').text(res.company.CompanyAddress);
+                    $('#lGST').text(res.company.GST); $('#lPAN').text(res.company.PAN);
+                    $('#vNo').text(res.head.VoucherNumber);
+                    $('#vDate').text(moment(res.head.VoucherDate).format('DD-MMM-YYYY'));
+                    $('#vVeh').text(res.head.VehicleNo || "N/A");
+                    $('#vTrans').text(res.head.TransportName || "IEPL");
+                    $('#vRem').text(res.head.Remarks || "N/A");
+                    $('#vGR').text(res.head.BiltyNo || "---");
+                    $('#vCustGST').text(res.head.ContactNo || "---");
+                    $('#lType').text(res.head.IsReturnable ? "TYPE: RETURNABLE" : "TYPE: NON-RETURNABLE");
+                    
+                    // Address Logic - Constrained to prevent footer movement
+                    $('#boxFrom').html("<strong>" + res.company.CompanyName + "</strong><br>" + res.company.CompanyAddress + "<br>" + res.company.DeliveryDestination);
+
+                    var toHtml = "<strong>" + res.head.CustomerName + "</strong><br>";
+                    toHtml += "<u>Billing:</u> " + (res.head.BillingAddress || "Same as Delivery") + "<br>";
+                    toHtml += "<u>Shipping:</u> " + res.head.Address;
+                    $('#boxTo').html(toHtml);
+
+                   @* if (res.head.IsBilty) {*@
+                    if (res.head.IsBilty) { 
+                        $('#bDt').text(moment(res.head.BiltyDate).format('DD-MMM-YYYY') || 'NA');
+                    }
+                        $('#bVl').text(parseFloat(res.head.BiltyTotalValue).toLocaleString('en-IN', {minimumFractionDigits: 2}));
+                        $('#bStrip').show();
+                   @* }*@
+
+                    var rows = "";
+                    $.each(res.lines, function (i, item) {
+                        rows += `<tr>
+                            <td align="center">${i + 1}</td>
+                            <td align="center" style="font-weight:bold">${item.ItemCode}</td>
+                            <td align="center">${item.HSN}</td>
+                            <td>${item.ItemName}</td>
+                            <td align="center"><strong>${item.Quantity} ${item.UOM}</strong></td>
+                        </tr>`;
+                    });
+
+                    // Adjusted filler rows for A4 stability
+                    var maxRows = 18; // Reduced slightly to account for fixed address height
+                    var current = res.lines.length;
+                    for (var k = current; k < maxRows; k++) {
+                        rows += `<tr style="height:32px;">
+                                    <td>&nbsp;</td><td></td><td></td><td></td><td></td>
+                                 </tr>`;
+                    }
+                    $('#itemBody').html(rows);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

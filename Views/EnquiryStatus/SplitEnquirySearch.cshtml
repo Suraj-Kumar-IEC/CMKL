@@ -1,0 +1,33 @@
+﻿@model CMKL.VMModels.Splitjobclass
+@{
+    ViewBag.Title = "CustomerDetail";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<br />
+
+
+@using (Html.BeginForm("OrderDetail", "EnquiryStatus", FormMethod.Get))
+{
+
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-4">
+                @* @Html.LabelFor(mode => mode.EnquiryNo)*@
+                @Html.TextBoxFor(x => x.CE.ID, new { id="ID", placeholder = "ID", @class = "form-control" })
+            </div>           
+
+            <div class="col-sm-4">
+                <p> <button type="submit" id="search" class="btn btn-primary">Search</button> </p>
+            </div>
+            <div class="col-sm-4">
+                <p>  </p>
+            </div>
+        </div>
+        </div>
+}

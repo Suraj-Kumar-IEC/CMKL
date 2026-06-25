@@ -1,0 +1,180 @@
+﻿@{
+    ViewBag.Title = "CMKLDocumentUpload";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>CMKLDocumentUpload</h2>
+<div class="container">
+    <div class="row">
+        <div class="col-md-3">
+            <label>Select ORDER ID</label>
+            <input type="number" id="orderid" class="form-control form-control-sm" required />
+            <div class="invalid-feedback">Order ID is required.</div>
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+            <button type="button" id="uploadAllFilesBtn" class="btn btn-primary btn-sm">Upload Documents</button>
+        </div>
+    </div>
+
+    <hr style="margin-top:20px; margin-bottom:20px;" />
+
+    <div class="row" style="margin-top:10px">
+        <div class="col-md-2">
+            <label>PO Upload</label>
+            <input class="form-control form-control-sm file-input" type="file" id="PO" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
+        </div>
+        <div class="col-md-2">
+            <label>GA Upload</label>
+            <input class="form-control form-control-sm file-input" type="file" id="GAdrg" accept=".pdf,.dwg,.dxf,.jpg,.jpeg,.png">
+        </div>
+        <div class="col-md-2">
+            <label>Single Line Upload</label>
+            <input class="form-control form-control-sm file-input" type="file" id="SLdrg" accept=".pdf,.dwg,.dxf,.jpg,.jpeg,.png">
+        </div>
+        <div class="col-md-2">
+            <label>Wiring Upload</label>
+            <input class="form-control form-control-sm file-input" type="file" id="WIdrg" accept=".pdf,.dwg,.dxf,.jpg,.jpeg,.png">
+        </div>
+        <div class="col-md-2">
+            <label>Mechanical Part List</label>
+            <input class="form-control form-control-sm file-input" type="file" id="MPlist" accept=".pdf,.xls,.xlsx,.doc,.docx">
+        </div>
+        <div class="col-md-2">
+            <label>Production Document</label>
+            <input class="form-control form-control-sm file-input" type="file" id="Productiondoc" accept=".pdf,.doc,.docx,.xls,.xlsx">
+        </div>
+        <div class="col-md-2">
+            <label>Customer Inspection Report</label>
+            <input class="form-control form-control-sm file-input" type="file" id="CIReport" accept=".pdf,.doc,.docx">
+        </div>
+        <div class="col-md-2">
+            <label>As Built Drawing</label>
+            <input class="form-control form-control-sm file-input" type="file" id="ABdrg" accept=".pdf,.dwg,.dxf,.jpg,.jpeg,.png">
+        </div>
+        <div class="col-md-2">
+            <label>Quality Document Upload</label>
+            <input class="form-control form-control-sm file-input" type="file" id="QDoc" accept=".pdf,.doc,.docx,.xls,.xlsx">
+        </div>
+        <div class="col-md-2">
+            <label>Bill Upload</label>
+            <input class="form-control form-control-sm file-input" type="file" id="Bill" accept=".pdf,.jpg,.jpeg,.png">
+        </div>
+        <div class="col-md-2">
+            <label>Eway Upload</label>
+            <input class="form-control form-control-sm file-input" type="file" id="Eway" accept=".pdf,.jpg,.jpeg,.png">
+        </div>
+        <div class="col-md-2">
+            <label>Upload LR</label>
+            <input class="form-control form-control-sm file-input" type="file" id="LR" accept=".pdf,.jpg,.jpeg,.png">
+        </div>
+        <div class="col-md-2">
+            <label>Truck Photo</label>
+            <input class="form-control form-control-sm file-input" type="file" id="truck" accept=".jpg,.jpeg,.png">
+        </div>
+        <div class="col-md-2">
+            <label>Packing List</label>
+            <input class="form-control form-control-sm file-input" type="file" id="Packing" accept=".pdf,.doc,.docx,.xls,.xlsx">
+        </div>
+    </div>
+    <div class="row" style="margin-top:20px;">
+        <div class="col-md-12">
+            <div id="uploadStatus" class="alert" style="display:none;"></div>
+        </div>
+    </div>
+</div>
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script> @* Your existing jQuery *@
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script> @* Your existing jQuery UI *@
+<script src="~/toastr/Js/toastr.js"></script> @* Your existing Toastr JS *@
+<link href="~/toastr/toastr.css" rel="stylesheet" /> @* Your existing Toastr CSS *@
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.16.2/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.2.1/exceljs.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('#uploadAllFilesBtn').on('click', function () {
+            // Clear previous status messages
+            $('#uploadStatus').hide().removeClass('alert-success alert-danger').text('');
+
+            var orderIdInput = $('#orderid');
+            var orderId = orderIdInput.val(); // Get value as string for initial validation
+
+            // Basic validation for Order ID
+            if (orderId === null || orderId.trim() === '' || isNaN(parseInt(orderId))) {
+                orderIdInput.addClass('is-invalid');
+                orderIdInput.next('.invalid-feedback').text('Please enter a valid Order ID.').show();
+                $('#uploadStatus').addClass('alert-danger').text('Please enter a valid Order ID.').show();
+                return; // Stop the process
+            } else {
+                orderIdInput.removeClass('is-invalid');
+                orderIdInput.next('.invalid-feedback').hide();
+            }
+
+            // Create a FormData object - this is the key to sending files efficiently
+            var formData = new FormData();
+
+            // Append the OrderId as a regular form field.
+            // The name "OrderId" MUST match the property name in your C# ViewModel.
+            formData.append("OrderId", parseInt(orderId));
+
+            var anyFileSelected = false;
+            // Iterate through all file inputs with the class 'file-input'
+            $('.file-input').each(function () {
+                var fileInput = this;
+                var file = fileInput.files[0]; // Get the selected File object (not a Base64 string)
+                var fieldName = $(fileInput).attr('id'); // Get the ID, e.g., "PO", "GAdrg"
+
+                if (file) { // If a file is actually selected in this input
+                    // Append the actual File object directly to FormData.
+                    // The 'fieldName' (e.g., "PO", "GAdrg") MUST match the property name (HttpPostedFileBase PO)
+                    // in your C# ViewModel.
+                    formData.append(fieldName, file);
+                    anyFileSelected = true;
+                }
+            });
+
+            if (!anyFileSelected) {
+                $('#uploadStatus').addClass('alert-danger').text('Please select at least one file to upload.').show();
+                return; // Stop if no files are selected
+            }
+
+            // Disable button and show loading text during upload
+            $('#uploadAllFilesBtn').prop('disabled', true).text('Uploading...');
+
+            // Perform the AJAX POST request using FormData
+            $.ajax({
+                type: "POST",
+                // This URL will map to the new controller action that accepts HttpPostedFileBase
+                url: "@Url.Action("UploadDocumentsFormData", "CMKLProduct")", // <<< IMPORTANT: Update 'YourController' to your actual Controller name (e.g., 'DocumentUpload')
+                data: formData, // Send the FormData object directly
+                processData: false, // Tell jQuery not to process the data (crucial for FormData)
+                contentType: false, // Tell jQuery not to set the Content-Type header (crucial for FormData)
+                success: function (response) {
+                    if (response.success) {
+                        $('#uploadStatus').addClass('alert-success').text(response.message).show();
+                        // Clear file inputs after successful upload
+                        $('.file-input').val(''); // Resets the file input fields
+                    } else {
+                        $('#uploadStatus').addClass('alert-danger').text(response.message || 'Upload failed.').show();
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("AJAX error: ", status, error, xhr.responseText);
+                    var errorMessage = 'An error occurred during upload. Please try again.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    } else if (xhr.responseText) {
+                        errorMessage += " Details: " + xhr.responseText.substring(0, 100) + "...";
+                    }
+                    $('#uploadStatus').addClass('alert-danger').text(errorMessage).show();
+                },
+                complete: function () {
+                    // Re-enable button and reset text after upload attempt (success or error)
+                    $('#uploadAllFilesBtn').prop('disabled', false).text('Upload Documents');
+                }
+            });
+        });
+    });
+</script>

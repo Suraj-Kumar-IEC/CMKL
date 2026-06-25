@@ -1,0 +1,369 @@
+﻿<title>A4 Paper Size with Shade - Centered Content</title>
+<style>
+/* Set A4 size */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+@@page {
+    size: A4;
+    margin: 0; /* Remove default page margins */
+}
+
+@@media print {
+    .watermark {
+        display: block !important; /* Ensure it's visible */
+    }
+
+    /* Add border to each page */
+    body {
+        border: 2px solid black; /* Adjust border style as needed */
+        box-sizing: border-box; /* Include border in element's total width and height */
+    }
+}
+
+.watermark-container {
+    position: fixed; /* or absolute, depending on your layout */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1; /* Place it behind other content */
+    pointer-events: none; /* Allow clicks to pass through */
+}
+   
+/* Set content to fill the entire A4 page */
+html,
+.setting > div {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column; /* Arrange content vertically */
+    text-align: center;
+}
+
+.setting > div h4 {
+    margin: 0; /* Remove default margin on the heading */
+}
+
+/* Style content with shaded background */
+.content {
+    width: 80%;
+    height: 80%;
+    padding: 20px;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+}
+
+.table-container {
+    width: 100%;
+    font-size: 8px; /* Set font-size for the table container */
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th, .table td {
+    border: 1px solid black;
+    padding: 5px;
+    text-align: left;
+    word-wrap: break-word;
+    font-size: inherit; /* Inherit font-size from the table container */
+}
+
+.inrow {
+    padding: 10px 0;
+}
+
+/* Prevent page breaks within the table */
+.table-container {
+    page-break-inside: avoid;
+}
+
+/* Add top margin to the second page */
+@@media print {
+    .setting > div:nth-child(n+13) { /* Adjust the selector if needed */
+        margin-top: 20px; /* Add some top margin to the second page content */
+    }
+}
+</style>
+
+<div class="setting">
+    <div style="border: 2px solid; padding: 2px; /* Reduced padding */ margin-bottom: -2px; line-height: 0.8; /* Adjusted line-height */ display: flex; justify-content: center; align-items: center;">
+        <span>Material Reciept</span>
+    </div>
+    <div style="border: 2px solid; padding: 10px; margin-bottom: -2px; line-height: 2px; text-align: center;">
+        <span id="CompanyNameHeader" style="font:bold 14px"></span>
+        <div class="row" style="display: flex;">
+            <div style="text-align: left; width: 70%; font-size:10px">
+                <p><strong style="font-size:12px">Bill & Delivery Address:</strong></p>
+                <p><strong><span id="CompanyName">Company Name:</span></strong></p>
+                <p><strong><span id="CAddress"></span></strong></p>
+                <p><strong><span id="CAddress1"></span></strong></p>
+                <p><strong>GST :<span id="CGST"></span></strong></p>
+                <p><strong>PAN :<span id="CPAN"></span></strong></p>
+                <p><strong>Contact :<span id="CContact"></span></strong></p>
+                <p><strong>Delivery Destination :<span id="CDestination"></span></strong></p>
+            </div>
+            <div style="width: 30%; display: flex; justify-content: flex-end; align-items: center;">
+                <img src="~/Images/IEC.jpg" alt="IEPL Logo" style="height: 50px;" />
+            </div>
+        </div>
+    </div>
+    <div style="border: 2px solid; padding: 2px; margin-bottom: -2px; line-height: 2px; text-align: center;">
+        <div class="row inrow" style="display: flex;">
+            <div style="text-align: left; width: 39%; font-size:11px">
+                <p><strong>Supplier Detail:</strong></p>
+                <p><strong><span id="SupplierName">Supplier Name:</span></strong></p>
+                <p><strong><span id="SupplierAddress">Address:</span></strong></p>
+                <p><strong><span id="SupplierAddress1">Address1:</span></strong></p>
+                <p><strong><span id="SupplierState">State:</span></strong></p>
+                <p><strong><span id="SupplierEmail">Email:</span></strong></p>
+            </div>
+            <div style="text-align: left; width: 33%; font-size:11px">
+                <p><strong><span id="SupplierGST">GST:</span></strong></p>
+                <p><strong><span id="ContactPerson">Contact Person:</span></strong></p>
+                <p><strong><span id="SupplierContact">Contact:</span></strong></p>
+            </div>
+            <div style="text-align:left; width: 28%; font-size:11px">
+                <p><strong>PO No:<span id="PONumber"></span></strong></p>
+                <p><strong>PO Date:<span id="PODate"></span></strong></p>
+                <p><strong>Gate Entry:<span id="GE"></span></strong></p>
+                <p><strong>G-Entry Date:<span id="GEDate"></span></strong></p>
+                <p><strong>MRN No :<span id="MRN"></span></strong></p>
+                <p><strong>MRN Date :<span id="MRNDate"></span></strong></p>
+                <p><strong>Supplier Bill No:<span id="sbillno"></span></strong></p>
+                <p><strong>Supplier Bill Date:<span id="sbilldate"></span></strong></p>
+            </div>
+        </div>
+    </div>           
+    <div class="setting">
+        <div class="table-container" style="border:2px solid;margin-bottom:-2px">
+            <table class="table" id="table" style="font-size:12px;width:100%">
+                <thead>
+                    <tr style="border:2px solid">
+                        <th>Item Code</th>
+                        <th>Goods/Services</th>                        
+                        <th>UOM</th>
+                        <th>Invoice QTY</th>
+                        <th>Recieved QTY</th>
+                        <th>Accepted QTY</th>
+                        <th>Rejected QTY</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody id="items" style="text-align:center;align-content:center;align-items:center;font-size:12px">
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div style="border: 2px solid; padding: 2px; margin-bottom: -2px; line-height: 2px; text-align: center;">
+        <div class="row inrow" style="display: flex;">
+            <div style="text-align: left; width: 25%; font-size:12px">
+                <p><strong>Total Bill Quantity</strong></p>
+                <p><strong>Total Recieved Quantity</strong></p>
+                <p><strong>Total Approved Quantity</strong></p>
+                <p><strong>Total Rejected Quantity</strong></p>
+            </div>
+            <div style="text-align: left; width:25%; font-size:12px">
+                <p><strong>: <span id="totalBillQuantity"></span></strong></p>
+                <p><strong>: <span id="totalReceivedQuantity"></span></strong></p>
+                <p><strong>: <span id="totalApprovedQuantity"></span></strong></p>
+                <p><strong>: <span id="totalRejectedQuantity"></span></strong></p>
+            </div>
+            <div style="text-align: right; width:40%; font-size:12px">
+                <p><strong>Total Tax Amount</strong></p>
+                <p><strong>Total Bill Amount</strong></p>
+                <p><strong>Tax Amount on Invoice Copy</strong></p>
+                <p><strong>Bill Amount on Invoice Copy</strong></p>
+            </div>
+            <div style="text-align:center; width:2%; font-size:12px">
+                <p><strong>: </strong></p>
+                <p><strong>: </strong></p>
+                <p><strong>: </strong></p>
+                <p><strong>: </strong></p>
+            </div>
+            <div style="text-align:left; width:8%; font-size:12px">
+                <p><strong><span id="totaltaxamount"></span></strong></p>
+                <p><strong><span id="totalbillamount"></span></strong></p>
+                <p><strong><span id="totalbilltaxamount"></span></strong></p>
+                <p><strong><span id="totalbillamountonbill"></span></strong></p>
+            </div>
+        </div>
+    </div>
+    
+    <div style="border: 2px solid; padding: 2px; margin-bottom: -2px; line-height: 2px;">
+        <div class="row inrow" style="display: flex;">           
+            <div style="text-align:center; width: 25%; font-size:10px;">
+                <img id="signatureImageStore" alt="Signature" style="width: 100px; height: 80px;" />
+                <p><strong>Store Acceptance :<span id="storeadt"></span></strong></p>                
+            </div>
+            <div style="text-align:center; width: 25%; font-size:10px;">
+                <img id="signatureImageQuality" alt="Signature" style="width: 100px; height: 80px;" />
+                <p><strong>Quality Acceptance :<span id="qualityadt"></span></strong></p>                
+            </div>
+            <div style="text-align:center; width: 25%; font-size:10px;">
+                <img id="signatureImagePlant" alt="Signature" style="width: 100px; height: 80px;" />
+                <p><strong>Admin Acceptance :<span id="plantadt"></span></strong></p>               
+            </div>
+            <div style="text-align:center; width: 25%; font-size:10px;">
+                <img id="signatureImageAccount" alt="Signature" style="width: 100px; height: 80px;" />
+                <p><strong>Account Acceptance :<span id="accountadt"></span></strong></p>                
+            </div>
+        </div>
+    </div>
+    <div style="border: 2px solid; padding: 2px; margin-bottom: -2px; line-height: 2px;">
+        <div style="text-align:center; width:100%; font-size:6px;margin-right:5px">
+            <p><strong> CORPORATE OFFICE SCO. 36, SEC 26, MADHYA MARG, CHANDIGARH (160019) (U.T) PH.NO 0172-4374437,441,442,444,455 FAX NO:0172-4374466 </strong></p>
+        </div>
+    </div>
+</div>
+
+
+<button id="Print" onclick="printContent()">Print</button>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script>
+    //$(document).ready(function () {
+    //    $('#Print').click();
+    //})
+    function printContent() {
+        var printWindow = window.open('', '', 'height=794,width=612'); // A4 dimensions in pixels
+        printWindow.document.write('<html><head><title></title></head><body>');
+        printWindow.document.write(document.querySelector('.setting').innerHTML);
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.print();
+    }
+</script>
+<script>
+    $(document).ready(function () {
+        debugger;
+        //var headid = Viewbag.headid;
+            var poId = @ViewBag.headid;
+            $.ajax({
+                type: 'get',
+                url: '/Purchase/GetPrintDataMRN',
+
+                data: { poId: poId },
+                success: function (data)
+                {
+                    //load Head Data
+                    const formattedPODate = moment(data.poHeadData.PODate).format('DD/MM/YYYY');
+                    const formatmrndate = moment(data.poHeadData.MRNDate).format('DD/MM/YYYY');
+                    const formategatedate = moment(data.poHeadData.GateDate).format('DD/MM/YYYY');
+                    const formatesbilldate = moment(data.poHeadData.sbilldate).format('DD/MM/YYYY');
+                    let formattedTotal = parseFloat(data.poHeadData.totalbillamountonbill).toFixed(2);
+
+                    //format Accptance dates
+                    const formatstoreadt = moment(data.poHeadData.storeadt).format('DD/MM/YYYY');
+                    const formatqualityadt = moment(data.poHeadData.qualityadt).format('DD/MM/YYYY');
+                    const formatplantadt = moment(data.poHeadData.plantadt).format('DD/MM/YYYY');
+                    const formataccountadt = moment(data.poHeadData.accountadt).format('DD/MM/YYYY');
+                    //const formataccountadt = moment(data.poHeadData.accountadt).format('DD/MM/YYYY');
+                    $('#CompanyName').text(data.poHeadData.companyname);
+                    $('#CompanyNameHeader').text(data.poHeadData.companyname); 
+                    $('#CAddress').text(data.poHeadData.CAddress);
+                    $('#CAddress1').text(data.poHeadData.CAddress1);
+                    $('#CGST').text(data.poHeadData.CGST);
+                    $('#CPAN').text(data.poHeadData.CPAN);
+                    $('#CContact').text(data.poHeadData.CContact);
+                    $('#CDestination').text(data.poHeadData.CDestination);
+                    $('#PODate').text(formattedPODate);
+                    $('#PONumber').text(data.poHeadData.PONumber);
+                    $('#GE').text(data.poHeadData.GateEntry);
+                    $('#GEDate').text(formategatedate);
+                    $('#SupplierName').text(data.poHeadData.SupplierName);
+                    $('#SupplierAddress').text(data.poHeadData.supplierAddress);
+                    $('#SupplierAddress1').text(data.poHeadData.supplierAddress1);
+                    $('#SupplierState').text(data.poHeadData.supplierState);
+                    $('#SupplierEmail').text(data.poHeadData.SEmail);
+                    $('#SupplierGST').text(data.poHeadData.SupplierGST);
+                    $('#ContactPerson').text(data.poHeadData.SupplierContactPerson);
+                    $('#SupplierContact').text(data.poHeadData.SupplierContact);
+                    $('#MRN').text(data.poHeadData.MRN);
+                    $('#MRNDate').text(formatmrndate);
+                    $('#totaltaxamount').text(parseFloat(data.poHeadData.TaxAmount).toFixed(2));
+                    $('#totalbilltaxamount').text(parseFloat(data.poHeadData.BillTaxAmount).toFixed(2));
+                    $('#totalbillamount').text(parseFloat(data.poHeadData.totalbillamount).toFixed(2));
+                    $('#totalbillamountonbill').text(formattedTotal);
+                    $('#CompanyName').text(data.poHeadData.companyname);
+                    $('#CompanyAddress').text(data.poHeadData.comadd1 - data.poHeadData.CompanyAddress2);
+                    $('#SignatoryName').text(data.poHeadData.SignatoryName);
+                    $('#Signatory').text(data.poHeadData.Signatory);
+                    $('#SignatoryEmail').text(data.poHeadData.SignatoryEmail);
+                    $('#sbillno').text(data.poHeadData.sbillno);
+                    $('#sbilldate').text(formatesbilldate);
+                  //  var storesign = '@Url.Content("~/")' + data.poHeadData.signatureImageStore.substring(2);
+                   // var qualitysign = '@Url.Content("~/")' + data.poHeadData.signatureImageQuality.substring(2);
+                   // var plantheadsign = '@Url.Content("~/")' + data.poHeadData.signatureImagePlant.substring(2);
+                   // var accountsign = '@Url.Content("~/")' + data.poHeadData.signatureImageAccount.substring(2);
+                   // $('#signatureImageStore').attr('src', storesign);
+                   // $('#signatureImageQuality').attr('src', qualitysign);
+                   // $('#signatureImagePlant').attr('src', plantheadsign);
+                   // $('#signatureImageAccount').attr('src', accountsign);
+                     var storesign = data.poHeadData.signatureImageStore ? '@Url.Content("~/")' + data.poHeadData.signatureImageStore.substring(2) : '';
+                     var qualitysign = data.poHeadData.signatureImageQuality ? '@Url.Content("~/")' + data.poHeadData.signatureImageQuality.substring(2) : '';
+                     var plantheadsign = data.poHeadData.signatureImagePlant ? '@Url.Content("~/")' + data.poHeadData.signatureImagePlant.substring(2) : '';
+                     var accountsign = data.poHeadData.signatureImageAccount ? '@Url.Content("~/")' + data.poHeadData.signatureImageAccount.substring(2) : '';
+
+                     $('#signatureImageStore').attr('src', storesign);
+                     $('#signatureImageQuality').attr('src', qualitysign);
+                     $('#signatureImagePlant').attr('src', plantheadsign);
+                     $('#signatureImageAccount').attr('src', accountsign);
+                    $('#storeadt').text(formatstoreadt);
+                    $('#qualityadt').text(formatqualityadt);
+                    $('#plantadt').text(formatplantadt);
+                    $('#accountadt').text(formataccountadt);
+                    //
+                    let totalBillQuantity = 0;
+                    let totalReceivedQuantity = 0;
+                    let totalApprovedQuantity = 0;
+                    let totalRejectedQuantity = 0;
+
+
+                    const itemsTbody = document.getElementById('items');
+                    let totalQuantity = 0;
+                    data.POItemDetail.forEach(item => {
+
+                        const rowHTML = `
+                            <tr>
+                        <td>${item.ItemCode}</td>
+                        <td>${item.ItemName}</td>
+                        <td>${item.UOM}</td>
+                        <td>${parseFloat(item.Quantity).toFixed(3)}</td>
+                        <td>${parseFloat(item.QuantityRecieved).toFixed(3)}</td>
+                        <td>${parseFloat(item.QuantityApproved).toFixed(3)}</td>
+                        <td>${parseFloat(item.QualityRejected).toFixed(3)}</td>
+                        <td>${item.RejectionReturn}</td>
+                            </tr>
+                        `;
+                        totalBillQuantity += parseFloat(item.Quantity);
+                        totalReceivedQuantity += parseFloat(item.QuantityRecieved);
+                        totalApprovedQuantity += parseFloat(item.QuantityApproved);
+                        totalRejectedQuantity += parseFloat(item.QualityRejected);
+
+                        itemsTbody.innerHTML += rowHTML;
+                    });
+                    $('#totalBillQuantity').text(parseFloat(totalBillQuantity).toFixed(3));
+                    $('#totalReceivedQuantity').text(parseFloat(totalReceivedQuantity).toFixed(3));
+                    $('#totalApprovedQuantity').text(parseFloat(totalApprovedQuantity).toFixed(3));
+                    $('#totalRejectedQuantity').text(parseFloat(totalRejectedQuantity).toFixed(3));
+
+
+
+                }
+
+            });
+        })
+
+
+</script>
+
+

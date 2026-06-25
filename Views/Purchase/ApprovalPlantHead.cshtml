@@ -1,0 +1,279 @@
+﻿@{
+    ViewBag.Title = "MRN Executive Approval Console";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const isInModal = !!(document.querySelector('.modal.show'));
+            const handleInvalidUser = () => {
+                toastr.error("Session Expired. Please Login.");
+                setTimeout(() => { window.location.href = "@Url.Action("Index", "Login")"; }, 2000);
+            };
+            setTimeout(handleInvalidUser, isInModal ? 500 : 0);
+        });
+    </script>
+    <div class="vh-100 vw-100 bg-white"></div>
+}
+
+<style>
+    :root {
+        --brand-blue: #00698f;
+        --brand-dark: #004d69;
+        --light-bg: #f8fafc;
+        --border-color: #e2e8f0;
+    }
+
+    body { background-color: var(--light-bg); font-family: 'Inter', 'Segoe UI', sans-serif; }
+
+    /* Executive Header */
+    .report-header {
+        background: linear-gradient(135deg, var(--brand-blue) 0%, var(--brand-dark) 100%);
+        color: white;
+        padding: 1.5rem 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    /* KPI Tiles */
+    .stat-card {
+        background: white; border-radius: 12px; padding: 20px;
+        border: 1px solid var(--border-color); box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        display: flex; flex-direction: column; transition: transform 0.2s ease;
+        height: 100%;
+    }
+    .stat-card:hover { transform: translateY(-5px); border-color: var(--brand-blue); }
+    .stat-label { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; margin-bottom: 5px; }
+    .stat-value { font-size: 1.4rem; font-weight: 800; color: var(--brand-blue); }
+
+    /* Main Table Container */
+    .custom-card {
+        background: white; border-radius: 12px; border: 1px solid var(--border-color);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; margin-bottom: 2rem;
+    }
+    .card-header-custom {
+        background: #fff; padding: 15px 20px; border-bottom: 1px solid var(--border-color);
+        display: flex; justify-content: space-between; align-items: center;
+    }
+    .card-title-line { font-weight: 700; color: var(--brand-blue); text-transform: uppercase; font-size: 0.85rem; margin: 0; }
+
+    /* Search Bar */
+    .search-wrapper { position: relative; width: 350px; }
+    .search-wrapper i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+    .search-input { border-radius: 25px !important; padding-left: 40px !important; background: #f8fafc !important; border: 1.5px solid var(--border-color) !important; height: 38px !important; font-size: 0.85rem; }
+
+    /* Table Enhancements */
+    .table thead th {
+        background: #f1f5f9; color: var(--brand-blue);
+        font-weight: 800; font-size: 0.7rem; text-transform: uppercase;
+        border: none; padding: 12px 15px;
+        position: sticky; top: 0; z-index: 10;
+    }
+    .table tbody td { vertical-align: middle; font-size: 0.82rem; padding: 12px 15px; border-bottom: 1px solid #f1f5f9; }
+
+    .id-pill { font-weight: 700; font-size: 0.65rem; color: #ffffff; background-color: var(--brand-blue); padding: 2px 8px; border-radius: 4px; display: inline-block; }
+    .bill-pill { font-weight: 700; font-size: 0.65rem; color: #00698f; background-color: #e0f2fe; padding: 2px 8px; border-radius: 4px; border: 1px solid #bae6fd; }
+
+    /* Action Hub Buttons */
+    .btn-review { background-color: #f1f5f9; color: #475569; font-weight: 700; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 15px; font-size: 0.7rem; text-transform: uppercase; }
+    .btn-review:hover { background-color: #e2e8f0; color: #1e293b; }
+
+    .btn-authorize { background-color: #10b981; color: white; font-weight: 700; border: none; border-radius: 8px; padding: 6px 18px; font-size: 0.7rem; text-transform: uppercase; transition: 0.2s; }
+    .btn-authorize:hover { background-color: #059669; transform: translateY(-1px); color: white; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
+
+    /* Animations */
+    .animate-up { animation: fadeInUp 0.5s ease forwards; opacity: 0; }
+    @@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Mobile Flip View */
+    @@media (max-width: 992px) {
+        .report-header { flex-direction: column; text-align: center; gap: 15px; }
+        .search-wrapper { width: 100%; margin-top: 10px; }
+        .table thead { display: none; }
+        .table, .table tbody, .table tr, .table td { display: block; width: 100%; }
+        .table tr { margin-bottom: 20px; border: 1px solid var(--border-color); border-radius: 15px; padding: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .table td { text-align: right; padding: 10px 0; border-bottom: 1px solid #f1f5f9; position: relative; padding-left: 50%; }
+        .table td::before { content: attr(data-label); position: absolute; left: 0; font-weight: 800; text-transform: uppercase; color: #64748b; font-size: 0.6rem; }
+        .table td:last-child { border-bottom: none; text-align: center; padding-left: 0; margin-top: 10px; }
+    }
+</style>
+
+<div class="container-fluid px-4 py-4 animate-up">
+    <!-- Header -->
+    <div class="report-header d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="mb-0 fw-bold"><i class="fas fa-file-signature mr-3"></i> MRN Authorization Hub</h2>
+            <small class="text-white-50">Plant Head authorization level for material receipt vouchers.</small>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-white text-primary border px-3 py-2 rounded-pill fw-bold shadow-sm">
+                <i class="fas fa-check-double mr-2"></i> Final Confirmation
+            </span>
+        </div>
+    </div>
+
+    <!-- Dashboard KPI Tiles -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card" style="border-left: 5px solid var(--brand-blue);">
+                <span class="stat-label">Pending MRN Slips</span>
+                <span class="stat-value" id="kpi-pending">0</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card" style="border-left: 5px solid #6366f1;">
+                <span class="stat-label">Active Suppliers</span>
+                <span class="stat-value" id="kpi-suppliers" style="color:#6366f1">0</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card" style="border-left: 5px solid #f59e0b;">
+                <span class="stat-label">Report Status</span>
+                <span class="stat-value text-warning">Awaiting Sync</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Table Container -->
+    <div class="custom-card shadow-sm">
+        <div class="card-header-custom">
+            <h6 class="card-title-line"><i class="fas fa-list-ul mr-2"></i> Items Awaiting Technical Approval</h6>
+            <div class="search-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" id="quickSearch" class="form-control search-input" placeholder="Search PO, Bill or MRN #...">
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table id="MRN" class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th class="text-center">ID</th>
+                        <th>PO Reference</th>
+                        <th>Vendor Bill</th>
+                        <th>G-Entry Ref</th>
+                        <th>MRN Identity</th>
+                        <th class="text-center">Technical Review</th>
+                        <th class="text-center">Action Hub</th>
+                    </tr>
+                </thead>
+                <tbody id="MRNDetail">
+                    <tr><td colspan="7" class="text-center py-5 text-muted">Scanning for pending material receipts...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Global Loader -->
+<img id="wait-sign" src="~/images/wait.gif" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10005; width: 80px;" />
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+
+<script>
+    $(document).ready(function () {
+        Loaddata();
+
+        // 1. INSTANT SEARCH LOGIC
+        $("#quickSearch").on("keyup", function() {
+            var value = $(this).val().toLowerCase();
+            $("#MRNDetail tr").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+    });
+
+    function Loaddata() {
+        $('#wait-sign').show();
+        $.ajax({
+            url: '/Purchase/PendingMRNPlantHead',
+            type: 'get',
+            success: function (data) {
+                $('#wait-sign').hide();
+                var tablebody = $('#MRNDetail');
+                tablebody.empty();
+
+                if (data.selectrows && data.selectrows.length > 0) {
+                    $('#kpi-pending').text(data.selectrows.length);
+
+                    // Logic to count unique suppliers
+                    let supplierSet = new Set();
+
+                    $.each(data.selectrows, function (index, item) {
+                        const FormattedBillDate = item.billdate ? moment(item.billdate).format('DD/MM/YYYY') : 'N/A';
+                        const FormattedMRNDate = item.mrndate ? moment(item.mrndate).format('DD/MM/YYYY') : 'N/A';
+                        const FormattedGateDate = item.gentrydate ? moment(item.gentrydate).format('DD/MM/YYYY') : 'N/A';
+
+                        if(item.supplier) supplierSet.add(item.supplier);
+
+                        var row = `<tr>
+                            <td data-label="ID" class="text-center text-muted small">#${item.id}</td>
+                            <td data-label="PO Ref"><span class="id-pill shadow-sm">${item.ponumber || 'N/A'}</span></td>
+                            <td data-label="Vendor Bill">
+                                <div class="fw-bold text-dark">${item.billnumber || 'N/A'}</div>
+                                <small class="text-muted">Dated: ${FormattedBillDate}</small>
+                            </td>
+                            <td data-label="G-Entry Ref">
+                                <div class="fw-bold">${item.gateentry || '---'}</div>
+                                <small class="text-muted">${FormattedGateDate}</small>
+                            </td>
+                            <td data-label="MRN Identity">
+                                <span class="bill-pill">${item.mrnnumber || 'N/A'}</span>
+                                <div class="small text-muted mt-1">Processed: ${FormattedMRNDate}</div>
+                            </td>
+                            <td data-label="Review" class="text-center">
+                                <a href="/Purchase/MRNPrintout?headid=${item.id}" target="_blank" class="btn btn-review shadow-sm">
+                                    <i class="fas fa-search me-1"></i> Technical View
+                                </a>
+                            </td>
+                            <td data-label="Action" class="text-center">
+                                <button onclick="approveOrder(${item.id})" class="btn btn-authorize shadow-sm">
+                                    <i class="fas fa-check-circle me-1"></i> Authorize MRN
+                                </button>
+                            </td>
+                        </tr>`;
+                        tablebody.append(row);
+                    });
+
+                    $('#kpi-suppliers').text(supplierSet.size > 0 ? supplierSet.size : 'N/A');
+                    toastr.success('Authorisation queue synchronized.');
+
+                } else {
+                    $('#kpi-pending').text("0");
+                    tablebody.append('<tr><td colspan="7" class="text-center py-5 text-muted italic"><i class="fas fa-check-circle text-success me-2"></i>All Material Receipts have been cleared.</td></tr>');
+                }
+            },
+            error: function () {
+                $('#wait-sign').hide();
+                toastr.error("Database connection failure. Please refresh.");
+            }
+        });
+    }
+
+    function approveOrder(itemId) {
+        if (confirm("Confirm Authorization? This will commit the Material Receipt to the financial ledger.")) {
+            $('#wait-sign').show();
+            $.ajax({
+                url: '@Url.Action("ApprovePlantHeadMRN", "Purchase")',
+                type: 'POST',
+                data: { id: itemId },
+                success: function(result) {
+                    $('#wait-sign').hide();
+                    toastr.success("MRN voucher authorized successfully.");
+                    Loaddata();
+                },
+                error: function(xhr, status, error) {
+                    $('#wait-sign').hide();
+                    toastr.error("Authorization failed. Please check technical remarks.");
+                    console.error(error);
+                }
+            });
+        }
+    }
+</script>

@@ -1,0 +1,106 @@
+﻿
+@{
+    ViewBag.Title = "PurcahseReport";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if the current context is inside a Bootstrap modal
+            const isInModal = !!(document.querySelector('.modal.show'));
+
+            if (isInModal) {
+                // If inside a modal, wait for a short delay
+                setTimeout(() => {
+                    handleInvalidUser();
+                }, 500); // Adjust the delay as needed
+            } else {
+                // If not in a modal, proceed immediately
+                handleInvalidUser();
+            }
+
+            function handleInvalidUser() {
+                toastr.error("Invalid User");
+
+                setTimeout(function () {
+                    window.location.href = "@Url.Action("Index", "Login")";
+                }, 2000); // Redirect after 2 seconds
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+
+<h2>Purchase Report Item Wise</h2>
+
+
+<div class="row">
+    <div class="col-md-12">
+        <table id="report-table" class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Head ID</th>
+                    <th>Bill Number</th>
+                    <th>Bill Date</th>
+                    <th>Supplier ID</th>
+                    <th>Item Code</th>
+                    <th>Quantity</th>
+                    <th>Basic Price</th>
+                    <th>Tax Amount</th>
+                    <th>Total Amount</th>
+                </tr>
+            </thead>
+            <tbody id="report-body">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.16.2/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.2.1/exceljs.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#report-form').submit(function (e) {
+            e.preventDefault();
+            var formData = $(this).serialize();
+            $.ajax({
+                type: 'GET',
+                url: '@Url.Action("GetPurchaseItemwise", "Reports")',
+                data: formData,
+                dataType: 'json',
+                success: function (data) {
+                    $('#report-body').empty();
+                    $.each(data.headData, function (index, head) {
+                        $.each(data.detailData, function (index, detail) {
+                            if (head.Id === detail.HeadId) {
+                                $('#report-body').append('<tr>' +
+                                    '<td>' + head.Id + '</td>' +
+                                    '<td>' + head.BillNumber + '</td>' +
+                                    '<td>' + head.BillDate.toLocaleDateString() + '</td>' +
+                                    '<td>' + head.Supplierid + '</td>' +
+                                    '<td>' + detail.ItemCode + '</td>' +
+                                    '<td>' + detail.Quantity + '</td>' +
+                                    '<td>' + detail.BasicPrice + '</td>' +
+                                    '<td>' + detail.TaxAmount + '</td>' +
+                                    '<td>' + detail.TotalAmount + '</td>' +
+                                    '</tr>');
+                            }
+                        });
+                    });
+                }
+            });
+        });
+    });
+</script>
+
+
+
+

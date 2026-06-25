@@ -1,0 +1,57 @@
+﻿@model CMKL.Models.CMKL_Email
+@{
+    ViewBag.Title = "EmailView";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@*@{
+        //string URole = "";
+        if (Session["U_Role"] == null)
+        {
+            Response.Redirect("~/Login/Index");
+            ViewBag.logout = "User Logged Out, Please Login Again";
+            // URole = Session["U_Role"].ToString();
+        }
+        else
+        {
+        }
+
+    }*@
+<h2>Auto Email Management</h2>
+
+
+@using (Html.BeginForm("EmailData", "EmailManage", FormMethod.Get))
+{
+    <div class="container">
+        <div class="row">
+            <br />
+            <div class="col-sm-9">
+
+            </div>
+            <form id="myForm">
+                <div class="col-sm-4">
+                    @* @Html.LabelFor(mode => mode.EnquiryNo)*@
+                    <p> @Html.DropDownList("typeEmail", (IEnumerable<SelectListItem>)ViewBag.EmailType, "-Auto Mail For-", new { @class = "form-control" })</p>
+
+                </div>
+                <div class="col-sm-4">
+
+                    <p><button type="submit" id="search" class="btn btn-primary">Search</button></p>
+                </div>
+
+            </form>
+        </div>
+
+    </div>
+}
+<hr />
+<div>
+    @Html.Partial("AddEmail")
+</div>
+
+<hr />
+
+
+
+
+

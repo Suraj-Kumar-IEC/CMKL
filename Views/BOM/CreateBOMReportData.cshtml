@@ -1,0 +1,104 @@
+﻿@model List<CMKL.Models.CreateBOMViewModel>
+@{
+    ViewBag.Title = "CreateBOMReportData";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@{
+    ViewBag.Title = "Create BOM Report";
+}
+
+<h2>Create BOM Report</h2>
+
+<form id="create-bom-report-form">
+    <table id="bom-report-table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Alternator</th>
+                <th>Panel</th>
+                <th>Dgassy</th>
+                <th>Baseframe</th>
+                <th>Canopy</th>
+                <th>Fueltank</th>
+                <th>Assembly</th>
+                <th>Acoustictreatment</th>
+                <th>Exhaustsystem</th>
+                <th>Final</th>
+                <th>Electrical</th>
+                <th>Total Quantity</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                <tr>
+                    <td>
+                        @Html.DropDownListFor(m => m[i].FinalItem, (SelectList)ViewBag.ProductList, "Select Product")
+                    </td>
+                    <td>
+                        @Html.EditorFor(m => m[i].Alternator)
+                    </td>
+                    <td>
+                        @Html.EditorFor(m => m[i].Panel)
+                    </td>
+                    <td>
+                        @Html.EditorFor(m => m[i].Dgassy)
+                    </td>
+                    <td>
+                        @Html.EditorFor(m => m[i].Baseframe)
+                    </td>
+                    <td>
+                        @Html.EditorFor(m => m[i].Canopy)
+                    </td>
+                    <td>
+                        @Html.EditorFor(m => m[i].Fueltank)
+                    </td>
+                    <td>
+                        @Html.EditorFor(m => m[i].Assembly)
+                    </td>
+                    <td>
+                        @Html.EditorFor(m => m[i].Acoustictreatment)
+                    </td>
+                    <td>
+                        @Html.EditorFor(m => m[i].Exhaustsystem)
+                    </td>
+                    <td>
+                        @Html.EditorFor(m => m[i].Final)
+                    </td>
+                    <td>
+                        @Html.EditorFor(m => m[i].Electrical)
+                    </td>
+                    <td>
+                        @Html.EditorFor(m => m[i].TotalQuantity)
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button type="submit">Generate BOM Report</button>
+</form>
+
+<div id="bom-report-container">
+    <!-- The BOM report will be displayed here -->
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#create-bom-report-form').submit(function (e) {
+                e.preventDefault();
+                var formData = $(this).serialize();
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("CreateBOMReportData", "YourControllerName")',
+                    data: formData,
+                    success: function (data) {
+                        $('#bom-report-container').html(data);
+                    }
+                });
+            });
+        });
+    </script>
+}

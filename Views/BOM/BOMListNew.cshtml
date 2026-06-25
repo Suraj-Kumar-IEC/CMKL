@@ -1,0 +1,21 @@
+﻿@model IEnumerable<CMKL.Models.BOMItem>
+
+<h2>BOM List</h2>
+
+<table>
+    <tr>
+        <th>Raw Item Name</th>
+        <th>Category</th>
+        <th>Quantity</th>
+        <th>UOM</th>
+    </tr>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.RawItemName</td>
+            <td>@item.Category</td>
+            <td>@item.Quantity</td>
+            <td>@item.UOM</td>
+        </tr>
+    }
+</table>

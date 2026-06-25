@@ -1,0 +1,415 @@
+﻿
+@{
+    ViewBag.Title = "PendingProductionView";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if the current context is inside a Bootstrap modal
+            const isInModal = !!(document.querySelector('.modal.show'));
+
+            if (isInModal) {
+                // If inside a modal, wait for a short delay
+                setTimeout(() => {
+                    handleInvalidUser();
+                }, 500); // Adjust the delay as needed
+            } else {
+                // If not in a modal, proceed immediately
+                handleInvalidUser();
+            }
+
+            function handleInvalidUser() {
+                toastr.error("Invalid User");
+
+                setTimeout(function () {
+                    window.location.href = "@Url.Action("Index", "Login")";
+                }, 2000); // Redirect after 2 seconds
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<h3 style="background-color: #00698f; color: #ffffff; padding: 5px 10px; border-radius: 5px; text-align: center;">Production Status Update</h3>
+<div class="container">
+    <div class="row">
+        <table class="table table-bordered table-sm" id="PendingTable">
+            <thead>
+                <tr>
+                    <th>Voucher Number</th>
+                    <th>Voucher Date</th>
+                    <th>Created By</th>
+                    <th>FG Product Code</th>
+                    <th>FG Product Name</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="PendingRows"></tbody>
+
+        </table>
+    </div>
+</div>
+<div class="modal fade" id="completionDetailsModal" tabindex="-1" role="dialog" aria-labelledby="completionDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="completionDetailsModalLabel">Enter Completion Details</h5>               
+            </div>
+            <div class="modal-body">
+                <input type="text" class="form-control" id="completionDetails" disabled style="display: none;">
+                <div class="row">
+                    <h5 style="background-color: #00698f; color: #ffffff; padding: 5px 10px; border-radius: 5px; text-align: center;">Engine Detail</h5>
+                    <div class="col-md-4">
+                        <label for="emake">Make</label>
+                        <input type="text" id="emake" class="form-control form-control-sm" value="Kirloskar" />
+                    </div>
+                    <div class="col-md-4">
+                        <label for="emodel">Model</label>
+                        <select id="emodel" class="form-control form-control-sm"></select>
+                    </div>                    
+                    <div class="col-md-4">
+                        <label for="eserial">Serial No</label>
+                        <input type="text" id="eserial" class="form-control form-control-sm" />
+                    </div>
+                    <div class="col-md-4">
+                        <label for="etestcert">Test Certificate</label>
+                        <select id="etestcert" class="form-control form-control-sm">
+                            <option>Yes</option>
+                            <option>No</option>
+                        </select>
+                    </div>
+                    <div class="col-md-8">
+                        <label for="eremarks">Remarks</label>
+                        <input type="text" id="eremarks" class="form-control form-control-sm" />
+                    </div>
+                </div>
+                <div class="row">
+                    <h5 style="background-color: #00698f; color: #ffffff; padding: 5px 10px; border-radius: 5px; text-align: center;">Alternator Detail</h5>
+                    <div class="col-md-4">
+                        <label for="amake">Make</label>
+                        <input type="text" id="amake" class="form-control form-control-sm" value="Kirloskar" />
+                    </div>
+                    <div class="col-md-4">
+                        <label for="aframe">Frame</label>
+                        <input type="text" id="aframe" class="form-control form-control-sm" />
+                    </div>
+                    <div class="col-md-4">
+                        <label for="amcno">MC No</label>
+                        <input type="text" id="amcno" class="form-control form-control-sm" />
+                    </div>
+                    <div class="col-md-4">
+                        <label for="arating">Alternator Rating</label>
+                        <select id="arating" class="form-control form-control-sm"></select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="aphase">Phase</label>
+                        <select id="aphase" class="form-control form-control-sm"></select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="atestcert">Test Certificate</label>
+                        <select id="atestcert" class="form-control form-control-sm">
+                            <option>Yes</option>
+                            <option>No</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="awarranty">Warranty Card</label>
+                        <select id="awarranty" class="form-control form-control-sm">
+                            <option>Yes</option>
+                            <option>No</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="aremarks">Remarks</label>
+                        <input type="text" id="aremarks" class="form-control form-control-sm" />
+                    </div>
+                </div>
+                <div class="row">
+                    <h5 style="background-color: #00698f; color: #ffffff; padding: 5px 10px; border-radius: 5px; text-align: center;">Other Detail</h5>
+                    <div class="col-md-4">
+                        <label for="exhaust">Exhaust Pipe</label>
+                        <input type="number" id="exhaust" class="form-control form-control-sm" value="1" />
+                    </div>
+                    <div class="col-md-4">
+                        <label for="kgsticker">KG Sticker</label>
+                        <input type="text" id="kgsticker" class="form-control form-control-sm" value="Pasted" />
+                    </div>
+                    <div class="col-md-4">
+                        <label for="AVM">AVM Pads</label>
+                        <input type="text" id="AVM" class="form-control form-control-sm" value="Fitted Under Engine/Alternator" />
+                    </div>
+                    <div class="col-md-4">
+                        <label for="fuelspout">Fuel Spout</label>
+                        <input type="number" id="fuelspout" class="form-control form-control-sm" value="1" />
+                    </div>
+                    <div class="col-md-4">
+                        <label for="flexbel">Flexible Bellow</label>
+                        <input type="number" id="flexbel" class="form-control form-control-sm" value="1" />
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="closemodal" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveCompletionDetails" style="background-color: #00698f; color: #ffffff;">Save Details</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.16.2/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.2.1/exceljs.min.js"></script>
+
+<script>
+    $(document).on('click', '.approve-button', function () {
+        var voucherId = $(this).data('voucher');
+
+        // Set hidden field for submission
+        $('#completionDetails').val(voucherId);
+
+        // 1. Reset/Clear Modal Fields
+        $('#eserial').val('');
+        $('#amcno').val('');
+        $('#eremarks').val('');
+        $('#aframe').val('');
+        $('#aremarks').val('');
+        $('#exhaust').val('1');
+        $('#fuelspout').val('1');
+        $('#flexbel').val('1');
+        $('#etestcert').prop('selectedIndex', 0);
+        $('#atestcert').prop('selectedIndex', 0);
+        $('#awarranty').prop('selectedIndex', 0);
+        $('#emodel').prop('selectedIndex', 0);
+        $('#eserial').prop('disabled', false);
+        $('#amcno').prop('disabled', false);
+        // 2. AJAX call to fetch assigned Serial Numbers from FIFO Lot
+        $.ajax({
+            type: 'GET',
+            url: '/Production/GetSerialNumbers',
+            data: { voucherId: voucherId },
+            success: function (data) {
+                // data should be checked for actual content, not just null
+                if (data && (data.engineserial || data.alternatorserial)) {
+
+                    // 1. Handle Engine Serial
+                    $('#eserial').val(data.engineserial);
+                    if (data.engineserial && data.engineserial.trim() !== "") {
+                        // If serial exists, set value and disable field
+                        $('#eserial').prop('disabled', true);
+                    } else {
+                        // If serial is missing, allow manual entry
+                        $('#eserial').prop('disabled', false).val('');
+                    }
+
+                    // 2. Handle Alternator Serial
+                    $('#amcno').val(data.alternatorserial);
+                    if (data.alternatorserial && data.alternatorserial.trim() !== "") {
+                        // If serial exists, set value and disable field
+                        $('#amcno').prop('disabled', true);
+                    } else {
+                        // If serial is missing, allow manual entry
+                        $('#amcno').prop('disabled', false).val('');
+                    }
+
+                    toastr.info('Assigned Serial Numbers loaded from FIFO Lot.');
+
+                } else {
+                    // No data found at all - enable fields for manual entry
+                    toastr.warning('No FIFO serials found. Please enter manually.');
+                    $('#eserial').prop('disabled', false).val('');
+                    $('#amcno').prop('disabled', false).val('');
+                }
+            },
+            error: function (xhr) {
+                toastr.error("Error fetching serials: " + xhr.statusText);
+            }
+        });
+
+        // 3. Show the modal
+        $('#completionDetailsModal').modal('show');
+    });
+    $(document).ready(function () {
+        $.ajax({
+            url: '/Production/GetEngineModel',
+            type: 'GET',
+            success: function (data) {
+                $('#emodel').append($('<option></option>').val("").text("Select Engine Model"));
+                $.each(data, function (index, item) {
+                    $('#emodel').append($('<option></option>').val(item.value).text(item.text));
+                });
+            }
+
+        })
+        
+        //Get Ratings
+        $.ajax({
+            url: '/Production/GetRatings',
+            type: 'GET',
+            success: function (data) {
+                $('#arating').append($('<option></option>').val("").text("Select Alternator Rating"));
+                $.each(data.rating, function (index, item) {
+                    $('#arating').append($('<option></option>').val(item.value).text(item.text));
+                });
+
+            }
+        })
+        //Get Phase
+        $.ajax({
+            url: '/Production/GetAlternatorPhase',
+            type: 'GET',
+            success: function (data) {
+                $('#aphase').append($('<option></option>').val("").text("Select Phase"));
+                $.each(data.phase, function (index, item) {
+                    $('#aphase').append($('<option></option>').val(item.value).text(item.text));
+                });
+
+            }
+        })
+        // Function to load pending records
+        function loadPendingRecords() {
+            $.ajax({
+                type: 'GET',
+                url: '/Production/GetPendingRecords',
+                dataType: 'JSON',
+                success: function (data) {
+                    $('#PendingRows').empty(); // Clear existing rows
+                    $.each(data.get, function (index, item) {
+                        var dateValue = parseInt(item.VoucherDate.replace(/[^0-9]/g, ''));
+                        var voucherDate = new Date(dateValue);
+                        var formattedDate = voucherDate.toLocaleDateString('en-GB', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric'
+                        }).replace(/\//g, '-');
+
+                        var row = '<tr>' +
+                            '<td>' + item.VoucherNumber + '</td>' +
+                            '<td>' + formattedDate + '</td>' +
+                            '<td>' + item.CreatedBy + '</td>' +
+                            '<td>' + item.FGProductCode + '</td>' +
+                            '<td>' + item.FGProductName + '</td>' +
+                            '<td><button class="btn btn-primary btn-sm approve-button" style="background-color: #00698f; color: #ffffff;" data-voucher="' + item.id + '">Mark Completed</button></td>' +
+                            '</tr>';
+
+                        $('#PendingRows').append(row);
+                    });
+                },
+                error: function (error) {
+                    console.error("Error loading pending records:", error);
+                    toastr.error("Failed to load pending production records.");
+                }
+            });
+        }
+
+        $('#closemodal').click(function () {
+            $('#completionDetailsModal').modal('hide');
+        });
+
+        // Initial loading of records
+        loadPendingRecords();
+        $('#saveCompletionDetails').click(function () {
+            debugger;
+            //Now we need to send data 
+            var voucherId = $('#completionDetails').val();
+
+            // Collect the data from all the input fields in the modal.
+            var engineData = {
+                emake: $('#emake').val(),
+                emodel: $('#emodel option:Selected').val(),
+                eserial: $('#eserial').val(),
+                etestcert: $('#etestcert').val(),
+                eremarks: $('#eremarks').val()
+            };
+
+            var alternatorData = {
+                amake: $('#amake').val(),
+                aframe: $('#aframe').val(),
+                amcNo: $('#amcno').val(),
+                atestCert: $('#atestcert').val(),
+                awarranty: $('#awarranty').val(),
+                aremarks: $('#aremarks').val(),
+                arating: $('#arating option:selected').val(),
+                aphase:$('#aphase option:selected').val()
+            };
+
+            var otherData = {
+                exhaust: $('#exhaust').val(),
+                kgSticker: $('#kgsticker').val(),
+                avmPads: $('#AVM').val(),
+                fuelSpout: $('#fuelspout').val(),
+                flexBellow: $('#flexbel').val()
+            };
+
+            
+
+            // Perform the AJAX request to send the data to the server
+            $.ajax({
+                url: '/Production/SaveCompletionDetails', // Replace with your actual controller endpoint URL.  Important!
+                method: 'POST', // Use POST for sending data
+                dataType: 'json', // Expect JSON response from the server
+                data: { // Send the data as an object
+                    voucherId: voucherId,
+                    engine: engineData,
+                    alternator: alternatorData,
+                    other: otherData
+                },
+                success: function (response) {
+                    if (response.success) {
+                        // Application-level success
+                        console.log("Data sent successfully:", response);
+                        $('#completionDetailsModal').modal('hide');
+                        toastr.success("Voucher details saved successfully!");
+                        loadPendingRecords();
+                    } else {
+                        // Application-level failure
+                       // console.error("Error saving data:", response.message); // Log the error message from the server
+                        toastr.error(response.message); // Display the error message to the user
+                    }
+                },
+                error: function (xhr, status, error) {
+                    // Handle errors during the AJAX request
+                    console.error("Error sending data:", error);
+                    console.error("Status:", status);
+                    console.error("Response:", xhr.responseText);  //Very helpful for debugging server errors.
+
+                    // Display an error message to the user
+                    toastr.error("Error saving voucher details. Please check the console."); // Basic alert.  Consider a better UI.
+                }
+            });
+
+        });
+
+        // Handle approve button click (using event delegation)
+        @*$('#PendingTable').on('click', '.approve-button', function () {
+            var voucherId = $(this).data('voucher');
+
+            // Send AJAX request to update the record
+            $.ajax({
+                type: 'POST',
+                url: '/Production/ApproveRecord', // Replace with your controller action
+                data: { id: voucherId }, // Send the voucher ID to the controller
+                success: function (response) {
+                    if (response.success) { // Assuming your controller returns a success flag
+                        toastr.success(response.message); // Show success message
+                        loadPendingRecords(); // Refresh the table data
+                    } else {
+                        toastr.error(response.message); // Show error message
+                    }
+                },
+                error: function (error) {
+                    console.error("Error approving record:", error);
+                    toastr.error("Failed to approve record.");
+                }
+            });
+        });*@
+    });
+</script>
+
+

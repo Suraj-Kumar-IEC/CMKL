@@ -1,0 +1,262 @@
+﻿@{
+    ViewBag.Title = "Cancelled BOM Audit Log";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const isInModal = !!(document.querySelector('.modal.show'));
+            const handleInvalidUser = () => {
+                toastr.error("Session Expired. Please Login.");
+                setTimeout(() => { window.location.href = "@Url.Action("Index", "Login")"; }, 2000);
+            };
+            setTimeout(handleInvalidUser, isInModal ? 500 : 0);
+        });
+    </script>
+    <div class="vh-100 vw-100 bg-white"></div>
+}
+
+<style>
+    :root {
+        --brand-blue: #00698f;
+        --brand-dark: #004d69;
+        --light-bg: #f8fafc;
+        --border-color: #e2e8f0;
+    }
+
+    body { background-color: var(--light-bg); font-family: 'Inter', 'Segoe UI', sans-serif; }
+
+    /* Executive Header */
+    .report-header {
+        background: linear-gradient(135deg, var(--brand-blue) 0%, var(--brand-dark) 100%);
+        color: white;
+        padding: 1.5rem 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    /* KPI Stat Cards */
+    .stat-card {
+        background: white; border-radius: 12px; padding: 20px;
+        border: 1px solid var(--border-color); box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        display: flex; flex-direction: column; transition: transform 0.2s ease;
+        height: 100%;
+    }
+    .stat-card:hover { transform: translateY(-3px); }
+    .stat-label { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; margin-bottom: 5px; }
+    .stat-value { font-size: 1.4rem; font-weight: 800; color: var(--brand-blue); }
+
+    /* Main UI Card */
+    .custom-card {
+        background: white; border-radius: 12px; border: 1px solid var(--border-color);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; margin-bottom: 2rem;
+    }
+    .card-header-custom {
+        background: #fff; padding: 15px 20px; border-bottom: 1px solid var(--border-color);
+        display: flex; justify-content: space-between; align-items: center;
+    }
+    .card-title-line { font-weight: 700; color: var(--brand-blue); text-transform: uppercase; font-size: 0.85rem; margin: 0; }
+
+    /* Control Elements */
+    .search-wrapper { position: relative; width: 350px; }
+    .search-wrapper i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+    .search-input { border-radius: 25px !important; padding-left: 40px !important; background: #f8fafc !important; border: 1.5px solid var(--border-color) !important; height: 38px !important; }
+
+    .filter-group { display: flex; gap: 10px; align-items: center; background: #f8fafc; padding: 15px 25px; border-bottom: 1px solid var(--border-color); }
+    .form-control-sm { border-radius: 6px; border: 1.5px solid var(--border-color); }
+
+    /* Table Styling */
+    .table thead th {
+        background: #f1f5f9; color: var(--brand-blue);
+        font-weight: 800; font-size: 0.7rem; text-transform: uppercase;
+        border: none; padding: 12px 15px;
+        position: sticky; top: 0; z-index: 10;
+    }
+    .table tbody td { vertical-align: middle; font-size: 0.82rem; padding: 12px 15px; border-bottom: 1px solid #f1f5f9; }
+
+    .id-pill { font-weight: 700; font-size: 0.65rem; color: #ffffff; background-color: var(--brand-blue); padding: 2px 8px; border-radius: 4px; display: inline-block; }
+    .remarks-box { font-size: 0.75rem; color: #64748b; font-style: italic; background: #fefce8; border: 1px solid #fef08a; padding: 4px 8px; border-radius: 6px; line-height: 1.4; }
+
+    .btn-export { background-color: #10b981; color: white; font-weight: 700; border: none; border-radius: 30px; padding: 8px 20px; font-size: 0.75rem; transition: 0.2s; }
+    .btn-export:hover { background-color: #059669; transform: translateY(-1px); color: white; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
+
+    .animate-up { animation: fadeInUp 0.5s ease forwards; opacity: 0; }
+    @@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<div class="container-fluid px-4 py-4 animate-up">
+    <!-- Header -->
+    <div class="report-header d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="mb-0 fw-bold"><i class="fas fa-file-excel mr-3"></i> Cancelled BOM Audit</h2>
+            <small class="text-white-50">Comprehensive audit trail of reversed production vouchers and stock realignments.</small>
+        </div>
+        <div class="text-end">
+            <button class="btn btn-export shadow-sm" onclick="exportToExcel()">
+                <i class="fas fa-file-download me-2"></i> Export Audit Log
+            </button>
+        </div>
+    </div>
+
+    <!-- Dashboard KPI Tiles -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card" style="border-left: 5px solid #ef4444;">
+                <span class="stat-label">Total Cancelled Records</span>
+                <span class="stat-value text-danger" id="kpi-total">0</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card" style="border-left: 5px solid #f59e0b;">
+                <span class="stat-label">Unique Authorized Users</span>
+                <span class="stat-value text-warning" id="kpi-users">0</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card" style="border-left: 5px solid var(--brand-blue);">
+                <span class="stat-label">Report Pulse</span>
+                <span class="stat-value" id="kpi-status">Live Sync</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Card -->
+    <div class="custom-card shadow-sm">
+        <div class="card-header-custom">
+            <h6 class="card-title-line"><i class="fas fa-history mr-2"></i> Reversion History</h6>
+            <div class="search-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" id="quickSearch" class="form-control search-input" placeholder="Search Voucher, Staff or Remarks...">
+            </div>
+        </div>
+
+        <div class="filter-group">
+            <div class="d-flex align-items-center gap-2">
+                <span class="small fw-bold text-muted uppercase">From:</span>
+                <input type="date" id="fromDate" class="form-control form-control-sm" style="width:150px" />
+            </div>
+            <div class="d-flex align-items-center gap-2 ms-3">
+                <span class="small fw-bold text-muted uppercase">To:</span>
+                <input type="date" id="toDate" class="form-control form-control-sm" style="width:150px" />
+            </div>
+            <button class="btn btn-sm btn-primary px-4 ms-auto rounded-pill fw-bold" onclick="loadCancelledBOMData()">
+                <i class="fas fa-sync-alt me-1"></i> Apply Filters
+            </button>
+        </div>
+
+        <div class="table-responsive" style="max-height: 550px;">
+            <table id="cancelledBomTable" class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th class="text-center">Audit ID</th>
+                        <th>Voucher Identity</th>
+                        <th class="text-center">Voucher Date</th>
+                        <th>Originator</th>
+                        <th>Cancellation Reason / Remarks</th>
+                        <th>Authorized By</th>
+                        <th class="text-center">Cancelled On</th>
+                    </tr>
+                </thead>
+                <tbody id="report-body">
+                    <tr><td colspan="7" class="text-center py-5 text-muted italic">Scanning technical logs for cancelled vouchers...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<img id="wait-sign" src="~/images/wait.gif" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10005; width: 80px;" />
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            // Default dates
+            const firstDay = moment().startOf('month').format('YYYY-MM-DD');
+            const today = moment().format('YYYY-MM-DD');
+            $('#fromDate').val(firstDay);
+            $('#toDate').val(today);
+
+            loadCancelledBOMData();
+
+            // 1. Instant Search Logic
+            $("#quickSearch").on("keyup", function() {
+                var value = $(this).val().toLowerCase();
+                $("#report-body tr").filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+
+        function loadCancelledBOMData() {
+            $('#wait-sign').show();
+            const payload = {
+                from: $('#fromDate').val(),
+                to: $('#toDate').val()
+            };
+
+            $.ajax({
+                url: '@Url.Action("GetCancelledBOMData", "Reports")',
+                type: 'POST',
+                data: payload,
+                dataType: 'json',
+                success: function (response) {
+                    $('#wait-sign').hide();
+                    var tableBody = $('#report-body');
+                    tableBody.empty();
+
+                    if (response.data && response.data.length > 0) {
+                        $('#kpi-total').text(response.data.length);
+
+                        let userSet = new Set();
+
+                        $.each(response.data, function (index, item) {
+                            var vdate = item.VoucherDate ? moment(parseInt(item.VoucherDate.substr(6))).format('DD/MM/YYYY') : '---';
+                            var cdate = item.CancelledOn ? moment(parseInt(item.CancelledOn.substr(6))).format('DD/MM/YYYY HH:mm') : '---';
+
+                            if(item.CancelledBy) userSet.add(item.CancelledBy);
+
+                            var row = `<tr>
+                                <td class="text-center text-muted small"><span class="id-pill shadow-sm">#${item.BOMVoucherID}</span></td>
+                                <td class="fw-bold text-dark">${item.VoucherNumber}</td>
+                                <td class="text-center small text-muted">${vdate}</td>
+                                <td class="small fw-bold">${item.CreatedBy}</td>
+                                <td><div class="remarks-box">${item.CancelledRemarks || 'No technical remarks provided.'}</div></td>
+                                <td class="fw-bold text-primary">${item.CancelledBy || '---'}</td>
+                                <td class="text-center small fw-bold">${cdate}</td>
+                            </tr>`;
+                            tableBody.append(row);
+                        });
+
+                        $('#kpi-users').text(userSet.size);
+                        toastr.success('Cancellation records synchronized.');
+
+                    } else {
+                        tableBody.append('<tr><td colspan="7" class="text-center py-5 text-muted italic"><i class="fas fa-check-circle text-success me-2"></i>No cancellation events identified for this period.</td></tr>');
+                        $('#kpi-total').text("0");
+                        $('#kpi-users').text("0");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    $('#wait-sign').hide();
+                    toastr.error("Database connection failure. Please check server logs.");
+                }
+            });
+        }
+
+        function exportToExcel() {
+            var table = document.getElementById("cancelledBomTable");
+            var wb = XLSX.utils.table_to_book(table, { raw: true });
+            XLSX.writeFile(wb, 'Cancelled_BOM_Audit_' + moment().format('DDMMYYYY') + '.xlsx');
+            toastr.info("Generating Excel document...");
+        }
+    </script>
+}

@@ -1,0 +1,366 @@
+﻿@{
+    ViewBag.Title = "Indent Fulfillment Analytics";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const isInModal = !!(document.querySelector('.modal.show'));
+            if (isInModal) {
+                setTimeout(() => { handleInvalidUser(); }, 500);
+            } else {
+                handleInvalidUser();
+            }
+            function handleInvalidUser() {
+                toastr.error("Invalid User Session");
+                setTimeout(function () { window.location.href = "@Url.Action("Index", "Login")"; }, 2000);
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<style>
+    .indent-tracker-container {
+        background-color: #f8fafc;
+        font-family: 'Inter', sans-serif;
+        color: #334155;
+    }
+
+    .report-header {
+        background: white;
+        padding: 15px 30px;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid #e2e8f0;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        transition: transform 0.2s;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+    .stat-label {
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #64748b;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: #00698f;
+    }
+
+    /* Control Styles */
+    .search-input {
+        border-radius: 20px;
+        border: 1.5px solid #e2e8f0;
+        padding: 6px 15px;
+        font-size: 0.8rem;
+        width: 250px;
+        outline: none;
+        transition: 0.3s;
+    }
+
+        .search-input:focus {
+            border-color: #00698f;
+            box-shadow: 0 0 0 3px rgba(0, 105, 143, 0.1);
+        }
+
+    .filter-select {
+        border-radius: 20px;
+        border: 1.5px solid #e2e8f0;
+        padding: 6px 15px;
+        font-size: 0.8rem;
+        outline: none;
+        background-color: #fff;
+        color: #334155;
+        font-weight: 600;
+    }
+
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+    }
+
+    .status-pending {
+        background: #fee2e2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+    }
+
+    .status-partial {
+        background: #fef3c7;
+        color: #d97706;
+        border: 1px solid #fde68a;
+    }
+
+    .status-completed {
+        background: #dcfce7;
+        color: #16a34a;
+        border: 1px solid #bbf7d0;
+    }
+
+    .table-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    .table thead th {
+        position: sticky;
+        top: 0;
+        background: #f1f5f9;
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #00698f;
+        padding: 12px 10px;
+        border: none;
+        z-index: 10;
+    }
+
+    .table tbody td {
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+        padding: 12px 10px;
+    }
+
+    .btn-export {
+        background-color: #10b981;
+        color: white;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.75rem;
+        border: none;
+        padding: 8px 20px;
+        transition: 0.3s;
+    }
+
+        .btn-export:hover {
+            background-color: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+        }
+
+    @@media (max-width: 768px) {
+        .report-header {
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+        }
+
+        .search-input {
+            width: 100%;
+        }
+
+        .d-flex.gap-2 {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="indent-tracker-container container-fluid py-4 px-lg-5">
+    <div class="report-header">
+        <div>
+            <h4 class="fw-bold m-0 text-dark">Indent Fulfillment Intelligence</h4>
+            <p class="text-muted small m-0">Track material receipt progress and procurement shortfalls.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <!-- New Status Filter -->
+            <select id="statusFilter" class="filter-select shadow-sm">
+                <option value="All">Show All Status</option>
+                <option value="Pending">Not Received (Pending)</option>
+                <option value="Partial">Partially Fulfilled</option>
+                <option value="Completed">Completed</option>
+            </select>
+
+            <input type="text" id="txtSearch" class="search-input shadow-sm" placeholder="Search Indent or Item..." />
+
+            <button class="btn btn-export shadow-sm" onclick="exportToExcel()">
+                <i class="fas fa-file-excel me-2"></i>Export Excel
+            </button>
+
+            <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 shadow-sm" onclick="loadAnalytics()" title="Sync Data">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- KPI Tiles -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #00698f;">
+                <span class="stat-label">Total Indent Items</span>
+                <span class="stat-value" id="kpi-total">0</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #dc2626;">
+                <span class="stat-label">Not Yet Received</span>
+                <span class="stat-value text-danger" id="kpi-pending">0</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #d97706;">
+                <span class="stat-label">Partially Fulfilled</span>
+                <span class="stat-value" style="color:#d97706" id="kpi-partial">0</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #16a34a;">
+                <span class="stat-label">Fulfillment Value</span>
+                <span class="stat-value text-success" id="kpi-value">₹ 0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+        <div class="table-responsive" style="max-height: 60vh;">
+            <table class="table table-hover mb-0" id="trackerTable">
+                <thead>
+                    <tr>
+                        <th>Indent #</th>
+                        <th>Date</th>
+                        <th>Item Description</th>
+                        <th class="text-center">Req Qty</th>
+                        <th class="text-center">Recv Qty</th>
+                        <th class="text-center">Balance</th>
+                        <th class="text-center">Progress</th>
+                        <th class="text-center">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="trackerBody">
+                    <tr><td colspan="8" class="text-center py-5">Scanning Indent Logs...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+@section scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        let fullDataCache = []; // To allow filtering without refetching
+
+        $(document).ready(function() {
+            loadAnalytics();
+
+            // Search Logic
+            $("#txtSearch").on("keyup", function() {
+                applyLocalFilters();
+            });
+
+            // Status Filter Logic
+            $("#statusFilter").on("change", function() {
+                applyLocalFilters();
+            });
+        });
+
+        function loadAnalytics() {
+            $('#wait-sign').show();
+            $.getJSON('@Url.Action("GetIndentTrackingAnalytics")', function(res) {
+                $('#wait-sign').hide();
+                fullDataCache = res.data;
+
+                // Update KPI Tiles (Always based on full data)
+                let stats = { total: 0, pending: 0, partial: 0, value: 0 };
+                $.each(fullDataCache, function(i, item) {
+                    stats.total++;
+                    if(item.Status === "Pending") stats.pending++;
+                    if(item.Status === "Partial") stats.partial++;
+                    stats.value += (parseFloat(item.QuantityRecieved) * parseFloat(item.LastBasicRate));
+                });
+
+                $('#kpi-total').text(stats.total);
+                $('#kpi-pending').text(stats.pending);
+                $('#kpi-partial').text(stats.partial);
+                $('#kpi-value').text("₹ " + stats.value.toLocaleString('en-IN', {maximumFractionDigits:0}));
+
+                // Render Table
+                applyLocalFilters();
+                toastr.success("Indent Fulfillment synchronized.");
+            }).fail(function() {
+                $('#wait-sign').hide();
+                toastr.error("Failed to load tracking data.");
+            });
+        }
+
+        function applyLocalFilters() {
+            const searchValue = $("#txtSearch").val().toLowerCase();
+            const filterValue = $("#statusFilter").val();
+            const tbody = $('#trackerBody').empty();
+
+            const filteredData = fullDataCache.filter(item => {
+                const matchesSearch = (item.VoucherNumber.toLowerCase().includes(searchValue) ||
+                                     item.ItemName.toLowerCase().includes(searchValue));
+                const matchesStatus = (filterValue === "All" || item.Status === filterValue);
+
+                return matchesSearch && matchesStatus;
+            });
+
+            if(filteredData.length === 0) {
+                tbody.append('<tr><td colspan="8" class="text-center py-5 text-muted italic">No records found matching criteria.</td></tr>');
+                return;
+            }
+
+            $.each(filteredData, function(i, item) {
+                let progress = Math.round((item.QuantityRecieved / item.ActualRequired) * 100);
+                let badgeClass = item.Status === "Pending" ? "status-pending" : (item.Status === "Partial" ? "status-partial" : "status-completed");
+
+                tbody.append(`
+                    <tr>
+                        <td class="fw-bold text-primary">${item.VoucherNumber}</td>
+                        <td class="small text-muted">${moment(item.CreatedOn).format('DD/MM/YY')}</td>
+                        <td class="fw-bold text-dark">${item.ItemName}</td>
+                        <td class="text-center fw-bold">${item.ActualRequired}</td>
+                        <td class="text-center text-success fw-bold">${item.QuantityRecieved}</td>
+                        <td class="text-center text-danger fw-bold">${(item.ActualRequired - item.QuantityRecieved).toFixed(2)}</td>
+                        <td class="text-center">
+                            <div class="progress" style="height: 8px; width: 100px; margin: auto; border-radius:10px; background:#f1f5f9;">
+                                <div class="progress-bar bg-success" style="width: ${progress}%"></div>
+                            </div>
+                            <small class="fw-bold" style="font-size:0.6rem; color:#64748b;">${progress}%</small>
+                        </td>
+                        <td class="text-center"><span class="status-badge ${badgeClass}">${item.Status}</span></td>
+                    </tr>
+                `);
+            });
+        }
+
+        function exportToExcel() {
+            const table = document.getElementById("trackerTable");
+            const wb = XLSX.utils.table_to_book(table, { raw: true });
+            const fileName = "Indent_Fulfillment_Report_" + moment().format('DDMMYYYY_HHmm') + ".xlsx";
+            XLSX.writeFile(wb, fileName);
+            toastr.info("Exporting data to Excel...");
+        }
+    </script>
+}

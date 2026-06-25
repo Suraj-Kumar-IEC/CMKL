@@ -1,0 +1,300 @@
+﻿@{
+    ViewBag.Title = "Approved BOM Analytics (Stores)";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const isInModal = !!(document.querySelector('.modal.show'));
+            if (isInModal) {
+                setTimeout(() => { handleInvalidUser(); }, 500);
+            } else {
+                handleInvalidUser();
+            }
+            function handleInvalidUser() {
+                toastr.error("Invalid User Session");
+                setTimeout(function () { window.location.href = "@Url.Action("Index", "Login")"; }, 2000);
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<style>
+    /* Scoped Container for Professional Aesthetic */
+    .bom-report-container {
+        background-color: #f8fafc;
+        font-family: 'Inter', sans-serif;
+        color: #334155;
+        font-size: 0.8rem;
+    }
+
+    .report-header {
+        background: white;
+        padding: 15px 30px;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid #e2e8f0;
+    }
+
+    /* KPI Stat Cards */
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 15px 20px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.2s;
+        height: 100%;
+    }
+    .stat-card:hover { transform: translateY(-3px); }
+    .stat-label { font-size: 0.62rem; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; margin-bottom: 4px;}
+    .stat-value { font-size: 1.25rem; font-weight: 800; color: #00698f; line-height: 1.2; }
+
+    /* Table Styling */
+    .table-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+    }
+
+    .table-responsive-custom {
+        max-height: calc(100vh - 350px);
+        overflow-y: auto;
+    }
+
+    .table-custom thead th {
+        position: sticky;
+        top: 0;
+        background: #f1f5f9;
+        z-index: 10;
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #00698f;
+        border-bottom: 2px solid #e2e8f0;
+        padding: 12px 10px;
+        white-space: nowrap;
+    }
+
+    .table-custom tbody td {
+        padding: 10px;
+        font-size: 0.75rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+        white-space: nowrap;
+    }
+
+    /* Quick Search Input styling */
+    .search-input {
+        border-radius: 20px;
+        border: 1.5px solid #e2e8f0;
+        padding: 6px 15px;
+        font-size: 0.8rem;
+        width: 280px;
+        outline: none;
+        transition: 0.3s;
+    }
+    .search-input:focus { border-color: #00698f; box-shadow: 0 0 0 3px rgba(0, 105, 143, 0.1); }
+
+    .ref-pill {
+        font-weight: 700;
+        font-size: 0.65rem;
+        color: #ffffff;
+        background-color: #00698f;
+        padding: 2px 8px;
+        border-radius: 4px;
+        display: inline-block;
+    }
+
+    .item-pill {
+        font-weight: 700;
+        font-size: 0.65rem;
+        color: #00698f;
+        background-color: #e7f3f7;
+        padding: 2px 8px;
+        border-radius: 4px;
+        border: 1px solid #00698f;
+        display: inline-block;
+    }
+
+    /* Animations */
+    .animate-up {
+        animation: fadeInUpInd 0.5s ease forwards;
+        opacity: 0;
+    }
+    @@keyframes fadeInUpInd {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<div class="bom-report-container container-fluid py-4 px-lg-5">
+
+    <!-- 1. Header Area -->
+    <div class="report-header animate-up">
+        <div>
+            <h4 class="fw-bold m-0 text-dark">Approved BOM Intelligence (Stores)</h4>
+            <p class="text-muted small m-0">Synchronized log of approved Bill of Materials for production issuance.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <input type="text" id="txtSearch" class="search-input shadow-sm" placeholder="Quick Search (Voucher, Code, Name)..." />
+            <button class="btn btn-sm btn-success fw-bold px-4 rounded-pill shadow-sm" onclick="exportToExcel()">
+                <i class="fas fa-file-excel me-2"></i> Export Excel
+            </button>
+            <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 shadow-sm" onclick="location.reload()">
+                <i class="fas fa-sync-alt me-1"></i> Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- 2. KPI Section -->
+    <div class="row g-4 mb-4 animate-up" style="animation-delay: 0.1s;">
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #00698f;">
+                <span class="stat-label">Total Approved Vouchers</span>
+                <span class="stat-value" id="kpi-total-vouchers">0 Records</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #10b981;">
+                <span class="stat-label">Unique FG Products</span>
+                <span class="stat-value text-success" id="kpi-unique-fg">0 Items</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #6366f1;">
+                <span class="stat-label">Authorized Entities</span>
+                <span class="stat-value" id="kpi-approver-count" style="color:#6366f1;">0 Persons</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #fd7e14;">
+                <span class="stat-label">System Status</span>
+                <span class="stat-value text-warning" id="engineStatus">Live Pulse</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Report Grid -->
+    <div class="table-card animate-up shadow-lg" style="animation-delay: 0.2s;">
+        <div class="table-responsive-custom">
+            <table id="approvalTable" class="table table-hover mb-0 table-custom">
+                <thead>
+                    <tr>
+                        <th>Voucher Number</th>
+                        <th class="text-center">Voucher Date</th>
+                        <th>Item Code</th>
+                        <th>FG Description</th>
+                        <th>Created By</th>
+                        <th class="text-center">Created On</th>
+                        <th>Approved By</th>
+                    </tr>
+                </thead>
+                <tbody id="approvalBody">
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+                            <div class="spinner-border spinner-border-sm text-primary"></div>
+                            <div class="mt-2 small fw-bold text-muted uppercase">Fetching Approved BOMs...</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Loader -->
+<img id="wait-sign" src="~/images/wait.gif" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10001; width:80px;" />
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        LoadReportData();
+
+        // QUICK SEARCH LOGIC
+        $("#txtSearch").on("keyup", function () {
+            var value = $(this).val().toLowerCase();
+            $("#approvalBody tr").filter(function () {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+    });
+
+    function LoadReportData() {
+        $('#wait-sign').show();
+        $.ajax({
+            url: '@Url.Action("GetApprovalData", "Reports")',
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                $('#wait-sign').hide();
+                var tableBody = $('#approvalBody');
+                tableBody.empty();
+
+                if (!data || data.length === 0) {
+                    tableBody.append('<tr><td colspan="7" class="text-center py-5 text-muted italic">No approved BOM records found for the current context.</td></tr>');
+                    return;
+                }
+
+                let uniqueFGs = new Set();
+                let uniqueApprovers = new Set();
+
+                $.each(data, function (index, item) {
+                    // Date Parsing
+                    var vDate = item.VoucherDate ? moment(parseInt(item.VoucherDate.substr(6))).format('DD/MM/YYYY') : '---';
+                    var cDate = item.Createdon ? moment(parseInt(item.Createdon.substr(6))).format('DD/MM/YYYY') : '---';
+
+                    // Analytics logic
+                    if(item.FGProductCode) uniqueFGs.add(item.FGProductCode);
+                    if(item.ApprovedBY) uniqueApprovers.add(item.ApprovedBY);
+
+                    var row = `<tr>
+                        <td><span class="ref-pill">${item.VoucherNumber}</span></td>
+                        <td class="text-center"><span class="badge bg-light text-muted border">${vDate}</span></td>
+                        <td><span class="item-pill">${item.FGProductCode}</span></td>
+                        <td class="fw-bold text-dark text-truncate" style="max-width:300px;" title="${item.ItemName}">${item.ItemName}</td>
+                        <td class="small fw-bold">${item.CreatedBy}</td>
+                        <td class="text-center small text-muted">${cDate}</td>
+                        <td class="fw-bold text-primary">${item.ApprovedBY || '---'}</td>
+                    </tr>`;
+                    tableBody.append(row);
+                });
+
+                // Update KPI Tiles
+                $('#kpi-total-vouchers').text(data.length + " Records");
+                $('#kpi-unique-fg').text(uniqueFGs.size + " Products");
+                $('#kpi-approver-count').text(uniqueApprovers.size + " Entities");
+
+                toastr.success('Approved BOM data synchronized.');
+                new Audio('/Sound/Save.mp3').play().catch(e => { console.log("Audio play blocked"); });
+            },
+            error: function (error) {
+                $('#wait-sign').hide();
+                console.error('Error fetching data:', error);
+                toastr.error("Failed to connect to the report server.");
+            }
+        });
+    }
+
+    function exportToExcel() {
+        var table = document.getElementById("approvalTable");
+        var wb = XLSX.utils.table_to_book(table, { raw: true });
+        XLSX.writeFile(wb, 'Approved_BOM_Stores_Report_' + moment().format('DDMMYYYY') + '.xlsx');
+    }
+</script>

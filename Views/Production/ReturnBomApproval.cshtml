@@ -1,0 +1,211 @@
+﻿
+@{
+    ViewBag.Title = "ReturnBomApproval";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if the current context is inside a Bootstrap modal
+            const isInModal = !!(document.querySelector('.modal.show'));
+
+            if (isInModal) {
+                // If inside a modal, wait for a short delay
+                setTimeout(() => {
+                    handleInvalidUser();
+                }, 500); // Adjust the delay as needed
+            } else {
+                // If not in a modal, proceed immediately
+                handleInvalidUser();
+            }
+
+            function handleInvalidUser() {
+                toastr.error("Invalid User");
+
+                setTimeout(function () {
+                    window.location.href = "@Url.Action("Index", "Login")";
+                }, 2000); // Redirect after 2 seconds
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<h3 style="background-color: #00698f; color: #ffffff; padding: 5px 10px; border-radius: 5px; text-align: center;">Return BOM Approval</h3>
+<table id="dispatchReturnTable" class="table table-bordered table-sm">
+    <thead>
+        <tr>
+            <th>Return BOM No</th>
+            <th>Sale Return No</th>
+            <th>FG Item Code</th>            
+            <th>Item Name</th>            
+            <th>Sale Return Date</th>
+            <th>BOM Created By</th>
+            <th>Sale Return Remarks</th>
+            <th>Quality Remarks</th>
+            <th>View BOM</th>
+            <th>Approve BOM</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+<div class="modal fade" id="qcRemarksModal" tabindex="-1" role="dialog" aria-labelledby="qcRemarksModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="qcRemarksModalLabel">Enter QC Remarks</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="BOMID">
+                <div>                    
+                        <table id="bomtable" class="table table-bordered table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Item Code</th>
+                                    <th>Item Name</th>
+                                    <th>Category</th>
+                                    <th>SubCategory</th>
+                                    <th>Quantity</th>
+                                    <th>UOM</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bomtablelines"></tbody>
+                        </table>                    
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="closemodal" class="btn btn-secondary" data-dismiss="modal">Close</button>                
+            </div>
+        </div>
+    </div>
+</div>
+<img id="wait-sign" src="~/images/wait.gif" class="wait-sign-image" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);" />
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script>
+    $(document).ready(function () {
+        function loaddata() {
+            $.ajax({
+                url: '/Production/PendingBOMReturnforApproval',
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    $('#dispatchReturnTable tbody').empty(); // Clear existing rows
+                    if (data && data.data && Array.isArray(data.data)) { // Added data validation
+                        $.each(data.data, function (i, item) {
+                            var SaleReturnDate = new Date(parseInt(item.SaleReturnDate.substr(6))); // Extract milliseconds
+                            var formattedSaleReturnDate = moment(SaleReturnDate).format('DD/MM/YYYY');
+
+                            var row = '<tr>' +
+                                '<td>' + (item.ReturnBOMNo || '') + '</td>' +
+                                '<td>' + (item.SaleReturnNo || '') + '</td>' +
+                                '<td>' + (item.FGItemCode || '') + '</td>' +
+                                '<td>' + (item.FGItemName || '') + '</td>' +
+                                '<td>' + formattedSaleReturnDate + '</td>' +
+                                '<td>' + (item.BOMCreatedBy || '') + '</td>' +
+                                '<td>' + (item.SaleRemarks || '') + '</td>' +
+                                '<td>' + (item.QCRemarks || '') + '</td>' +
+                                '<td><button class="btn btn-primary btn-sm view-button" style="background-color: #00698f; color: #ffffff; border-color: #0070d2;" data-id="' + item.id + '">View Items</button></td>' +
+                                '<td><button class="btn btn-primary btn-sm approve-button" style="background-color: #00698f; color: #ffffff; border-color: #0070d2;" data-id="' + item.id + '">Approve BOM</button></td>' +
+                                '</tr>';
+                            $('#dispatchReturnTable tbody').append(row);
+                        });
+                    } else {
+                        $('#dispatchReturnTable tbody').append('<tr><td colspan="10">No data available.</td></tr>');
+                    }
+                },
+                error: function (error) {
+                    console.error(error); // Use console.error for errors
+                    alert('Error loading data.');
+                }
+            });
+        }
+
+        loaddata(); // Initial load of data
+
+        $(document).on('click', '.approve-button', function () {
+            var button = $(this);
+            button.prop('disabled', true);
+            var BOMID = $(this).data('id');
+
+            $('#wait-sign').show();
+            $.ajax({
+                url: '/Production/ReturnBOMApprovalHead',
+                type: 'POST',
+                data: { BOMID: BOMID },
+                success: function (data) {
+                    toastr.success('BOM Saved - ' + data.Voucher);
+                    loaddata();
+                    $('#wait-sign').hide();
+                    button.prop('disabled', false);
+
+                }
+            })            
+        });
+
+        $(document).on('click', '.view-button', function () {
+           
+            var BOMID = $(this).data('id');
+            $('#qcRemarksModal #BOMID').val(BOMID);
+
+            $.ajax({
+                type: 'GET',
+                url: '/Production/GetReturnBOMLines',
+                data: { BOMID: BOMID },
+                success: function (data) {
+                    var table = $('#bomtablelines').empty();                    
+                        $.each(data.data, function (i, item) {
+                            var row = '<tr>' +
+                                '<td>' + (item.ItemCode || '') + '</td>' +
+                                '<td>' + (item.ItemName || '') + '</td>' +
+                                '<td>' + (item.Category || '') + '</td>' +
+                                '<td>' + (item.SubCategory || '') + '</td>' +
+                                '<td>' + (item.Quantity || '') + '</td>' +
+                                '<td>' + (item.UOM || '') + '</td>' +
+                                '</tr>';
+                            table.append(row);
+                        });                    
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error fetching BOM lines:", error);
+                    $('#bomtablelines').empty().append('<tr><td colspan="6">Error loading data.</td></tr>');
+                }
+            });
+            $('#qcRemarksModal').modal('show'); // Moved modal show inside ajax success
+        });
+
+        $('#closemodal').click(function () {
+            $('#qcRemarksModal').modal('hide');
+        });
+
+        $('#SaveRemarks').click(function () {
+            var id = $('#hiddenItemId').val();
+            var remarks = $('#qcRemarks').val();
+            $('#qcRemarksModal').modal('hide');
+            $.ajax({
+                url: '/Production/SaveQCRemarksFGReturn',
+                type: 'POST',
+                data: { id: id, remarks: remarks },
+                success: function (data) {
+                    loaddata(); // Reload data after save
+                    toastr.success('QC Remarks Updated..');
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error saving QC remarks:', error);
+                    toastr.error('Failed to update QC Remarks.');
+                }
+            });
+        });
+    });
+</script>
+
+

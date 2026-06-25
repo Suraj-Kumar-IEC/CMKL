@@ -1,0 +1,452 @@
+﻿@{
+    ViewBag.Title = "Maintenance Authorization Hub";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const isInModal = !!(document.querySelector('.modal.show'));
+            const handleInvalidUser = () => {
+                toastr.error("Session Expired. Please Login.");
+                setTimeout(() => { window.location.href = "@Url.Action("Index", "Login")"; }, 2000);
+            };
+            setTimeout(handleInvalidUser, isInModal ? 500 : 0);
+        });
+    </script>
+    <div class="vh-100 vw-100 bg-white"></div>
+}
+
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+
+<style>
+    :root {
+        --brand-blue: #00698f;
+        --brand-dark: #004d69;
+        --light-bg: #f8fafc;
+        --border-color: #e2e8f0;
+    }
+
+    body {
+        background-color: var(--light-bg);
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+    }
+
+    /* Header Styling */
+    .page-header {
+        background: linear-gradient(135deg, var(--brand-blue) 0%, var(--brand-dark) 100%);
+        color: white;
+        padding: 1.5rem 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(0, 105, 143, 0.15);
+    }
+
+    /* Dashboard KPI Tiles */
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 18px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.2s ease;
+        height: 100%;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--brand-blue);
+        }
+
+    .stat-label {
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #64748b;
+        letter-spacing: 0.5px;
+        margin-bottom: 5px;
+    }
+
+    .stat-value {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: var(--brand-blue);
+    }
+
+    /* Search & Table Containers */
+    .custom-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .card-header-custom {
+        background: #fff;
+        padding: 15px 20px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .card-title-line {
+        font-weight: 700;
+        color: var(--brand-blue);
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        margin: 0;
+    }
+
+    /* Quick Search Bar */
+    .search-wrapper {
+        position: relative;
+        width: 350px;
+    }
+
+        .search-wrapper i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+
+    .search-input {
+        border-radius: 25px !important;
+        padding-left: 40px !important;
+        background: #f8fafc !important;
+        border: 1.5px solid var(--border-color) !important;
+        height: 38px !important;
+        font-size: 0.85rem;
+    }
+
+    /* Table Enhancements */
+    .table thead th {
+        background: #f1f5f9;
+        color: var(--brand-blue);
+        font-weight: 800;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        border: none;
+        padding: 12px 15px;
+    }
+
+    .table tbody td {
+        vertical-align: middle;
+        font-size: 0.8rem;
+        padding: 12px 15px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .btn-approve {
+        background-color: var(--brand-blue);
+        color: white;
+        font-weight: 700;
+        border: none;
+        border-radius: 6px;
+        padding: 5px 15px;
+        font-size: 0.75rem;
+        transition: 0.2s;
+    }
+
+        .btn-approve:hover {
+            background-color: var(--brand-dark);
+            transform: translateY(-1px);
+            color: white;
+        }
+
+    .btn-view {
+        background-color: #f1f5f9;
+        color: #475569;
+        font-weight: 700;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 5px 15px;
+        font-size: 0.75rem;
+    }
+
+        .btn-view:hover {
+            background-color: #e2e8f0;
+        }
+
+    .machine-identity {
+        font-weight: 700;
+        color: #1e293b;
+        display: block;
+    }
+
+    .task-badge {
+        font-size: 0.65rem;
+        background: #e0f2fe;
+        color: #0369a1;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-weight: 800;
+    }
+
+    /* Modal Styling */
+    .modal-content {
+        border-radius: 15px;
+        border: none;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+
+    .modal-header {
+        background: var(--brand-blue);
+        color: white;
+        border-top-left-radius: 15px;
+        border-top-right-radius: 15px;
+    }
+
+    .modal-title {
+        font-weight: 800;
+        letter-spacing: -0.5px;
+    }
+</style>
+
+<div class="container-fluid px-4 py-4">
+    <!-- Header -->
+    <div class="page-header d-flex justify-content-between align-items-center animate-up">
+        <div>
+            <h2 class="mb-0 fw-bold"><i class="fas fa-user-shield mr-3"></i> Maintenance Authorization Hub</h2>
+            <small class="text-white-50">Authorized review and final sign-off for completed technical maintenance logs</small>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-white text-primary border px-3 py-2 rounded-pill fw-bold shadow-sm">
+                <i class="fas fa-clock mr-2"></i> @DateTime.Now.ToString("dd MMM, yyyy")
+            </span>
+        </div>
+    </div>
+
+    <!-- KPI Dashboard Tiles -->
+    <div class="row g-3 mb-4 animate-up">
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid var(--brand-blue);">
+                <span class="stat-label">Pending Approval</span>
+                <span class="stat-value" id="kpi-total">0</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #6366f1;">
+                <span class="stat-label">Unique Assets</span>
+                <span class="stat-value" id="kpi-assets" style="color: #6366f1;">0</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #f59e0b;">
+                <span class="stat-label">High Priority</span>
+                <span class="stat-value text-warning" id="kpi-priority">0</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #10b981;">
+                <span class="stat-label">Verification Mode</span>
+                <span class="stat-value text-success">Live Pulse</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Approval List Table Section -->
+    <div class="custom-card shadow-sm animate-up">
+        <div class="card-header-custom">
+            <h6 class="card-title-line"><i class="fas fa-clipboard-list mr-2"></i> Work Logs Awaiting Review</h6>
+            <div class="search-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" id="quickSearch" class="form-control search-input" placeholder="Quick find machine, staff or log ID...">
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table id="logsForApprovalTable" class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">Log ID</th>
+                        <th>Asset & SubUnit</th>
+                        <th class="text-center">Due Date</th>
+                        <th class="text-center">Completed On</th>
+                        <th>Personnel</th>
+                        <th>Task Identity</th>
+                        <th>Execution Remarks</th>
+                        <th class="text-center">Action Hub</th>
+                    </tr>
+                </thead>
+                <tbody id="logsBody">
+                    <tr><td colspan="8" class="text-center py-5 text-muted italic">Scanning authorization queue...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div id="noLogsMessage" class="alert alert-info text-center m-3" style="display:none;">
+            <i class="fas fa-check-circle mr-2"></i> Authorization queue is clear. No pending logs identified.
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Comprehensive Item Review -->
+<div class="modal fade" id="viewItemsModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-0 py-3">
+                <h5 class="modal-title m-0"><i class="fas fa-box-open mr-2"></i> Technical Material Consumption</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="alert alert-light border small text-muted mb-3">
+                    Verified items used for Log ID: <b><span id="modalLogIdDisplay"></span></b>
+                </div>
+                <div class="table-responsive rounded-lg border">
+                    <table id="modalItemsTable" class="table table-sm table-striped mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="py-3 px-3">Material Name</th>
+                                <th class="text-center py-3">Quantity</th>
+                                <th class="py-3">UOM</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Items will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary px-4 rounded-pill fw-bold" data-dismiss="modal">Minimize Review</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<img id="wait-sign" src="~/images/wait.gif" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10005; width: 80px;" />
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            loadLogsForApproval();
+
+            // Real-time Instant Search
+            $("#quickSearch").on("keyup", function() {
+                var value = $(this).val().toLowerCase();
+                $("#logsBody tr").filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+
+            function loadLogsForApproval() {
+                $('#logsBody').html('<tr><td colspan="8" class="text-center py-5 text-muted"><i class="fas fa-sync fa-spin mr-2"></i> Synchronizing cloud logs...</td></tr>');
+                $('#noLogsMessage').hide();
+
+                $.ajax({
+                    url: '@Url.Action("GetLogsForApproval", "Asset")',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (response) {
+                        var tableBody = $('#logsBody');
+                        tableBody.empty();
+
+                        if (response.success && response.data && response.data.length > 0) {
+                            // Calculate KPI Data
+                            let assets = new Set();
+                            let priority = 0;
+
+                            $.each(response.data, function (index, log) {
+                                if (log.MachineName) assets.add(log.MachineName);
+                                if (log.Priority === "High") priority++; // Assuming priority exists, fallback below
+
+                                var row = `
+                                    <tr>
+                                        <td class="text-muted fw-bold">#${log.Id}</td>
+                                        <td>
+                                            <span class="machine-identity">${log.MachineName || 'N/A'}</span>
+                                            <small class="text-muted italic">${log.Subunit || 'General Asset'}</small>
+                                        </td>
+                                        <td class="text-center"><span class="badge bg-light text-muted border px-2">${moment(log.DueDate).format('DD/MM/YYYY')}</span></td>
+                                        <td class="text-center fw-bold text-dark">${moment(log.CompletionDate).format('DD/MM/YYYY')}</td>
+                                        <td><div class="small fw-bold">${log.CompletedBy || 'System'}</div></td>
+                                        <td><span class="task-badge">${log.Task || 'Standard Maint'}</span></td>
+                                        <td class="small text-muted italic">${log.CompletionRemarks || '---'}</td>
+                                        <td class="text-center">
+                                            <div class="d-flex gap-1 justify-content-center">
+                                                <button class="btn-view mr-1" onclick="viewLogItems(${log.Id})"><i class="fas fa-eye"></i> Items</button>
+                                                <button class="btn-approve" onclick="approveLog(${log.Id}, '${log.MachineName}')"><i class="fas fa-check-circle mr-1"></i> Approve</button>
+                                            </div>
+                                        </td>
+                                    </tr>`;
+                                tableBody.append(row);
+                            });
+
+                            // Update KPI Tiles
+                            $('#kpi-total').text(response.data.length);
+                            $('#kpi-assets').text(assets.size);
+                            $('#kpi-priority').text(priority || response.data.filter(x => moment(x.DueDate).isBefore(moment())).length); // Fallback to overdue
+
+                            toastr.success('Authorization queue synchronized.');
+                        } else {
+                            tableBody.append('<tr><td colspan="8" class="text-center py-5 text-muted italic">All logs are authorized. Queue is empty.</td></tr>');
+                            $('#noLogsMessage').show();
+                            $('#kpi-total, #kpi-assets, #kpi-priority').text('0');
+                        }
+                    },
+                    error: function () {
+                        toastr.error("Database connection failure.");
+                    }
+                });
+            }
+
+            // Global functions for inline events
+            window.viewLogItems = function(logbookId) {
+                $('#modalLogIdDisplay').text(logbookId);
+                var modalTableBody = $('#modalItemsTable tbody');
+                modalTableBody.empty().html('<tr><td colspan="3" class="text-center py-4"><i class="fas fa-spinner fa-spin text-primary"></i> Fetching material list...</td></tr>');
+                $('#viewItemsModal').modal('show');
+
+                $.ajax({
+                    url: '@Url.Action("GetLogbookItems", "Asset")',
+                    type: 'GET',
+                    data: { logbookId: logbookId },
+                    success: function (response) {
+                        modalTableBody.empty();
+                        if (response.success && response.data.length > 0) {
+                            $.each(response.data, function (i, item) {
+                                modalTableBody.append(`<tr><td class="px-3 fw-bold">${item.ItemName}</td><td class="text-center fw-bold text-primary">${item.Quantity}</td><td>${item.UOM}</td></tr>`);
+                            });
+                        } else {
+                            modalTableBody.append('<tr><td colspan="3" class="text-center py-4 text-muted italic">No specific materials logged for this task.</td></tr>');
+                        }
+                    }
+                });
+            };
+
+            window.approveLog = function(logId, machineName) {
+                if (confirm(`Authorize maintenance completion for ${machineName} (#${logId})?`)) {
+                    $('#wait-sign').show();
+                    $.ajax({
+                        url: '@Url.Action("CompleteApproval", "Asset")',
+                        type: 'POST',
+                        data: { logId: logId },
+                        success: function (response) {
+                            $('#wait-sign').hide();
+                            if (response.success) {
+                                toastr.success(response.message);
+                                loadLogsForApproval();
+                            } else {
+                                toastr.error(response.message);
+                            }
+                        },
+                        error: function() { $('#wait-sign').hide(); toastr.error("Approval transaction failed."); }
+                    });
+                }
+            };
+        });
+    </script>
+}

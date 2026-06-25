@@ -1,0 +1,295 @@
+﻿@model dynamic
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOM Approval Advisory - @Model.VoucherNumber</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f1f5f9;
+            margin: 0;
+            padding: 0;
+            color: #334155;
+        }
+
+        .wrapper {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Header Section - Visibility Fixes */
+        .header {
+            background: linear-gradient(135deg, #004d69 0%, #00698f 100%);
+            color: #ffffff;
+            padding: 35px 40px;
+        }
+
+            .header h1 {
+                margin: 0;
+                font-size: 26px;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                color: #ffffff !important;
+            }
+
+        .company-tag {
+            font-size: 11px;
+            font-weight: 700;
+            color: #ffffff !important;
+            opacity: 0.9;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            display: block;
+            letter-spacing: 2px;
+        }
+
+        /* Dashboard KPI Tiles */
+        .dashboard {
+            padding: 20px;
+            background-color: #f8fafc;
+            display: table;
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 10px;
+            box-sizing: border-box;
+        }
+
+        .stat-card {
+            display: table-cell;
+            background: #ffffff;
+            padding: 15px 12px;
+            border-radius: 12px;
+            text-align: center;
+            width: 25%;
+            border: 1px solid #e2e8f0;
+            vertical-align: middle;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .stat-label {
+            font-size: 9px;
+            font-weight: 800;
+            color: #94a3b8;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 13px;
+            font-weight: 800;
+            color: #00698f;
+        }
+
+        /* Content Area */
+        .content {
+            padding: 30px 40px;
+        }
+
+        .section-title {
+            font-size: 12px;
+            font-weight: 800;
+            color: #1e293b;
+            text-transform: uppercase;
+            border-left: 4px solid #00698f;
+            padding-left: 12px;
+            margin-bottom: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Component Grid */
+        .table-wrapper {
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            background: #ffffff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11.5px;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: #64748b;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 14px 12px;
+            text-align: left;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+            color: #475569;
+        }
+
+        /* Status & Identity Pills */
+        .serial-badge {
+            background: #f0fdf4;
+            color: #166534;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 700;
+            border: 1px solid #bbf7d0;
+            font-family: 'Consolas', monospace;
+            display: inline-block;
+        }
+
+        .code-tag {
+            font-family: 'Consolas', monospace;
+            font-weight: 700;
+            color: #00698f;
+            background: #f0f9ff;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .qty-box {
+            font-weight: 800;
+            color: #0f172a;
+            font-size: 13px;
+        }
+
+        /* Footer */
+        .footer {
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #f1f5f9;
+            font-size: 11px;
+            color: #94a3b8;
+            background: #f8fafc;
+        }
+
+            .footer b {
+                color: #64748b;
+            }
+
+        .btn-portal {
+            display: inline-block;
+            margin-top: 15px;
+            background-color: #00698f;
+            color: #ffffff !important;
+            padding: 10px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 12px rgba(0, 105, 143, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <!-- 1. HEADER -->
+        <div class="header">
+            <span class="company-tag" style="color: #ffffff !important;">@Model.CompanyName</span>
+            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                    <td style="padding-bottom: 10px;">
+                        <h1 style="color: #ffffff !important; margin: 0;">BOM Approval Advisory</h1>
+                    </td>
+                    <td align="right" valign="middle" style="padding-bottom: 10px;">
+                        <div style="background-color: rgba(255,255,255,0.15); padding: 8px 20px; border-radius: 30px; font-size: 12px; font-weight: 800; border: 1px solid rgba(255,255,255,0.4); color: #ffffff !important; white-space: nowrap;">
+                            VOUCHER: @Model.VoucherNumber
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            <!-- Horizontal Line as per reference image -->
+            <div style="border-top: 1px solid rgba(255,255,255,0.4); margin-top: 5px;"></div>
+        </div>
+
+        <!-- 2. ANALYTICAL TILES -->
+        <div class="dashboard">
+            <div class="stat-card" style="border-top: 4px solid #00698f;">
+                <span class="stat-label">Authorized By</span>
+                <span class="stat-value">@Model.ApprovedBy</span>
+            </div>
+            <div class="stat-card" style="border-top: 4px solid #10b981;">
+                <span class="stat-label">Approval Date</span>
+                <span class="stat-value">@DateTime.Now.ToString("dd MMM yyyy")</span>
+            </div>
+            <div class="stat-card" style="border-top: 4px solid #6366f1;">
+                <span class="stat-label">FG Product</span>
+                <span class="stat-value" style="font-size:11px;">@Model.FGName</span>
+            </div>
+            <div class="stat-card" style="border-top: 4px solid #f59e0b;">
+                <span class="stat-label">System Trace</span>
+                <span class="stat-value" style="color:#f59e0b;">Verified</span>
+            </div>
+        </div>
+
+        <!-- 3. MAIN CONTENT -->
+        <div class="content">
+            <div class="section-title">Allotted Components & FIFO Traceability</div>
+
+            <div class="table-wrapper">
+                <table border="0" cellpadding="0" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Part Identity</th>
+                            <th style="text-align:center;">Qty Required</th>
+                            <th>FIFO Allotted Serial / Lot No</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr>
+                                <td>
+                                    <div style="font-weight: 700; color: #1e293b; font-size: 13px;">@item.ItemName</div>
+                                    <div style="margin-top: 4px;"><span class="code-tag">@item.ItemCode</span> <span style="color:#94a3b8; margin-left: 5px;">(@item.UOM)</span></div>
+                                </td>
+                                <td align="center">
+                                    <span class="qty-box">@item.Quantity</span>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.AllottedSerial) && item.AllottedSerial != "Bulk/Manual")
+                                    {
+                                        <span class="serial-badge">@item.AllottedSerial</span>
+                                    }
+                                    else
+                                    {
+                                        <span style="color:#94a3b8; font-style: italic;">Standard Consumption</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="margin-top: 30px; background-color: #f8fafc; padding: 25px; border-radius: 16px; border: 1px solid #e2e8f0; text-align: center;">
+                <p style="margin: 0 0 15px 0; font-size: 14px; font-weight: 600; color: #475569;">The production floor is now authorized to issue the above components for job execution.</p>
+                <a href="http://erp.iecelectric.co.in/" class="btn-portal">Open ERP Command Center</a>
+            </div>
+        </div>
+
+        <!-- 4. FOOTER -->
+        <div class="footer">
+            <p style="margin: 0;">This is an automated technical advisory from <b>IEPL ERP Cloud</b>.</p>
+            <p style="margin: 8px 0 0 0;">&copy; @DateTime.Now.Year <b>IEC Electric Power Limited</b>. All Rights Reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

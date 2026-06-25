@@ -1,0 +1,179 @@
+﻿@{
+    Layout = null;
+    // Formatting helper for cleaner display
+    var dateFormat = "dd MMM, yyyy";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dispatch Advisory - @Model.VoucherNumber</title>
+    <style>
+        /* Responsive overrides for mobile */
+        @@media screen and (max-width: 600px) {
+            .container {
+                width: 100% !important;
+                padding: 10px !important;
+            }
+
+            .col {
+                display: block !important;
+                width: 100% !important;
+                padding: 0 !important;
+                margin-bottom: 20px;
+            }
+
+            .technical-grid td {
+                display: block !important;
+                width: 100% !important;
+                border-bottom: 1px solid #eee !important;
+                padding: 10px 0 !important;
+            }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: 'Segoe UI', Roboto, Arial, sans-serif;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td align="center" style="padding: 20px 0;">
+
+                <!-- Main Container Card -->
+                <table class="container" border="0" cellpadding="0" cellspacing="0" width="650" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
+
+                    <!-- 1. Brand Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #004d69 0%, #00698f 100%); padding: 35px 40px; color: #ffffff;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td>
+                                        <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; opacity: 0.8; margin-bottom: 5px;">Outbound Logistics</div>
+                                        <h1 style="margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; text-transform: uppercase;">Dispatch Advisory</h1>
+                                    </td>
+                                    <td align="right">
+                                        <div style="background: rgba(255,255,255,0.2); padding: 8px 18px; border-radius: 30px; font-size: 11px; font-weight: 700; border: 1px solid rgba(255,255,255,0.3);">
+                                            SLIP: @Model.VoucherNumber
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- 2. Body Content -->
+                    <tr>
+                        <td style="padding: 40px;">
+
+                            <!-- Reference Row -->
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 35px; border-bottom: 2px solid #f1f5f9; padding-bottom: 20px;">
+                                <tr>
+                                    <td width="33%">
+                                        <div style="font-size: 9px; color: #94a3b8; font-weight: 800; text-transform: uppercase; margin-bottom: 4px;">Order Number</div>
+                                        <div style="font-size: 14px; font-weight: 700; color: #1e293b;">@Model.OrderNumber</div>
+                                        <div style="font-size: 11px; color: #64748b;">@Model.OrderDate.ToString(dateFormat)</div>
+                                    </td>
+                                    <td width="33%" align="center" style="border-left: 1px solid #f1f5f9; border-right: 1px solid #f1f5f9;">
+                                        <div style="font-size: 9px; color: #94a3b8; font-weight: 800; text-transform: uppercase; margin-bottom: 4px;">Bill / Invoice</div>
+                                        <div style="font-size: 14px; font-weight: 700; color: #1e293b;">@Model.Billbumber</div>
+                                        <div style="font-size: 11px; color: #64748b;">@Model.BillDate.ToString(dateFormat)</div>
+                                    </td>
+                                    <td width="33%" align="right">
+                                        <div style="font-size: 9px; color: #94a3b8; font-weight: 800; text-transform: uppercase; margin-bottom: 4px;">Status</div>
+                                        <div style="display: inline-block; background: #dcfce7; color: #166534; font-size: 10px; font-weight: 800; padding: 4px 12px; border-radius: 20px;">SHIPPED</div>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Consignee & Logistics -->
+                            <h3 style="font-size: 12px; font-weight: 800; color: #00698f; text-transform: uppercase; margin: 0 0 15px 0; border-left: 4px solid #00698f; padding-left: 12px;">Consignee & Destination</h3>
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8fafc; border-radius: 12px; padding: 25px; margin-bottom: 35px;">
+                                <tr>
+                                    <td colspan="2" style="padding-bottom: 15px;">
+                                        <div style="font-size: 16px; font-weight: 800; color: #0f172a;">@Model.CustomerName</div>
+                                        <div style="font-size: 12px; color: #64748b; font-weight: 600;">Location: @Model.CustomerLocation</div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col" width="50%" valign="top" style="padding-right: 15px;">
+                                        <div style="font-size: 9px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Billing Address</div>
+                                        <div style="font-size: 11px; color: #334155; line-height: 1.6;">@Model.BillingAddress</div>
+                                    </td>
+                                    <td class="col" width="50%" valign="top" style="padding-left: 15px; border-left: 1px solid #e2e8f0;">
+                                        <div style="font-size: 9px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Shipping Destination</div>
+                                        <div style="font-size: 11px; color: #334155; line-height: 1.6;">@Model.ShippingAddress</div>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Product Specifications -->
+                            <h3 style="font-size: 12px; font-weight: 800; color: #00698f; text-transform: uppercase; margin: 0 0 15px 0; border-left: 4px solid #00698f; padding-left: 12px;">Technical Asset Matrix</h3>
+                            <table class="technical-grid" border="0" cellpadding="0" cellspacing="0" width="100%" style="border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; margin-bottom: 10px;">
+                                <tr>
+                                    <td colspan="2" style="background-color: #f1f5f9; padding: 15px 20px; font-weight: 800; font-size: 14px; color: #1e293b;">
+                                        @Model.Model - @Model.GensetDetail
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td width="50%" style="padding: 15px 20px; border-bottom: 1px solid #f1f5f9; border-right: 1px solid #f1f5f9;">
+                                        <span style="font-size: 9px; color: #94a3b8; font-weight: 800; text-transform: uppercase; display: block;">Engine Serial No</span>
+                                        <span style="font-family: 'Courier New', Courier, monospace; font-weight: 700; color: #00698f; font-size: 13px;">@Model.EngineSerial</span>
+                                    </td>
+                                    <td width="50%" style="padding: 15px 20px; border-bottom: 1px solid #f1f5f9;">
+                                        <span style="font-size: 9px; color: #94a3b8; font-weight: 800; text-transform: uppercase; display: block;">Alternator Serial No</span>
+                                        <span style="font-family: 'Courier New', Courier, monospace; font-weight: 700; color: #00698f; font-size: 13px;">@Model.AlternatorSerial</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 15px 20px; border-bottom: 1px solid #f1f5f9; border-right: 1px solid #f1f5f9;">
+                                        <span style="font-size: 9px; color: #94a3b8; font-weight: 800; text-transform: uppercase; display: block;">Control Panel Serial</span>
+                                        <span style="font-weight: 600; color: #1e293b;">@Model.PanelSerial</span>
+                                    </td>
+                                    <td style="padding: 15px 20px; border-bottom: 1px solid #f1f5f9;">
+                                        <span style="font-size: 9px; color: #94a3b8; font-weight: 800; text-transform: uppercase; display: block;">Battery Detail (Qty)</span>
+                                        <span style="font-weight: 600; color: #1e293b;">@Model.BatterySerial (@Model.BatteryQuantity)</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 15px 20px; border-right: 1px solid #f1f5f9;">
+                                        <span style="font-size: 9px; color: #94a3b8; font-weight: 800; text-transform: uppercase; display: block;">KRM Tracking No</span>
+                                        <span style="font-weight: 700; color: #1e293b;">@Model.KRMNo</span>
+                                    </td>
+                                    <td style="padding: 15px 20px;">
+                                        <span style="font-size: 9px; color: #94a3b8; font-weight: 800; text-transform: uppercase; display: block;">Dispatched Quantity</span>
+                                        <span style="font-weight: 800; color: #10b981; font-size: 16px;">@Model.GensetQuantity Set(s)</span>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            @if (!string.IsNullOrEmpty(Model.Speciality) && Model.Speciality != "NA")
+                            {
+                                <div style="background-color: #fffbeb; border: 1px solid #fef3c7; padding: 12px 15px; border-radius: 8px; margin-top: 15px; font-size: 11px; color: #92400e;">
+                                    <strong>Technical Remarks:</strong> @Model.Speciality
+                                </div>
+                            }
+
+                        </td>
+                    </tr>
+
+                    <!-- 3. Footer Section -->
+                    <tr>
+                        <td style="background-color: #f8fafc; padding: 35px; text-align: center; border-top: 1px solid #e2e8f0;">
+                            <div style="margin-bottom: 20px;">
+                                <a href="http://erp.iecelectric.co.in/" style="display: inline-block; background-color: #00698f; color: #ffffff; padding: 12px 30px; border-radius: 50px; font-weight: 700; text-decoration: none; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 12px rgba(0, 105, 143, 0.2);">Track in ERP Portal</a>
+                            </div>
+                            <p style="margin: 0; font-size: 12px; color: #94a3b8; line-height: 1.6;">
+                                This is a system-generated advisory from <strong>IEC Electric Power Limited</strong>.<br>
+                                Please do not reply to this automated email.
+                            </p>
+                            <p style="margin: 15px 0 0 0; font-size: 11px; color: #cbd5e1; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
+                                &copy; @DateTime.Now.Year IEPL ERP Cloud. All Rights Reserved.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

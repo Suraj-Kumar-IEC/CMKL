@@ -1,0 +1,110 @@
+﻿@model CMKL.Models.CMKL_Enquiry
+@{
+    ViewBag.Title = "Reverse Enquiry";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@*@{
+        //string URole = "";
+        if (Session["U_Role"] == null)
+        {
+            Response.Redirect("~/Login/Index");
+            ViewBag.logout = "User Logged Out, Please Login Again";
+            // URole = Session["U_Role"].ToString();
+        }
+        else
+        {
+        }
+
+    }
+*@
+
+
+@*@using (Html.BeginForm("Reverse", "EnquiryStatus", FormMethod.Post))*@
+
+<div class="container">
+    <div class="row">
+        <br />
+        <div class="col-sm-9">
+            Enquiry Will be Reversed.
+        </div>
+        <form id="myForm">
+            <div class="col-sm-4">
+                @* @Html.LabelFor(mode => mode.EnquiryNo)*@
+                <p>@Html.TextBoxFor(mode => mode.ID, new { placeholder = "ID", @class = "form-control" })</p>
+            </div>
+
+            <div class="col-sm-4">
+
+                <p>@Html.DropDownList("ddlstage", (IEnumerable<SelectListItem>)ViewBag.Stagelist, "Select Stage", new { @class = "form-control" })</p>
+
+                @*<p> <button type="submit" id="search" class="btn btn-primary">Reverse Enquiry</button> </p>*@
+                @* @Html.LabelFor(mode => mode.Billseries)*@
+                @* <p>@Html.TextBoxFor(mode => mode.Billseries, new { placeholder = "Bill Series", @class = "form-control" })</p>*@
+
+            </div>
+            <div>
+
+            </div>
+            <div class="col-sm-4">
+                @* @Html.LabelFor(mode => mode.Year)*@
+                @* <p>@Html.TextBoxFor(mode => mode.Year, new { placeholder = "2018-19 OR 2019-20", @class = "form-control" })</p>*@
+                <button type="button" id="search" class="btn btn-primary">Reverse Enquiry</button>
+            </div>
+            @*  <div class="alert-success col-sm-4">
+
+
+                </div>*@
+        </form>
+    </div>
+</div>
+
+
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+
+<script>
+
+    $(document).ready(function () {
+
+        // $("#search").click(function () {
+        // $("#loaderDiv").show();
+        $("#search").click(function () {
+            var data = $("#myForm").serialize();
+            // console.log("dadada", data);
+            $.ajax({
+
+                type: "POST",
+                url: "/EnquiryStatus/Reverse",
+                data: data
+                , success: function (response) {
+                    if (response.success == true) {
+                        toastr.success(response.message);
+
+                    }
+                    else {
+                        toastr.error(response.message);
+                    }
+                    $('#ID').val("");
+                    $('#ddlstage').val("");
+
+                    // $("#loaderDiv").hide();
+                    //  $("#myModal").modal("hide");
+
+                },
+                error: function () {
+                    toastr.error('Record not Found / There is Somthing Wrong');
+
+                    // toastr.error('there is some problem with the input', 'Error alert', new { timeout: 300 });
+
+                }
+
+            });
+        });
+    })
+
+
+
+
+</script>

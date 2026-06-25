@@ -1,0 +1,110 @@
+﻿
+@{
+    ViewBag.Title = "ReadytoDispatch";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if the current context is inside a Bootstrap modal
+            const isInModal = !!(document.querySelector('.modal.show'));
+
+            if (isInModal) {
+                // If inside a modal, wait for a short delay
+                setTimeout(() => {
+                    handleInvalidUser();
+                }, 500); // Adjust the delay as needed
+            } else {
+                // If not in a modal, proceed immediately
+                handleInvalidUser();
+            }
+
+            function handleInvalidUser() {
+                toastr.error("Invalid User");
+
+                setTimeout(function () {
+                    window.location.href = "@Url.Action("Index", "Login")";
+                }, 2000); // Redirect after 2 seconds
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+<h3 style="background-color: #00698f; color: #ffffff; padding: 5px 10px; border-radius: 5px; text-align: center;">Items Ready To Dispatch</h3>
+<div class="container" id="reportContainer">
+    <table id="reportTable" class="table table-sm table-bordered">
+        <thead>
+            <tr>
+                <th>Item ID</th>
+                <th>Item Name</th>
+                <th>Model</th>
+                <th>Total Quantity</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <div id="loadingIndicator" style="display:none;">Loading...</div>
+</div>
+
+<img id="wait-sign" src="~/images/wait.gif" class="wait-sign-image" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);" />
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.16.2/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.2.1/exceljs.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // 1. Call the function to load report data immediately on page load
+        loadReportData();
+
+        $("#generateReport").click(function () {
+            loadReportData(); // Call when the button is clicked as well
+        });
+
+        function loadReportData() {
+            let startDate = $("#startDate").val();
+            let endDate = $("#endDate").val();
+
+            $("#loadingIndicator").show();
+            $("#reportTable tbody").empty();
+
+            $.ajax({
+                url: '@Url.Action("GetReportData", "StockReport")',
+                type: 'GET',
+                data: { startDate: startDate, endDate: endDate },
+                dataType: 'json',
+                success: function (response) { // Changed 'data' to 'response' to be more clear
+                    // Check if the response has a data property.
+                    if (response && response.data) {
+                        $.each(response.data, function (index, item) { // Access the data array
+                            $("#reportTable tbody").append("<tr>" +
+                                "<td>" + item.ItemID + "</td>" +
+                                "<td>" + item.ItemName + "</td>" +
+                                "<td>" + item.Model + "</td>" +
+                                "<td>" + item.TotalQuantity + "</td>" +
+                                //... other cells
+                                "</tr>");
+                        });
+                    }
+                    else{
+                        console.warn("Data property is missing from the response", response);
+                        alert("No data received from the server or data is in an unexpected format.  Check the server response in the browser's developer console.");
+                    }
+                },
+                error: function (error) {
+                    console.error("Error fetching report data:", error);
+                    alert("Error fetching report data.");
+                },
+                complete: function () {
+                    $("#loadingIndicator").hide();
+                }
+            });
+        } // End of loadReportData function
+    });
+</script>

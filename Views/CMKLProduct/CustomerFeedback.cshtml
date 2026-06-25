@@ -1,0 +1,388 @@
+﻿
+
+@{
+    ViewBag.Title = "CustomerFeedback";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.HideLayout = true;
+}
+
+<style>
+    /* Custom Styling for the Feedback Card */
+    .feedback-container {
+        padding-top: 30px;
+        padding-bottom: 50px;
+        background-color: #f8f9fa; /* Light grey background */
+    }
+
+    .feedback-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .rating-section {
+        padding: 15px 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .rating-label {
+        font-weight: 600;
+        color: white; /* Primary color - kept for labels */
+    }
+
+    /* --- NEW STAR RATING STYLING (Radio Button Based) --- */
+    .stars {
+        display: inline-block;
+        direction: rtl; /* Sets the direction for star layout */
+        font-size: 50px; /* *** MODIFIED: Increased star size *** */
+        line-height: 1;
+        unicode-bidi: isolate; /* Ensures proper directionality */
+        /* Explicitly ensuring no background/border to remove any blue */
+        background: none;
+        border: none;
+    }
+
+        /* Hiding the actual radio button inputs */
+        .stars input[type="radio"] {
+            display: none;
+        }
+
+        /* Styling the stars themselves (labels for the radio buttons) */
+        .stars label {
+            color: #ccc; /* Default grey color */
+            cursor: pointer;
+            transition: color 0.2s;
+            padding: 0 3px; /* Adjusted padding slightly for larger stars */
+            float: right; /* Align stars right-to-left for correct selection logic */
+            background: none; /* Ensure no background on labels either */
+            border: none; /* Ensure no border on labels either */
+        }
+
+            /* Hover effect: color the hovered star and all preceding stars (to the right in RTL mode) */
+            .stars label:hover,
+            .stars label:hover ~ label {
+                color: gold;
+            }
+
+        /* Checked effect: color the selected star and all preceding stars */
+        .stars input[type="radio"]:checked ~ label {
+            color: gold;
+        }
+
+            /* FIX: When hovering over a star, the already checked state should be overridden by the hover */
+            .stars input[type="radio"]:checked ~ label:hover,
+            .stars input[type="radio"]:checked ~ label:hover ~ label {
+                color: gold;
+            }
+
+    /* Message Styling */
+    .alert-success-custom {
+        background-color: #e6ffed;
+        color: #1a7f33;
+        border-color: #b3dfc6;
+    }
+</style>
+
+<div class="container feedback-container">
+    <div class="row justify-content-center">
+        <div class="col-md-9 col-lg-8">
+            <div class="card feedback-card p-4">
+                <div class="card-header bg-white text-center border-0 pb-0">
+                    <h4 class="mb-0" style="color: #00698f;">We Value Your Feedback!</h4>
+                    <p class="text-muted">Help us improve your experience by providing details below.</p>
+                </div>
+                <div class="card-body pt-3">
+                    <div id="form-status-message" class="alert alert-dismissible fade show d-none" role="alert">
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+
+                    <form id="feedbackForm" action="@Url.Action("Submit", "Feedback")" method="post">
+
+                        <h5 class="mt-3 mb-3 text-secondary">1. Service Identification</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="CustomerName" class="form-label">Customer Name</label>
+                                <input type="text" class="form-control form-control-sm" id="CustomerName" name="CustomerName" disabled="disabled" />
+                                <input type="text" id="id" name="id" class="form-control" style="visibility:hidden" />
+                            </div>
+                            <div class="col-md-6">
+                                <label for="Email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control form-control-sm" id="Email" name="Email" disabled="disabled" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="ContactPerson" class="form-label form-control-sm">Contact Person</label>
+                                <input type="text" class="form-control form-control-sm" id="ContactPerson" name="ContactPerson" disabled="disabled" />
+                            </div>
+                            <div class="col-md-6">
+                                <label for="PO" class="form-label form-control-sm">PO Number</label>
+                                <input type="text" class="form-control form-control-sm" id="PO" name="PO" disabled="disabled" />
+                            </div>
+                        </div>
+
+                        <h5 class="mt-3 mb-3 text-secondary">2. Your Rating</h5>
+
+                        <div class="rating-section mb-3">
+                            <div class="row align-items-center gx-0">
+                                <div class="col-sm-8 col-12">
+                                    <label class="form-label rating-label mb-0">1. Order Delivery Timeline</label>
+                                </div>
+                                <div class="col-sm-4 col-12 text-sm-end mt-sm-0 mt-2">
+                                    <div class="stars">
+                                        <input type="radio" id="od5" name="OrderDelivery" value="5" required /><label for="od5"><i class="fa fa-star"></i></label>
+                                        <input type="radio" id="od4" name="OrderDelivery" value="4" required /><label for="od4"><i class="fa fa-star"></i></label>
+                                        <input type="radio" id="od3" name="OrderDelivery" value="3" required /><label for="od3"><i class="fa fa-star"></i></label>
+                                        <input type="radio" id="od2" name="OrderDelivery" value="2" required /><label for="od2"><i class="fa fa-star"></i></label>
+                                        <input type="radio" id="od1" name="OrderDelivery" value="1" required /><label for="od1"><i class="fa fa-star"></i></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="rating-section mb-3">
+                            <div class="row align-items-center gx-0">
+                                <div class="col-sm-8 col-12">
+                                    <label class="form-label rating-label mb-0">2. Packing Of Panels</label>
+                                </div>
+                                <div class="col-sm-4 col-12 text-sm-end mt-sm-0 mt-2">
+                                    <div class="stars">
+                                        <input type="radio" id="pp5" name="PanelPacking" value="5" required /><label for="pp5"><i class="fa fa-star"></i></label>
+                                        <input type="radio" id="pp4" name="PanelPacking" value="4" required /><label for="pp4"><i class="fa fa-star"></i></label>
+                                        <input type="radio" id="pp3" name="PanelPacking" value="3" required /><label for="pp3"><i class="fa fa-star"></i></label>
+                                        <input type="radio" id="pp2" name="PanelPacking" value="2" required /><label for="pp2"><i class="fa fa-star"></i></label>
+                                        <input type="radio" id="pp1" name="PanelPacking" value="1" required /><label for="pp1"><i class="fa fa-star"></i></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="rating-section mb-3">
+                            <div class="row align-items-center gx-0">
+                                <div class="col-sm-8 col-12">
+                                    <label class="form-label rating-label mb-0">3. Interaction During Inspection Call</label>
+                                </div>
+                                <div class="col-sm-4 col-12 text-sm-end mt-sm-0 mt-2">
+                                    <div class="stars">
+                                        <input type="radio" id="ic5" name="InteractionCall" value="5" required /><label for="ic5"><i class="fa fa-star"></i></label>
+                                        <input type="radio" id="ic4" name="InteractionCall" value="4" required /><label for="ic4"><i class="fa fa-star"></i></label>
+                                        <input type="radio" id="ic3" name="InteractionCall" value="3" required /><label for="ic3"><i class="fa fa-star"></i></label>
+                                        <input type="radio" id="ic2" name="InteractionCall" value="2" required /><label for="ic2"><i class="fa fa-star"></i></label>
+                                        <input type="radio" id="ic1" name="InteractionCall" value="1" required /><label for="ic1"><i class="fa fa-star"></i></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="rating-section mb-3">
+                            <div class="row align-items-center gx-0">
+                                <div class="col-sm-8 col-12">
+                                    <label class="form-label rating-label mb-0">4. After sales service:</label>
+                                </div>
+                                <div class="col-sm-4 col-12 text-sm-end mt-sm-0 mt-2">
+                                    <div class="stars">
+                                        <input type="radio" id="as5" name="AfterSale" value="5" required /><label for="as5"><i class="fa fa-star"></i></label>
+                                        <input type="radio" id="as4" name="AfterSale" value="4" required /><label for="as4"><i class="fa fa-star"></i></label>
+                                        <input type="radio" id="as3" name="AfterSale" value="3" required /><label for="as3"><i class="fa fa-star"></i></label>
+                                        <input type="radio" id="as2" name="AfterSale" value="2" required /><label for="as2"><i class="fa fa-star"></i></label>
+                                        <input type="radio" id="as1" name="AfterSale" value="1" required /><label for="as1"><i class="fa fa-star"></i></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="rating-section mb-3">
+                            <div class="row align-items-center gx-0">
+                                <div class="col-sm-8 col-12">
+                                    <label class="form-label rating-label mb-0">5. Quality of panels:</label>
+                                </div>
+                                <div class="col-sm-4 col-12 text-sm-end mt-sm-0 mt-2">
+                                    <div class="stars">
+                                        <input type="radio" id="pq5" name="ProductQuality" value="5" required /><label for="pq5"><i class="fa fa-star"></i></label>
+                                        <input type="radio" id="pq4" name="ProductQuality" value="4" required /><label for="pq4"><i class="fa fa-star"></i></label>
+                                        <input type="radio" id="pq3" name="ProductQuality" value="3" required /><label for="pq3"><i class="fa fa-star"></i></label>
+                                        <input type="radio" id="pq2" name="ProductQuality" value="2" required /><label for="pq2"><i class="fa fa-star"></i></label>
+                                        <input type="radio" id="pq1" name="ProductQuality" value="1" required /><label for="pq1"><i class="fa fa-star"></i></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="rating-section mb-4">
+                            <div class="row align-items-center gx-0">
+                                <div class="col-sm-8 col-12">
+                                    <label class="form-label rating-label mb-0">6. WHATS ABOUT DOCUMENTATION & COMPLIANCES OF SPECIFICATIONS W.R.T TO YOUR ORDER:</label>
+                                </div>
+                                <div class="col-sm-4 col-12 text-sm-end mt-sm-0 mt-2">
+                                    <div class="stars">
+                                        <input type="radio" id="dt5" name="Documentaion" value="5" required /><label for="dt5"><i class="fa fa-star"></i></label>
+                                        <input type="radio" id="dt4" name="Documentaion" value="4" required /><label for="dt4"><i class="fa fa-star"></i></label>
+                                        <input type="radio" id="dt3" name="Documentaion" value="3" required /><label for="dt3"><i class="fa fa-star"></i></label>
+                                        <input type="radio" id="dt2" name="Documentaion" value="2" required /><label for="dt2"><i class="fa fa-star"></i></label>
+                                        <input type="radio" id="dt1" name="Documentaion" value="1" required /><label for="dt1"><i class="fa fa-star"></i></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="rating-section mb-4">
+                            <div class="row align-items-center gx-0">
+                                <div class="col-sm-8 col-12">
+                                    <label class="form-label rating-label mb-0">7. CMKL Plant Rating:</label>
+                                </div>
+                                <div class="col-sm-4 col-12 text-sm-end mt-sm-0 mt-2">
+                                    <div class="stars">
+                                        <input type="radio" id="pr5" name="PlantRating" value="5" required /><label for="pr5"><i class="fa fa-star"></i></label>
+                                        <input type="radio" id="pr4" name="PlantRating" value="4" required /><label for="pr4"><i class="fa fa-star"></i></label>
+                                        <input type="radio" id="pr3" name="PlantRating" value="3" required /><label for="pr3"><i class="fa fa-star"></i></label>
+                                        <input type="radio" id="pr2" name="PlantRating" value="2" required /><label for="pr2"><i class="fa fa-star"></i></label>
+                                        <input type="radio" id="pr1" name="PlantRating" value="1" required /><label for="pr1"><i class="fa fa-star"></i></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="rating-section mb-4">
+                            <div class="row align-items-center g-0">
+                                <div class="col-sm-8 col-12">
+                                    <label class="form-label rating-label mb-0">8. OverAll Experience:</label>
+                                </div>
+                                <div class="col-sm-4 col-12 text-sm-end mt-sm-0 mt-2">
+                                    <div class="stars">
+                                        <input type="radio" id="ol5" name="OverAll" value="5" required /><label for="ol5"><i class="fa fa-star"></i></label>
+                                        <input type="radio" id="ol4" name="OverAll" value="4" required /><label for="ol4"><i class="fa fa-star"></i></label>
+                                        <input type="radio" id="ol3" name="OverAll" value="3" required /><label for="ol3"><i class="fa fa-star"></i></label>
+                                        <input type="radio" id="ol2" name="OverAll" value="2" required /><label for="ol2"><i class="fa fa-star"></i></label>
+                                        <input type="radio" id="ol1" name="OverAll" value="1" required /><label for="ol1"><i class="fa fa-star"></i></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+                        <h5 class="mt-3 mb-3 text-secondary">3. Additional Feedback</h5>
+
+                        <div class="mb-4">
+                            <label for="Comments" class="form-label">Additional Comments/Suggestions (Where we did well or can improve):</label>
+                            <textarea class="form-control" id="Comments" name="Comments" rows="4"></textarea>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" id="save" class="btn btn-primary btn-lg" style="background-color: #00698f; border-color: #00698f;">Submit Feedback</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script>
+    $(document).ready(function () {
+        debugger;
+        $('#feedbackForm')[0].reset();
+        $('#CustomerName').val('@(ViewBag.Data?.Project_Client ?? "NA")');
+        $('#Email').val('@(ViewBag.Data?.Email ?? "NA")');
+        $('#ContactPerson').val('@(ViewBag.Data?.Contact ?? "NA")');
+        $('#PO').val('@(ViewBag.Data?.PONumber ?? "NA")');
+        $('#id').val('@(ViewBag.id ?? "NA")');
+
+        if (@ViewBag.exist == 1)
+        {
+            //var delivery = @(ViewBag.detail?.DeliveryTime ?? 0);
+            toastr.warning('Feedback Already Shared for This Job..');
+            // FIX APPLIED: Use $('#save') to target the button by ID
+            $('#save').prop('disabled', true).text('Already Submitted..');
+            $('input[name="OrderDelivery"][value=' + @(ViewBag.detail?.DeliveryTime ?? 0) + ']').prop('checked', true);
+            $('input[name="PanelPacking"][value=' + @(ViewBag.detail?.PackingofPanel ?? 0)  + ']').prop('checked', true);
+            $('input[name="InteractionCall"][value=' + @(ViewBag.detail?.InteractionCall ?? 0) + ']').prop('checked', true);
+            $('input[name="ProductQuality"][value=' + @(ViewBag.detail?.Qualityofpanel ?? 0) + ']').prop('checked', true);
+            $('input[name="Documentaion"][value=' + @(ViewBag.detail?.Documentation ?? 0) + ']').prop('checked', true);
+            $('input[name="PlantRating"][value=' + @(ViewBag.detail?.PlantRating ?? 0) + ']').prop('checked', true);
+            $('input[name="OverAll"][value=' + @(ViewBag.detail?.OverallRating ?? 0) + ']').prop('checked', true);
+            $('input[name="AfterSale"][value=' + @(ViewBag.detail?.AfterSale ?? 0) + ']').prop('checked', true);
+            $('#Comments').val('@(ViewBag.detail?.OtherFeedback ?? "")');
+
+
+            // We use 'return' here to stop the script and prevent any further execution or form submission logic
+            return;
+        }
+        var msg = '@ViewBag.msg';
+        toastr.info(msg);
+
+
+        // --- FORM SUBMISSION LOGIC ---
+        // NOTE: The star click/hover is now handled purely by CSS using the hidden radio buttons.
+        // We no longer need the complex visual manipulation functions in JS.
+
+        $('#feedbackForm').on('submit', function (e) {
+            debugger;
+            e.preventDefault();
+            var form = $(this);
+            var statusMessage = $('#form-status-message');
+
+            // Collect form data (using serialize to handle all fields, including the selected radio buttons)
+            var formData = form.serialize();
+
+            // Client-side validation: Check if all radio groups have a value selected
+            if ($('input[name="OrderDelivery"]:checked').length === 0 ||
+                $('input[name="PanelPacking"]:checked').length === 0 ||
+                $('input[name="InteractionCall"]:checked').length === 0 ||
+                $('input[name="ProductQuality"]:checked').length === 0 ||
+                $('input[name="Documentaion"]:checked').length === 0 ||
+                $('input[name="PlantRating"]:checked').length === 0 ||
+                $('input[name="OverAll"]:checked').length === 0 ||
+                $('input[name="AfterSale"]:checked').length === 0) {
+                statusMessage.removeClass('d-none alert-success-custom').addClass('alert-danger').text('Please select a rating for all four categories.');
+                statusMessage.removeClass('d-none');
+                toastr.warning('Please select a star rating for all categories.');
+                return;
+            }
+
+            statusMessage.addClass('d-none'); // Hide previous messages
+
+            // Disable button during AJAX call
+            form.find('button[type="submit"]').prop('disabled', true).text('Submitting...');
+
+
+            $.ajax({
+                url: '/CMKLProduct/SaveCustomerRating',
+                type: 'POST',
+                data: formData,
+                success: function (response) {
+                    if (response.success) {
+                        statusMessage.removeClass('alert-danger').addClass('alert-success-custom').text(response.message);
+                        form[0].reset(); // Clear form fields
+
+                        // Manually uncheck all radio buttons after reset (since form.reset() might not visually reset radios easily)
+                        $('.stars input[type="radio"]').prop('checked', false);
+
+                        toastr.success(response.message);
+                    } else {
+                        statusMessage.removeClass('alert-success-custom').addClass('alert-danger').text(response.message);
+                        toastr.error(response.message);
+                    }
+                    statusMessage.removeClass('d-none');
+                },
+                error: function (xhr, status, error) {
+                    statusMessage.removeClass('alert-success-custom').addClass('alert-danger').text('An unexpected error occurred. Please check your connection.');
+                    statusMessage.removeClass('d-none');
+                    toastr.error('Submission failed. Check your network or try again.');
+                },
+                complete: function () {
+                    // Re-enable button
+                    form.find('button[type="submit"]').prop('disabled', false).text('Submit Feedback');
+
+                }
+            });
+        });
+
+        // --- Initial Reset ---
+        // Ensure initial state is clean
+
+        //$('.stars input[type="radio"]').prop('checked', false);
+    });
+</script>

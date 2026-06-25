@@ -1,0 +1,160 @@
+﻿@model CMKL.Models.CMKL_Enquiry
+@{
+    ViewBag.Title = "CustomerDetail";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#search").click(function () {
+            //debugger
+
+            var data = $("#myform").serialize();
+            $.ajax({
+
+                type: "Get",
+                url: "GetCustomerDetail",
+                data: data
+                , success: function (Detail) {
+                    if (Detail != null) {
+                        $("#CID").val(Detail.ID);
+                        $("#project").val(Detail.Project_Client);
+                        $("#contact").val(Detail.Contact);
+                        $("#contactname").val(Detail.Contact_Name);
+                        $("#technicalcontact").val(Detail.TechnicalContact);
+                        $("#commercialcontact").val(Detail.FinancialContact);
+                        $("#email").val(Detail.Email);
+                        $("#address").val(Detail.Address);
+
+                        //$('#jq').slideDown(3000);
+                        toastr.success("Loading Customer Details");
+
+                    }
+                    else {
+                        toastr.error(response.message);
+                    }
+
+
+                },
+                error: function () {
+                    toastr.error('Record not Found / There is Somthing Wrong');
+
+                    // toastr.error('there is some problem with the input', 'Error alert', new { timeout: 300 });
+
+                }
+
+            });
+        })
+    })
+</script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#update").click(function () {
+            //debugger
+
+            var data = $("#myform1").serialize();
+            $.ajax({
+
+                type: "Post",
+                url: "UpdateCustomerDetail",
+                data: data
+                , success: function (response) {
+
+                    if (response.success == true) {
+                        toastr.success(response.message);
+                        $("#jq").slideUp(3000);
+                    }
+                    else {
+                        toastr.error("Something is Wrong");
+                    }
+
+
+                },
+                error: function () {
+                    toastr.error('Record not Found / There is Somthing Wrong');
+
+                    // toastr.error('there is some problem with the input', 'Error alert', new { timeout: 300 });
+
+                }
+
+            });
+        })
+    })
+</script>
+
+
+
+
+
+<h2>Customer Update</h2>
+<hr />
+<form id="myform">
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-4">
+                <p>@Html.TextBoxFor(x => x.ID, new { id = "ID", placeholder = "Enquiry ID", @class = "form-control" })</p>
+            </div>
+            <div class="col-sm-4">
+                <p><button type="button" name="Search" id="search" class="btn btn-primary">Search</button></p>
+            </div>
+        </div>
+    </div>
+</form>
+<br />
+
+
+<form id="myform1">
+    <div class="container" id="jq">
+        <h4>Customer Detail</h4>
+        <div class="row">
+            <div class="col-sm-3">
+                <p>@Html.LabelFor(x => x.ID)</p>
+                <p>@Html.TextBoxFor(x => x.ID, new { id = "CID", @readonly = "readonly", placeholder = "ID", @class = "form-control" })</p>
+            </div>
+            <div class="col-sm-3">
+                <p>@Html.LabelFor(x => x.Project_Client)</p>
+                <p>@Html.TextBoxFor(x => x.Project_Client, new { id = "project", placeholder = "Project Name", @class = "form-control" })</p>
+            </div>
+            <div class="col-sm-3">
+                <p>@Html.LabelFor(x => x.Contact)</p>
+                <p>@Html.TextBoxFor(x => x.Contact, new { id = "contact", placeholder = "Contact Number", @class = "form-control" })</p>
+            </div>
+            <div class="col-sm-3">
+                <p>@Html.LabelFor(x => x.Contact_Name)</p>
+                <p>@Html.TextBoxFor(x => x.Contact_Name, new { id = "contactname", placeholder = "Contact Name", @class = "form-control" })</p>
+            </div>
+            <div class="col-sm-3">
+                <p>@Html.LabelFor(x => x.TechnicalContact)</p>
+                <p>@Html.TextBoxFor(x => x.TechnicalContact, new { id = "technicalcontact", placeholder = "Technical Contact Person", @class = "form-control" })</p>
+            </div>
+            <div class="col-sm-3">
+                <p>@Html.LabelFor(x => x.FinancialContact)</p>
+                <p>@Html.TextBoxFor(x => x.FinancialContact, new { id = "commercialcontact", placeholder = "Commercial Contact Person", @class = "form-control" })</p>
+            </div>
+            <div class="col-sm-3">
+                <p>@Html.LabelFor(x => x.Email)</p>
+                <p>@Html.TextBoxFor(x => x.Email, new { id = "email", placeholder = "Email ID", @class = "form-control" })</p>
+            </div>
+            <div class="col-sm-3">
+                <p>@Html.LabelFor(x => x.Address)</p>
+                <p>@Html.TextBoxFor(x => x.Address, new { id = "address", placeholder = "Address", @class = "form-control" })</p>
+            </div>
+            <br />
+            <div class="col-sm-3">
+                <p>@Html.Label("")</p>
+                <p><button type="button" name="Update" id="update" class="btn btn-primary">Update Detail</button></p>
+            </div>
+        </div>
+    </div>
+</form>
+
+
+

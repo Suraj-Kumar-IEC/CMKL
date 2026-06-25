@@ -1,0 +1,160 @@
+﻿
+@{
+    ViewBag.Title = "PendingQualityReport";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if the current context is inside a Bootstrap modal
+            const isInModal = !!(document.querySelector('.modal.show'));
+
+            if (isInModal) {
+                // If inside a modal, wait for a short delay
+                setTimeout(() => {
+                    handleInvalidUser();
+                }, 500); // Adjust the delay as needed
+            } else {
+                // If not in a modal, proceed immediately
+                handleInvalidUser();
+            }
+
+            function handleInvalidUser() {
+                toastr.error("Invalid User");
+
+                setTimeout(function () {
+                    window.location.href = "@Url.Action("Index", "Login")";
+                }, 2000); // Redirect after 2 seconds
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+
+
+
+<div class="container text-center">
+    <h4 class="card-title text-center" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Pending Quality Report</h4>
+
+
+    <div class="table-responsive">
+        <table id="stock-report-table" class="table table-sm table-bordered table-centered">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col" class="text-center">Bill Number</th>
+                    <th scope="col" class="text-center">Bill Date</th>
+                    <th scope="col" class="text-center">GR Number</th>
+                    <th scope="col" class="text-center">GR Date</th>
+                    <th scope="col" class="text-center">Item Code</th>
+                    <th scope="col" class="text-center">Item Name</th>
+                    <th scope="col" class="text-center">UOM</th>
+                    <th scope="col" class="text-center">Bill Quantity</th>
+                    <th scope="col" class="text-center">QTY Pending To Approve</th>
+                    <th scope="col" class="text-center">Current Stock</th>
+                </tr>
+            </thead>
+            <tbody id="stock-report-body">
+            </tbody>
+        </table>
+    </div>
+</div>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.16.2/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        var stockLevel = 'Pending'; // default stock level
+
+        function jsonDateToDate(jsonDate) {
+            if (!jsonDate) return '';
+            var date = new Date(parseInt(jsonDate.replace(/\/Date\((\d+)\)\//, '$1')));
+            var day = date.getDate();
+            var month = date.getMonth() + 1; // months are 0-based, so add 1
+            var year = date.getFullYear();
+            return `${padZero(day)}/${padZero(month)}/${year}`;
+        }
+
+        function padZero(value) {
+            return (value < 10 ? '0' : '') + value;
+        }
+
+
+        $.ajax({
+            type: 'GET',
+            url: '@Url.Action("PendingQuality", "StockReport")',
+            data: { stockLevel: stockLevel },
+            dataType: 'json',
+            success: function (data) {
+                toastr.success('Report Is Loading');
+
+                $('#stock-report-body').html('');
+                $.each(data, function (index, item) {
+                    var rowClass = item.TotalQuantityRequired !== item.TotalApprovedQuantity ? 'highlight' : '';
+                    $('#stock-report-body').append('<tr>' +
+                        '<td class="' + rowClass + '">' + item.BillNo + '</td>' +
+                        '<td class="' + rowClass + '">' + (item.BillDate ? jsonDateToDate(item.BillDate) : '') + '</td>' +
+                        '<td class="' + rowClass + '">' + item.GRNumber + '</td>' +
+                        '<td class="' + rowClass + '">' + (item.GRDate ? jsonDateToDate(item.GRDate) : '') + '</td>' +
+                        '<td class="' + rowClass + '">' + item.ItemCode + '</td>' +
+                        '<td class="' + rowClass + '">' + item.ItemName + '</td>' +
+                        '<td class="' + rowClass + '">' + item.UOMText + '</td>' +
+                        '<td class="' + rowClass + '">' + item.totalqty + '</td>' +
+                        '<td class="' + rowClass + '">' + item.PendingQty + '</td>' +
+                        '<td class="' + rowClass + '">' + item.Stock + '</td>' +
+                        '</tr>');
+                });
+                var audio = new Audio('/Sound/Save.mp3');
+                audio.play();
+            }
+        });
+    });
+</script>
+@*// Auto-refresh functionality
+                function autoRefresh() {
+                    var stockLevel = $('#allStock').text();
+                    $.ajax({
+                        type: 'GET',
+                        url: '@Url.Action("PendingQuality", "StockReport")',
+                        data: { stockLevel: stockLevel },
+                        dataType: 'json',
+                        success: function (data) {
+                            toastr.success('Report Auto Refreshed');
+                            $('#stock-report-body').html('');
+                            $.each(data, function (index, item) {
+                                var rowClass = item.TotalQuantityRequired !== item.TotalApprovedQuantity ? 'highlight' : '';
+                                $('#stock-report-body').append('<tr>' +
+                                    '<td class="' + rowClass + '">' + item.BillNo + '</td>' +
+                                    '<td class="' + rowClass + '">' + item.ItemCode + '</td>' +
+                                    '<td class="' + rowClass + '">' + item.ItemName + '</td>' +
+                                    '<td class="' + rowClass + '">' + item.UOMText + '</td>' +
+                                    '<td class="' + rowClass + '">' + item.totalqty + '</td>' +
+                                    '<td class="' + rowClass + '">' + item.PendingQty + '</td>' +
+                                    '<td class="' + rowClass + '">' + item.Stock + '</td>' +
+                                    '</tr>');
+                            });
+                            var audio = new Audio('/Sound/Save.mp3');
+                            audio.play();
+                        }
+                    });
+                }
+
+                // Set interval to auto-refresh every 10 seconds
+                setInterval(autoRefresh, 20000);
+            });
+        </script>
+    }*@
+
+<style>
+    .highlight {
+        background-color: #ffff99; /* or any other color you prefer */
+    }
+</style>
+
+
+

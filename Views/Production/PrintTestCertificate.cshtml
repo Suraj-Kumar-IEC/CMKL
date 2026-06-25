@@ -1,0 +1,264 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DG Set Test Certificate - @ViewBag.id</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact;
+        }
+
+        body {
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            font-family: 'Times New Roman', Times, serif;
+            color: #000;
+        }
+
+        .certificate-container {
+            width: 210mm;
+            height: 297mm;
+            padding: 25mm 25mm;
+            margin: 10mm auto;
+            background: #fff;
+            border: 1px solid #ddd;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Updated Header Section --- */
+        .header-section {
+            position: relative;
+            width: 100%;
+            text-align: center;
+            padding-top: 20px; /* Space from top of page */
+            margin-bottom: 30px; /* Space between header and titles */
+        }
+
+        .logo-section {
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+
+            .logo-section img {
+                width: 110px;
+            }
+
+        .company-name {
+            font-size: 34px;
+            font-weight: bold;
+            text-decoration: none;
+            /* Increased margin-top to create space between logo level and name line */
+            margin: 60px 0 8px 0;
+            color: #1a1a1a;
+            display: block;
+            width: 100%;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        .company-address {
+            font-size: 11px;
+            font-weight: bold;
+            margin: 0;
+            text-transform: uppercase;
+            text-align: center;
+            color: #333;
+        }
+        /* ------------------------------ */
+
+        .cert-titles {
+            text-align: center;
+            margin-top: 30px;
+            margin-bottom: 50px;
+        }
+
+            .cert-titles h2 {
+                font-size: 26px;
+                margin: 0;
+                font-weight: bold;
+            }
+
+            .cert-titles h3 {
+                font-size: 22px;
+                margin: 10px 0;
+                text-decoration: underline;
+                font-weight: bold;
+            }
+
+        .cert-content {
+            font-size: 21px;
+            line-height: 2.5;
+            text-align: justify;
+            margin-bottom: 40px;
+        }
+
+        .data-field {
+            display: inline-block;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            color: #0000FF;
+            border-bottom: 1px dotted #444;
+            padding: 0 12px;
+            text-align: center;
+            min-width: 60px;
+        }
+
+        .long-field {
+            min-width: 350px;
+            word-break: break-all;
+            vertical-align: bottom;
+            line-height: 1.2;
+            display: inline;
+        }
+
+        .standard-note {
+            margin-top: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .footer-section {
+            margin-top: auto;
+            padding-bottom: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .date-box {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .sig-box {
+            text-align: center;
+            min-width: 250px;
+        }
+
+        .sig-img {
+            width: 140px;
+            height: auto;
+            margin-bottom: -5px;
+        }
+
+        .sig-text {
+            border-top: 2px solid #000;
+            padding-top: 8px;
+            display: block;
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .doc-footer-code {
+            position: absolute;
+            bottom: 10mm;
+            left: 25mm;
+            font-size: 12px;
+            color: #666;
+        }
+
+        @@media print {
+            .no-print {
+                display: none;
+            }
+
+            body {
+                background: none;
+            }
+
+            .certificate-container {
+                margin: 0;
+                border: none;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print" style="text-align:center; padding: 20px;">
+        <button onclick="window.print()" style="padding: 12px 60px; background: #00698f; color: #fff; border: none; font-weight: bold; border-radius: 4px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">EXECUTE PRINT</button>
+    </div>
+
+    <div class="certificate-container">
+        <div class="header-section">
+            <div class="logo-section">
+                <img src="~/images/iec.jpg" alt="Logo" />
+            </div>
+            <h1 class="company-name">IEC ELECTRIC POWER LTD</h1>
+            <p class="company-address">PLOT NO.1-6A, INDUSTRIAL ESTATE, IID CENTRE, SICOP, GOVINDSAR, KATHUA -184102</p>
+        </div>
+
+        <div class="cert-titles">
+            <h2>Test Certificate</h2>
+            <h2>For</h2>
+            <h2>Kirloskar Green Silent Diesel Generating Set</h2>
+        </div>
+
+        <div class="cert-content">
+            This is to certify that the Kirloskar Green Genset Rating <span id="lblRating" class="data-field">--</span> KVA
+            Primed by Kirloskar Diesel Engine Model <span id="lblEngineModel" class="data-field">--</span> with
+            Engine Serial no <span id="lblEngineSerial" class="data-field">--</span> coupled with Kirloskar
+            Green AC Generator rating <span id="lblAltRating" class="data-field">--</span> KVA bearing Alternator Serial No
+            <span id="lblAltSerial" class="data-field">--</span> has been tested as per the company test
+            standards and found to be electrically and mechanically sound and in the Working Order.
+        </div>
+
+        <div class="standard-note">
+            #Genset Rating Confirms to ISO-8528 or Equivalent.
+        </div>
+
+        <div class="footer-section">
+            <div class="date-box">
+                Date: <span id="lblDate" style="color:#0000FF;">@DateTime.Now.ToString("dd/MM/yyyy")</span>
+            </div>
+            <div class="sig-box">
+                @* <img id="signature" alt="Signature" class="sig-img" />*@
+                <img src="~/images/IEPL-quality.png" class="sig-img" alt="" onerror="this.style.display='none'" />
+                <span class="sig-text">Manager Quality</span>
+            </div>
+        </div>
+
+        <div class="doc-footer-code">
+            IEPL/F/GTC/00
+        </div>
+    </div>
+
+    <script src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            var id = '@ViewBag.id';
+            var type = 'Sale';
+            if (id) {
+                $.ajax({
+                    url: '@Url.Action("GetDetails", "Production")',
+                    type: 'GET',
+                    data: { id: id, type: type },
+                    success: function (data) {
+                        if (data) {
+                            var TestingSign = data.sign ? '@Url.Content("~/")' + data.sign.substring(2) : '';
+                            $('#signature').attr('src', TestingSign)
+                            $('#lblRating').text(data.DgRating || "---");
+                            $('#lblEngineModel').text(data.engineModel || "---");
+                            $('#lblEngineSerial').text(data.engineSerial || "---");
+                            $('#lblAltRating').text(data.altrating || "---");
+                            $('#lblAltSerial').text(data.altSerial || "---");
+                            $('#lblDate').text(data.date || '@DateTime.Now.ToString("dd/MM/yyyy")');
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

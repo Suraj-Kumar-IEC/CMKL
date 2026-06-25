@@ -1,0 +1,108 @@
+﻿@model CMKL.Models.Tender
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (ViewBag.Status != null)
+
+{
+    <script src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script src="~/toastr/Js/toastr.js"></script>
+    <link href="~/toastr/toastr.css" rel="stylesheet" />
+
+    <script type="text/javascript">
+        window.onload = function () {
+            toastr.success("@ViewBag.Status")
+           // toastr.error("@ViewBag.err")
+            //this.alert("@ViewBag.Delete")
+        }
+    </script>
+}
+
+
+
+
+@using (Html.BeginForm("SaveTender", "Tender", FormMethod.Post))
+{
+    <h2>Tender Form</h2>
+    <hr />
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-4">
+                @* @Html.LabelFor(mode => mode.EnquiryNo)*@
+                <p>@Html.TextBoxFor(x => x.Buyer, new { placeholder = "Buyer Name", @class = "form-control" })</p>
+            </div>
+            <div class="col-sm-4">
+                @* @Html.LabelFor(mode => mode.Billseries)*@
+                <p>@Html.TextBoxFor(x => x.Rating, new { placeholder = "Product Required", @class = "form-control" })</p>
+
+            </div>
+                        <div class="col-sm-4">
+                @* @Html.LabelFor(mode => mode.Year)*@
+                <p>@Html.TextBoxFor(x => x.TenderNumber, new { placeholder = "Tender Number", @class = "form-control" })</p>
+
+            </div>
+            <div class="col-sm-4">
+                @* @Html.LabelFor(mode => mode.Year)*@
+                <p>@Html.TextBoxFor(x => x.DueDate, new { placeholder = "Due Date - mm/dd/yyyy", @class = "form-control" })</p>
+
+            </div>
+            <div class="col-sm-4">
+                @* @Html.LabelFor(mode => mode.Year)*@
+                <p>@Html.TextBoxFor(x => x.Quantity, new { placeholder = "Quantity", @class = "form-control" })</p>
+
+            </div>
+            <div class="col-sm-4">
+                @* @Html.LabelFor(mode => mode.Year)*@
+                <p>@Html.TextBoxFor(x => x.Portal, new { placeholder = "Source/Website", @class = "form-control" })</p>
+
+            </div>
+            <div class="col-sm-4">
+                @* @Html.LabelFor(mode => mode.Year)*@
+                <p>@Html.TextBoxFor(x => x.EMDExemption, new { placeholder = "Fee Exemption", @class = "form-control" })</p>
+
+            </div>            
+
+
+            <div class="col-sm-4">
+                <p> <button type="submit" class="btn btn-primary">Save Tender Details</button> </p>
+            </div>
+
+            <div class="col-sm-4">
+                <p>  </p>
+            </div>
+        </div>
+    </div>
+}
+
+
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<link rel="stylesheet" href="/resources/demos/style.css">
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script>
+    //  $(function () {
+    //    $("#DueDate").datepicker();
+    // });
+</script>
+
+<script>
+    @{var dt = DateTime.Now.ToString("dd/MM/yyyy"); }
+    $.noConflict();
+   jQuery(document).ready(function ($) {
+        $(function () {
+            $('#DueDate').datepicker({
+                dateFormat: 'mm/dd/yy',
+                
+                
+            });
+            $('#DueDate').datepicker('setDate','today')
+
+        });
+        
+    });
+    
+</script>

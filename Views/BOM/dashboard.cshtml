@@ -1,0 +1,103 @@
+﻿@{
+    ViewBag.Title = "dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>dashboard</h2>
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="dashboard-container">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="graph-container">
+                <h4>Graph 1</h4>
+                <canvas id="graph1" width="400" height="200"></canvas>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="graph-container">
+                <h4>Graph 2</h4>
+                <canvas id="graph2" width="400" height="200"></canvas>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="graph-container">
+                <h4>Graph 3</h4>
+                <canvas id="graph3" width="400" height="200"></canvas>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="graph-container">
+                <h4>Graph 4</h4>
+                <canvas id="graph4" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-3">
+            <div class="graph-container">
+                <h4>Graph 5</h4>
+                <canvas id="graph5" width="400" height="200"></canvas>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="graph-container">
+                <h4>Graph 6</h4>
+                <canvas id="graph6" width="400" height="200"></canvas>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="graph-container">
+                <h4>Graph 7</h4>
+                <canvas id="graph7" width="400" height="200"></canvas>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="graph-container">
+                <h4>Graph 8</h4>
+                <canvas id="graph8" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Sample data for Graph 1
+    var graph1Data = {
+        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        datasets: [{
+            label: "Series 1",
+            data: [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120],
+            backgroundColor: "rgba(255, 99, 132, 0.2)",
+            borderColor: "rgba(255, 99, 132, 1)",
+            borderWidth: 1
+        }]
+    };
+
+    // Sample data for Graph 2
+    var graph2Data = {
+        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        datasets: [{
+            label: "Series 2",
+            data: [50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160],
+            backgroundColor: "rgba(54, 162, 235, 0.2)",
+            borderColor: "rgba(54, 162, 235, 1)",
+            borderWidth: 1
+        }]
+    };
+
+    // Sample data for Graph 3
+    var graph3Data = {
+        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        datasets: [{
+            label: "Series 3",
+            data: [20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130],
+            backgroundColor: "rgba(255, 206, 86, 0.2)",
+            borderColor: "rgba(255, 206, 86, 1)",
+            borderWidth: 1
+        }]
+    };
+ </script>

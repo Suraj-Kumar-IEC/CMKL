@@ -1,0 +1,38 @@
+﻿@model IEnumerable<CMKL.Models.itemcombine>
+@using GridMvc.Html
+@{
+    ViewBag.Title = "Item Grid View";
+}
+
+<div>
+    <div class="container" align="center">
+        <h2>Items</h2>
+    </div>
+</div>
+
+
+
+<div class="row">
+    <div class="container">
+        @Html.Grid(Model).Named("GridView").Columns(c =>
+   {
+       c.Add(x => x.company).Titled("Company").Filterable(true).Sortable(true);
+       c.Add(x => x.Productcode).Titled("Item Code").Filterable(true).Sortable(true);
+       c.Add(x => x.Itemname).Titled("Item Name").Filterable(true).Sortable(true);
+       c.Add(x => x.itemdesc).Titled("Desc").Filterable(true).Sortable(true);
+       c.Add(x => x.Itemcategory).Titled("Category").Filterable(true).Sortable(true);
+       c.Add(x => x.norms).Titled("Norms").Filterable(true).Sortable(true);
+       c.Add(x => x.Phase).Titled("Phase/L1-L3").Filterable(true).Sortable(true);
+
+
+   }).WithPaging(20).EmptyText("No Data")
+    </div>
+</div>
+
+
+@section styles{
+    @Styles.Render("~/Content/Gridmvc")
+}
+@section scripts{
+    @Scripts.Render("~/bundles/Gridmvc")
+}

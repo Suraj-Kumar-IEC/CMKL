@@ -1,0 +1,88 @@
+﻿
+@{
+    ViewBag.Title = "Stockinprocess";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h3 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">WIP Stock Report With Valuation</h3>
+
+<table id="stockTable" class="table table-bordered table-centered">
+    <thead>
+        <tr>
+            <th>Item ID</th>
+            <th>Item Code</th>
+            <th>Item Name</th>
+            <th>WIP Stock</th>
+            <th>Basic Price</th>
+            <th>Total Basic</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+    <tfoot></tfoot>
+ </table>
+    <img id="wait-sign" src="~/images/wait.gif" class="wait-sign-image" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);" />
+    <script src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script src="~/toastr/Js/toastr.js"></script>
+    <link href="~/toastr/toastr.css" rel="stylesheet" />
+    <script>
+   $(document).ready(function () {
+    $('#wait-sign').show(); // Show a loading indicator (if you have one)
+
+    $.ajax({
+        url: '@Url.Action("InProcessStockData", "StockReport")', // Replace with your controller and action
+        type: 'GET',
+        dataType: 'json',
+        success: function (result) {
+            if (result.success) {
+                var data = result.data;
+                var totalBasicPrice = 0;
+
+                $.each(data, function (index, item) {
+                    var basicPrice = item.BasicPrice;
+                    var quantity = item.Quantity;
+                    var totalBasic = 0;
+
+                    // Check if BasicPrice is a valid number before performing calculations
+                    if (typeof basicPrice === 'number') {
+                        totalBasic = basicPrice * quantity;
+                    } else {
+                        // Handle the case where BasicPrice is null or not a number
+                        console.warn("BasicPrice is not a valid number for item:", item);
+                        basicPrice = 0; // Or some other default value you deem appropriate
+                    }
+
+                    var row = '<tr>' +
+                        '<td>' + item.ItemId + '</td>' +
+                        '<td>' + item.ItemCode + '</td>' +
+                        '<td>' + item.ItemName + '</td>' +
+                        '<td>' + quantity + '</td>' +
+                        '<td>' + basicPrice.toFixed(2) + '</td>' +
+                        '<td>' + totalBasic.toFixed(2) + '</td>' +
+                        '</tr>';
+                    $('#stockTable tbody').append(row);
+
+                    totalBasicPrice += totalBasic;
+                });
+
+                var totalRow = '<tr>' +
+                               '<td colspan="5" style="text-align:right;">Total Basic Price:</td>' +
+                               '<td>' + totalBasicPrice.toFixed(2) + '</td>' +
+                               '</tr>';
+                $('#stockTable tfoot').append(totalRow);
+
+                $('#wait-sign').hide(); // Hide the loading indicator
+            } else {
+                alert("Error loading data.");
+                $('#wait-sign').hide();
+            }
+        },
+        error: function () {
+            alert("Error loading data.");
+            $('#wait-sign').hide();
+        }
+    });
+});
+    </script>
+

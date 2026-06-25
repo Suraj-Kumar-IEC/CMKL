@@ -1,0 +1,399 @@
+﻿@{
+    ViewBag.Title = "BOM Item Master Console";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    :root {
+        --brand-blue: #00698f;
+        --bg-light: #f8fafc;
+        --border-color: #e2e8f0;
+        --accent-green: #10b981;
+        --accent-orange: #f59e0b;
+        --jakarta: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    /* THE FIX: Force the font on EVERYTHING, specifically inputs and buttons */
+    *, html, body, input, button, select, textarea, span, div {
+        font-family: var(--jakarta) !important;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+        background-color: var(--bg-light);
+        color: #334155;
+    }
+
+    /* KPI / Stat Cards */
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        border-left: 5px solid var(--brand-blue);
+    }
+
+    .stat-label {
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #64748b;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--brand-blue);
+    }
+
+    /* Main Container Header */
+    .master-header {
+        background: white;
+        padding: 15px 30px;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid var(--border-color);
+    }
+
+    .fw-800 {
+        font-weight: 800 !important;
+    }
+
+    /* Form Components */
+    .section-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        overflow: hidden;
+        margin-bottom: 25px;
+    }
+
+    .form-label-pill {
+        font-weight: 800;
+        font-size: 0.62rem;
+        color: #ffffff !important;
+        text-transform: uppercase;
+        background-color: var(--brand-blue);
+        padding: 3px 10px;
+        border-radius: 4px;
+        display: inline-block;
+        margin-bottom: 6px;
+        letter-spacing: 0.8px;
+    }
+
+    .form-control, .form-select {
+        border-radius: 10px;
+        border: 1.5px solid var(--border-color);
+        font-size: 0.88rem;
+        font-weight: 500;
+        padding: 10px 15px;
+        color: #1e293b;
+        transition: all 0.2s;
+    }
+
+        .form-control:focus {
+            border-color: var(--brand-blue);
+            box-shadow: 0 0 0 4px rgba(0, 105, 143, 0.1);
+        }
+
+    /* Table Design */
+    .table thead th {
+        background: #f1f5f9;
+        color: #64748b;
+        font-weight: 800;
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border: none;
+        padding: 14px;
+    }
+
+    .table tbody td {
+        font-size: 0.85rem;
+        font-weight: 500;
+        padding: 14px;
+        color: #334155;
+    }
+
+    /* The "Asset Master" style Save Button */
+    #submit {
+        background-color: var(--brand-blue);
+        color: white;
+        font-weight: 800;
+        border-radius: 10px;
+        border: none;
+        padding: 12px 25px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.85rem;
+        transition: 0.3s;
+        width: 100%;
+        box-shadow: 0 4px 6px rgba(0, 105, 143, 0.1);
+    }
+
+        #submit:hover {
+            background-color: #005676;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 105, 143, 0.2);
+        }
+
+    .scrollable-card-body {
+        height: 400px;
+        overflow-y: auto;
+    }
+</style>
+
+<div class="container-fluid py-4 px-lg-5">
+
+    <div class="master-header shadow-sm">
+        <div>
+            <h4 class="fw-800 m-0 text-dark" style="letter-spacing: -0.5px;">BOM Item Master Console</h4>
+            <p class="text-muted small m-0 font-weight-500">Standardize engineering components and technical material standards.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-secondary fw-bold px-4 rounded-pill" onclick="GetData()">
+                <i class="fas fa-sync-alt me-2"></i> Refresh Data
+            </button>
+            <span class="badge bg-light text-primary border px-3 py-2 rounded-pill fw-800">
+                <i class="fas fa-database me-1"></i> Technical Registry
+            </span>
+        </div>
+    </div>
+
+    <div class="section-card">
+        <div class="card-body p-4 bg-white">
+            <form id="bomForm">
+                <div class="row g-4">
+                    <div class="col-md-3">
+                        <label class="form-label-pill">Item Code</label>
+                        <input id="Itemcode" class="form-control fw-800 text-primary" placeholder="e.g. ITM-001" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label-pill">Item Name</label>
+                        <input id="ItemName" class="form-control fw-600" placeholder="Display Name" />
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label-pill" style="background:#64748b;">Item Description</label>
+                        <input id="ItemDesc" class="form-control" placeholder="Technical specifications..." />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label-pill">HSN Code</label>
+                        <input id="HSN" class="form-control" placeholder="HSN/SAC" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label-pill">UOM</label>
+                        <select id="UOM" class="form-select fw-600"></select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label-pill">Item Class</label>
+                        <select id="class" class="form-select fw-600"></select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label-pill">Item Group</label>
+                        <select id="group" class="form-select fw-600"></select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label-pill">Item Location</label>
+                        <select id="location" class="form-select fw-600"></select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label-pill" style="background:#64748b;">Min Stock Level</label>
+                        <input id="minstk" class="form-control fw-600" value="0" type="number" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label-pill" style="background:#64748b;">Max Stock Level</label>
+                        <input id="maxstk" class="form-control fw-600" value="0" type="number" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label-pill" style="background:#64748b;">MOQ</label>
+                        <input id="moq" class="form-control fw-600" value="0" type="number" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label-pill" style="background:var(--accent-green);">Available Stock</label>
+                        <input id="availablestk" class="form-control fw-800 text-success" value="0" type="number" readonly />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label-pill">Item Type</label>
+                        <select id="ItemType" class="form-select fw-600"></select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label-pill" style="background:var(--accent-orange);">Enable Lot Control</label>
+                        <select id="EnableLot" class="form-select fw-800">
+                            <option value="False">False</option>
+                            <option value="True">True</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label-pill">Drawing Upload (PDF)</label>
+                        <input class="form-control" type="file" id="drawingupload">
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" id="submit" class="shadow-sm">SAVE ITEM MASTER</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="section-card border-0 shadow-sm">
+                <div class="section-header bg-white border-bottom">
+                    <h6 class="section-title fw-800"><i class="fas fa-box me-2"></i>Final Products Directory</h6>
+                </div>
+                <div class="scrollable-card-body">
+                    <div id="item-list1">
+                        @Html.Action("BOMmainitems", "BOM")
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="section-card border-0 shadow-sm">
+                <div class="section-header bg-white border-bottom">
+                    <h6 class="section-title fw-800"><i class="fas fa-recycle me-2"></i>Raw Material Inventory</h6>
+                </div>
+                <div class="scrollable-card-body">
+                    <div id="item-list">
+                        @Html.Action("BOMItemmaster", "BOM")
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<img id="wait-sign" src="~/images/wait.gif" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10001; width:80px;" />
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+
+<script>
+    $(document).ready(function () {
+        // Shared dynamic name/desc logic
+        $('#ItemName').on('keyup blur', function () {
+            $('#ItemDesc').val($(this).val());
+        });
+
+        // Load all dropdowns
+        loadDropdowns();
+
+        $('#submit').on('click', function (e) {
+            e.preventDefault();
+            var code = $('#Itemcode').val().trim();
+            var Item = $('#ItemName').val().trim();
+            var Desc = $('#ItemDesc').val().trim();
+            var Type = parseInt($('#ItemType').val());
+            var minstk = parseInt($('#minstk').val());
+            var maxstk = parseInt($('#maxstk').val());
+            var avlstk = parseInt($('#availablestk').val());
+            var moq = parseInt($('#moq').val());
+            var uom = parseInt($('#UOM').val());
+            var itemclass = parseInt($('#class').val());
+            var itemgroup = parseInt($('#group').val());
+            var itemlocation = parseInt($('#location').val());
+            var HSN = $("#HSN").val().trim();
+            var enableLot = $('#EnableLot').val(); // Capture EnableLot value
+
+            if (Item == '' || code == '' || isNaN(uom)) {
+                toastr.info('Please fill in mandatory fields');
+                return false;
+            }
+
+            var fileData = $('#drawingupload').prop('files')[0];
+            if (fileData) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    saveItemData(e.target.result);
+                }
+                reader.readAsDataURL(fileData);
+            } else {
+                saveItemData(null);
+            }
+
+            function saveItemData(fileContent) {
+                $('#wait-sign').show();
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("SaveItem", "BOM")',
+                    data: JSON.stringify({
+                        ItemName: Item,
+                        ItemDesc: Desc,
+                        ItemType: Type,
+                        ItemCode: code,
+                        MinStk: minstk,
+                        MaxStk: maxstk,
+                        AvlStl: avlstk,
+                        MOQ: moq,
+                        Uom: uom,
+                        HSN: HSN,
+                        DrawingData: fileContent,
+                        itemclass: itemclass,
+                        itemgroup: itemgroup,
+                        itemlocation: itemlocation,
+                        EnableLot: enableLot // Sending to server
+                    }),
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    success: function (data) {
+                        $('#wait-sign').hide();
+                        if (data.success) {
+                            toastr.success('Item Master Recorded');
+                            $('#item-list1').load('@Url.Action("BOMmainitems", "BOM")');
+                            $('#item-list').load('@Url.Action("BOMItemmaster", "BOM")');
+                            $('#bomForm')[0].reset();
+                        } else {
+                            toastr.error('Save Failed: ' + data.message);
+                        }
+                    },
+                    error: function () { $('#wait-sign').hide(); toastr.error('Server Communication Error'); }
+                });
+            }
+        });
+
+        function loadDropdowns() {
+            // Load Location
+            $.getJSON('@Url.Action("Getlocation", "BOM")', d => {
+                $('#location').empty().append(d.map(it => new Option(it.Text, it.Value)));
+            });
+            // Load ItemTypes
+            $.getJSON('@Url.Action("GetItemTypes", "BOM")', d => {
+                $('#ItemType').empty().append(d.map(it => new Option(it.Text, it.Value)));
+            });
+            // Load UOM
+            $.getJSON('@Url.Action("GetUOMs", "BOM")', d => {
+                $('#UOM').empty().append(d.map(it => new Option(it.Text, it.Value)));
+            });
+            // Load Class
+            $.getJSON('@Url.Action("Getclass", "BOM")', d => {
+                $('#class').empty().append(d.map(it => new Option(it.Text, it.Value)));
+            });
+            // Load Groups
+            $.getJSON('@Url.Action("Getgroup", "BOM")', d => {
+                $('#group').empty().append(d.map(it => new Option(it.Text, it.Value)));
+            });
+        }
+    });
+
+    function GetData() {
+        $('#item-list').load('@Url.Action("BOMItemmaster", "BOM")');
+        $('#item-list1').load('@Url.Action("BOMmainitems", "BOM")');
+        toastr.success("View Refreshed");
+    }
+</script>

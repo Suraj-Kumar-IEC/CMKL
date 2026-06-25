@@ -1,0 +1,16 @@
+﻿@model IEnumerable<CMKL.Models.BOMCategory>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Category Name</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var category in Model)
+        {
+            <tr>
+                <td>@category.CategoryDesc</td>
+            </tr>
+        }
+    </tbody>
+</table>

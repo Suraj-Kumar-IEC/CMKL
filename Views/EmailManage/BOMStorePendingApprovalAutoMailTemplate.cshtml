@@ -1,0 +1,110 @@
+﻿@{
+    ViewBag.Title = "BOMApprovalEmailTemplate";
+    Layout = null;
+    // var vouchers = (List<CMKL.Models.BOMVoucher>)Model; // Cast the Model to the correct type
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pending Approval Information</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #333333;
+        }
+
+        h3 {
+            background-color: #00698f;
+            color: #ffffff;
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-align: center;
+            margin-bottom: 20px; /* Add space below the heading */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #dddddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+        }
+
+        .logo {
+            max-width: 150px;
+            margin-bottom: 20px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            color: #777777;
+            font-size: 14px;
+            text-align: center; /* Center align the footer text */
+        }
+
+            .footer a {
+                color: #337ab7;
+            }
+
+        .highlight {
+            background-color: #f9f9f9; /* Highlight important rows */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h3>@Model.Title</h3>
+
+        @foreach (var voucher in Model.Approvals)  // Accessing the approval data
+        {
+            <h4>Voucher: @voucher.VoucherNumber</h4>
+            <table class="table table-sm">
+                <tr class="highlight">
+                    <th>Voucher Number:</th>
+                    <td>@voucher.VoucherNumber</td>
+                </tr>
+                <tr>
+                    <th>Created On:</th>
+                    <td>@voucher.VoucherDate</td> 
+                </tr>
+                <tr class="highlight">
+                    <th>Created By:</th>
+                    <td>@voucher.CreatedBy</td>
+                </tr>
+            </table>
+            <br />
+        }
+
+        <div class="footer">
+            <p>Please do not reply to this email as it is an auto-generated email from IEPL ERP system.</p>
+            <p>All rights reserved. IEC Electric Power Limited.</p>
+            <p><a href="http://erp.iecelectric.co.in/">http://erp.iecelectric.co.in/</a></p>
+        </div>
+    </div>
+</body>
+</html>

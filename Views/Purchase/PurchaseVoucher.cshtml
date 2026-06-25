@@ -1,0 +1,635 @@
+﻿@{
+    ViewBag.Title = "Material Receipt Management";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    :root {
+        --brand-blue: #00698f;
+        --brand-dark: #004d69;
+        --text-dark: #1e293b;
+        --border-gray: #cbd5e1;
+    }
+
+    body {
+        background-color: #f1f5f9;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .pro-label {
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: var(--text-dark) !important;
+        margin-bottom: 5px;
+        display: block;
+        letter-spacing: 0.5px;
+    }
+
+    .glass-panel {
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        padding: 25px;
+        margin-bottom: 25px;
+    }
+
+    .section-title {
+        background: var(--brand-blue);
+        color: white !important;
+        padding: 10px 18px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 13px;
+        text-transform: uppercase;
+        margin-bottom: 20px;
+    }
+
+    .form-control-sm, .form-select-sm {
+        height: 38px !important;
+        border: 1.5px solid var(--border-gray);
+        border-radius: 6px;
+        color: #000 !important;
+        font-weight: 500;
+    }
+
+    .summary-box {
+        background: #1e293b;
+        color: white;
+        border-radius: 12px;
+        padding: 25px;
+    }
+
+    .summary-input {
+        background-color: #2d3436 !important;
+        color: #ffffff !important;
+        border: 1px solid #4b5563 !important;
+        font-weight: bold;
+    }
+
+    .table thead th {
+        background-color: #f8fafc;
+        color: var(--brand-blue);
+        font-size: 11px;
+        text-transform: uppercase;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    #add-button {
+        background-color: var(--brand-blue);
+        color: white !important;
+        font-weight: 700;
+        height: 38px;
+        border: none;
+        border-radius: 6px;
+        width: 100%;
+    }
+</style>
+
+<div class="container-fluid py-4 px-lg-5">
+
+    <div class="glass-panel d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex align-items-center gap-2">
+           
+            <div class="input-group" style="width: 450px;">
+                <input type="text" id="search-mrn-no" class="form-control" placeholder="Search MRN to modify...">
+                <button class="btn btn-warning fw-bold px-4" onclick="modifyMRN()">RETRIEVE</button>
+            </div>
+            
+        </div>
+        <div>
+            <button class="btn btn-success rounded-pill px-4 fw-bold me-2" onclick="$('#excelFile').click()">
+                <i class="fa fa-file-excel me-1"></i> IMPORT ITEMS FROM EXCEL
+            </button>
+            <input type="file" id="excelFile" style="display:none" accept=".xlsx, .xls" />
+            <button class="btn btn-outline-primary rounded-pill px-4 fw-bold" onclick="location.reload()">+ NEW ENTRY</button>
+        </div>
+    </div>
+
+    <div class="glass-panel">
+        <div class="section-title"><i class="fa fa-file-contract me-2"></i> Document Header & PO Info</div>
+        <input type="hidden" id="edit-head-id" value="0" />
+
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="pro-label">Vendor / Supplier</label>
+                <select id="supplier" class="form-select form-select-sm"></select>
+            </div>
+            <div class="col-md-3">
+                <label class="pro-label">Supplier Address</label>
+                <input type="text" id="Sup-Add" class="form-control form-control-sm" disabled />
+            </div>
+            <div class="col-md-2">
+                <label class="pro-label">GST Number</label>
+                <input type="text" id="GST-No" class="form-control form-control-sm" disabled />
+            </div>
+            <div class="col-md-2">
+                <label class="pro-label">Invoice Number</label>
+                <input type="text" id="bill-number" class="form-control form-control-sm" />
+            </div>
+            <div class="col-md-2">
+                <label class="pro-label">Invoice Date</label>
+                <input type="date" id="bill-date" class="form-control form-control-sm" />
+            </div>
+            <div class="col-md-3">
+                <label class="pro-label">Select PO</label>
+                <select id="poid" class="form-select form-select-sm"></select>
+            </div>
+            <div class="col-md-2">
+                <label class="pro-label">Locked PO</label>
+                <input type="text" id="pono" class="form-control form-control-sm bg-light" />
+            </div>
+            <div class="col-md-2">
+                <label class="pro-label">PO Date</label>
+                <input type="date" id="podate" class="form-control form-control-sm" />
+            </div>
+            <div class="col-md-2">
+                <label class="pro-label">GRN / Challan No</label>
+                <input type="text" id="gr-number" class="form-control form-control-sm" />
+            </div>
+            <div class="col-md-2">
+                <label class="pro-label">GRN Date</label>
+                <input type="date" id="gr-date" class="form-control form-control-sm" />
+            </div>
+            <div class="col-md-1">
+                <label class="pro-label">Gate No</label>
+                <input type="text" id="GateEntry" class="form-control form-control-sm" value="0" />
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-md-2">
+                <label class="pro-label">Gate Date</label>
+                <input type="date" id="gateentrydate" class="form-control form-control-sm" />
+            </div>
+            <div class="col-md-2">
+                <label class="pro-label">Purchase Type</label>
+                <select id="purchasetype" class="form-select form-select-sm"></select>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-panel">
+        <div class="section-title" style="background: #2d3436;"><i class="fa fa-boxes-stacked me-2"></i> Line Item Details</div>
+        <div class="row g-2 align-items-end">
+            <div class="col-md-2">
+                <label class="pro-label">Part Code</label>
+                <input type="text" id="item-code" class="form-control form-control-sm" placeholder="Search Code..." />
+            </div>
+            <div class="col-md-3">
+                <label class="pro-label">Description</label>
+                <input type="text" id="item-name" class="form-control form-control-sm" disabled />
+            </div>
+            <div class="col-md-2">
+                <label class="pro-label">Tax Category</label>
+                <select id="item-tax" class="form-select form-select-sm"></select>
+            </div>
+            <div class="col-md-2">
+                <label class="pro-label">Lot/Serial</label>
+                <input type="text" id="LotNumber" class="form-control form-control-sm" value="NA" />
+            </div>
+            <div class="col-md-1">
+                <label class="pro-label">Basic Rate</label>
+                <input type="number" id="basicprice" class="form-control form-control-sm" />
+            </div>
+            <div class="col-md-1">
+                <label class="pro-label">Qty Recd</label>
+                <input type="number" id="quantity" class="form-control form-control-sm" value="1" />
+            </div>
+            <div class="col-md-1">
+                <button type="button" id="add-button" class="btn btn-sm text-white fw-bold">ADD</button>
+            </div>
+        </div>
+
+        <div class="table-responsive mt-4" style="max-height: 500px; overflow-y: auto;">
+            <table id="item-table" class="table table-hover table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Description</th>
+                        <th>Lot/Serial</th>
+                        <th>Rate</th>
+                        <th>Qty</th>
+                        <th>Tax</th>
+                        <th>Total</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="item-table-body"></tbody>
+            </table>
+        </div>
+        <input type="hidden" id="taxamount" /><input type="hidden" id="totalitemprice" /><input type="hidden" id="uom" />
+    </div>
+
+    <div class="row">
+        <div class="col-lg-7">
+            <div class="glass-panel h-100">
+                <div class="section-title"><i class="fa fa-truck-loading me-2"></i> Adjustments & Freight</div>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="pro-label">Freight Tax ID</label>
+                        <select id="tax" class="form-select form-select-sm"></select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="pro-label">Freight Amount</label>
+                        <input type="number" id="frieghtAmount" class="form-control form-control-sm" value="0" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="pro-label">Other Tax (%)</label>
+                        <input type="number" id="othertax" class="form-control form-control-sm" value="0" />
+                    </div>
+                    <div class="col-md-12">
+                        <button class="btn btn-dark w-100 fw-bold py-2" onclick="calculateSummary()">RE-CALCULATE SYSTEM TOTALS</button>
+                    </div>
+                    <input type="hidden" id="frieghttax" value="0" />
+                    <input type="hidden" id="othertaxval" value="0" />
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="summary-box shadow-lg">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="pro-label text-white opacity-75">Calculated System Gross</label>
+                        <input type="text" id="billAmount" class="form-control border-0 bg-dark text-white fw-bold fs-4" readonly value="0.00" />
+                    </div>
+                    <div class="col-12">
+                        <label class="pro-label text-info opacity-75">Calculated System Tax (GST)</label>
+                        <input type="text" id="totaltax" class="form-control border-0 bg-dark text-info fw-bold fs-5" readonly value="0.00" />
+                    </div>
+                    <div class="col-6">
+                        <label class="pro-label text-white opacity-75">Actual Bill Amount</label>
+                        <input type="text" id="actualbillAmount" class="form-control form-control-sm summary-input" placeholder="0.00" />
+                    </div>
+                    <div class="col-6">
+                        <label class="pro-label text-white opacity-75">Actual Tax Amount</label>
+                        <input type="text" id="actualtaxAmount" class="form-control form-control-sm summary-input" placeholder="0.00" />
+                    </div>
+                    <div class="col-12 mt-4">
+                        <button id="save-bill-button" class="btn btn-success w-100 fw-bold py-3" onclick="validateAndSave()">FINAL POST MRN</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<img id="wait-sign" src="~/images/wait.gif" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999;" />
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        loadInitData();
+        $('#basicprice, #quantity, #item-tax').on('input change', calculateLineTotals);
+        $('#frieghtAmount, #othertax, #tax').on('input change blur', calculateSummary);
+        $('#item-code').on('blur', getItemDetails);
+
+        $('#supplier').on('change', function () {
+            let id = $(this).val();
+            if (id) {
+                $.getJSON('@Url.Action("GetSupplierDetail", "Purchase")', { Supplierid: id }, d => {
+                    $('#Sup-Add').val(d.Address || d.address || "");
+                    $('#GST-No').val(d.GST || d.gst || "");
+                });
+                fetchPOs(id);
+            }
+        });
+
+        $('#poid').on('change', function() { $('#pono').val($(this).val()); });
+        $('#add-button').click(addNewRow);
+
+        // --- EXCEL FILE LISTENER ---
+        $('#excelFile').on('change', function (e) {
+            let file = e.target.files[0];
+            if (!file) return;
+
+            let reader = new FileReader();
+            reader.onload = function (e) {
+                let data = new Uint8Array(e.target.result);
+                let workbook = XLSX.read(data, { type: 'array' });
+                let firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                let rows = XLSX.utils.sheet_to_json(firstSheet);
+                processExcelRows(rows);
+            };
+            reader.readAsArrayBuffer(file);
+            $(this).val(''); // Reset input
+        });
+    });
+
+    // --- EXCEL PROCESSING LOGIC ---
+    async function processExcelRows(rows) {
+    $('#wait-sign').show();
+
+    // 1. Get the Tax Category currently selected by the user in the UI
+    let selectedTaxOption = $('#item-tax option:selected');
+    let taxId = selectedTaxOption.val();
+    let perc = parseFloat(selectedTaxOption.attr('data-percent')) || 0;
+    let type = selectedTaxOption.attr('data-type'); // Inclusive or Exclusive
+
+    if (!taxId) {
+        $('#wait-sign').hide();
+        toastr.error("Please select a Tax Category from the dropdown before importing Excel.");
+        return;
+    }
+
+    // 2. Fetch Item Names (Bulk)
+    let allCodes = rows.map(r => (r.ItemCode || Object.values(r)[0] || "").toString().trim()).filter(c => c !== "");
+    let uniqueCodes = [...new Set(allCodes)];
+
+    $.ajax({
+        url: '@Url.Action("GetBulkItemNames", "Purchase")',
+        type: 'POST',
+        data: JSON.stringify({ codes: uniqueCodes }),
+        contentType: 'application/json',
+        success: function (response) {
+            let itemMap = {};
+            if (response.success) {
+                response.data.forEach(item => { itemMap[item.ItemCode] = item.ItemName; });
+            }
+
+            rows.forEach(function (row) {
+                let keys = Object.keys(row);
+                // Map Excel Columns A, B, C, D (Ignoring E/TaxID)
+                let code = (row.ItemCode || row[keys[0]] || "").toString().trim();
+                let qty = parseFloat(row.Quantity || row[keys[1]]) || 0;
+                let price = parseFloat(row.BasicPrice || row[keys[2]]) || 0;
+                let lot = row.LotNo || row[keys[3]] || "NA";
+
+                if (code !== "" && qty > 0 && price > 0) {
+                    let sub = price * qty;
+                    let taxValue = 0;
+                    let totalValue = 0;
+
+                    // Apply the tax logic from the SELECTED UI DROPDOWN
+                    if (type === "Inclusive") {
+                        taxValue = sub - (sub / (1 + (perc / 100)));
+                        totalValue = sub;
+                    } else {
+                        taxValue = sub * (perc / 100);
+                        totalValue = sub + taxValue;
+                    }
+
+                    let itemName = itemMap[code] || "Item Description N/A";
+
+                    $('#item-table-body').append(`<tr>
+                        <td>${code}</td>
+                        <td>${itemName}</td>
+                        <td>${lot}</td>
+                        <td>${price.toFixed(2)}</td>
+                        <td>${qty}</td>
+                        <td>${taxValue.toFixed(2)}</td>
+                        <td class="fw-bold text-primary">${totalValue.toFixed(2)}</td>
+                        <td style="display:none;">${taxId}</td> <td class="text-center">
+                            <button class="btn btn-sm text-danger" onclick="$(this).closest('tr').remove(); calculateSummary();">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>`);
+                }
+            });
+
+            calculateSummary();
+            $('#wait-sign').hide();
+            toastr.success("Imported items using " + selectedTaxOption.text());
+        },
+        error: function() {
+            $('#wait-sign').hide();
+            toastr.error("Failed to sync item names.");
+        }
+    });
+}
+
+    function calculateLineTotals() {
+        let price = parseFloat($('#basicprice').val()) || 0;
+        let qty = parseFloat($('#quantity').val()) || 0;
+        let opt = $('#item-tax option:selected');
+        let perc = parseFloat(opt.attr('data-percent')) || 0;
+        let type = opt.data('type');
+
+        let sub = price * qty;
+        let tax = 0, total = sub;
+
+        if (type === "Inclusive") {
+            tax = sub * (perc / 100) / (1 + (perc / 100));
+        } else {
+            tax = sub * (perc / 100);
+            total = sub + tax;
+        }
+
+        $('#taxamount').val(tax.toFixed(2));
+        $('#totalitemprice').val(total.toFixed(2));
+    }
+
+    function calculateSummary() {
+        let itemTaxTotal = 0, itemNetTotal = 0;
+
+        $('#item-table-body tr').each(function () {
+            let r = $(this).find('td');
+            let lineTotal = parseFloat(r.eq(6).text()) || 0;
+            let lineTax = parseFloat(r.eq(5).text()) || 0;
+            itemTaxTotal += lineTax;
+            itemNetTotal += (lineTotal - lineTax);
+        });
+
+        let frAmt = parseFloat($('#frieghtAmount').val()) || 0;
+        let optHead = $('#tax option:selected');
+        let hPerc = parseFloat(optHead.attr('data-percent')) || 0;
+        let hType = optHead.attr('data-type');
+
+        let frTax = 0, frTotalWithTax = frAmt;
+
+        if (frAmt > 0 && hPerc > 0) {
+            if (hType === "Inclusive") {
+                frTax = frAmt - (frAmt / (1 + (hPerc / 100)));
+            } else {
+                frTax = frAmt * (hPerc / 100);
+                frTotalWithTax = frAmt + frTax;
+            }
+        }
+
+        let otherPerc = parseFloat($('#othertax').val()) || 0;
+        let subForOther = itemNetTotal + itemTaxTotal + frTotalWithTax;
+        let otherAmt = subForOther * (otherPerc / 100);
+
+        let finalTaxAmount = itemTaxTotal + frTax + otherAmt;
+        let finalBillAmount = itemNetTotal + itemTaxTotal + frTotalWithTax + otherAmt;
+
+        $('#frieghttax').val(frTax.toFixed(2));
+        $('#othertaxval').val(otherAmt.toFixed(2));
+        $('#totaltax').val(finalTaxAmount.toFixed(2));
+        $('#billAmount').val(finalBillAmount.toFixed(2));
+    }
+
+    function addNewRow() {
+        calculateLineTotals();
+        let it = {
+            code: $('#item-code').val(), name: $('#item-name').val(), lot: $('#LotNumber').val(),
+            rate: $('#basicprice').val(), qty: $('#quantity').val(), tax: $('#taxamount').val(),
+            total: $('#totalitemprice').val(), tid: $('#item-tax').val()
+        };
+        if(!it.code || !it.rate) return toastr.warning("Missing Data");
+
+        $('#item-table-body').append(`<tr>
+            <td>${it.code}</td><td>${it.name}</td><td>${it.lot}</td>
+            <td>${parseFloat(it.rate).toFixed(2)}</td><td>${it.qty}</td>
+            <td>${it.tax}</td><td class="fw-bold text-primary">${it.total}</td>
+            <td style="display:none;">${it.tid}</td>
+            <td class="text-center"><button class="btn btn-sm text-danger" onclick="$(this).closest('tr').remove(); calculateSummary();"><i class="fa fa-trash"></i></button></td>
+        </tr>`);
+        calculateSummary();
+        $('#item-code').val('').focus();
+    }
+
+    function validateAndSave() {
+        let sysGross = parseFloat($('#billAmount').val()) || 0;
+        let sysTax = parseFloat($('#totaltax').val()) || 0;
+        let actGross = parseFloat($('#actualbillAmount').val()) || 0;
+        let actTax = parseFloat($('#actualtaxAmount').val()) || 0;
+
+        if ($('#item-table-body tr').length === 0) {
+            toastr.error("Please add items to the grid first");
+            return;
+        }
+
+        if (sysGross.toFixed(2) !== actGross.toFixed(2) || sysTax.toFixed(2) !== actTax.toFixed(2)) {
+            let msg = `Discrepancy Found!\n\nSystem Gross: ${sysGross.toFixed(2)} | Actual: ${actGross.toFixed(2)}\nSystem Tax: ${sysTax.toFixed(2)} | Actual: ${actTax.toFixed(2)}\n\nDo you want to proceed?`;
+            if (confirm(msg)) saveVoucher();
+        } else {
+            saveVoucher();
+        }
+    }
+
+    function saveVoucher() {
+    $('#wait-sign').show();
+    $('#save-bill-button').prop('disabled', true);
+
+    // Build the object
+    let model = {
+        HeadData: {
+            Id: $('#edit-head-id').val(),
+            BillNumber: $('#bill-number').val(),
+            BillDate: $('#bill-date').val(),
+            pono: $('#pono').val(),
+            podate: $('#podate').val(),
+            Supplier: $('#supplier').val(),
+            TaxHead: $('#tax').val(),
+            Totaltax: $('#totaltax').val(),
+            BillAmount: $('#billAmount').val(),
+            ActualBillAmount: $('#actualbillAmount').val(),
+            ActualTaxAmount: $('#actualtaxAmount').val(),
+            purchasetype: $('#purchasetype').val(),
+            GRNumber: $('#gr-number').val(),
+            GRDate: $('#gr-date').val(),
+            GateEntry: $('#GateEntry').val(),
+            GateEntryDate: $('#gateentrydate').val(),
+            FrieghtAmount: $('#frieghtAmount').val(),
+            frieghttax: $('#frieghttax').val(),
+            OtherTaxPercent: $('#othertax').val(),
+            OtherTaxAmount: $('#othertaxval').val()
+        },
+        TableData: []
+    };
+
+    // Extract table rows
+    $('#item-table-body tr').each(function() {
+        let r = $(this).find('td');
+        model.TableData.push({
+            ItemCode: r.eq(0).text().trim(),
+            // eq(1) is Item Name (Description) - skipped
+            LotNo: r.eq(2).text().trim(),
+            BasicPrice: r.eq(3).text().trim(),
+            Quantity: r.eq(4).text().trim(),
+            BillQuantity: r.eq(4).text().trim(),
+            Tax: r.eq(5).text().trim(),
+            TotalPrice: r.eq(6).text().trim(),
+            taxid: r.eq(7).text().trim()
+        });
+    });
+
+    // Send as a single stringified key 'jsonData'
+    $.ajax({
+        type: 'POST',
+        url: '@Url.Action("SaveStockin", "Purchase")',
+        data: JSON.stringify({ jsonData: JSON.stringify(model) }),
+        contentType: 'application/json',
+        success: function(r) {
+            $('#wait-sign').hide();
+            if (r.success) {
+                alert(r.message + "\nMRN Number: " + (r.voucherNumber || ""));
+                location.reload();
+            } else {
+                toastr.error(r.message);
+                $('#save-bill-button').prop('disabled', false);
+            }
+        },
+        error: function(xhr) {
+            $('#wait-sign').hide();
+            $('#save-bill-button').prop('disabled', false);
+            console.log(xhr.responseText);
+            toastr.error("Critical Error: The request was likely blocked by the server due to size.");
+        }
+    });
+}
+
+    function loadInitData() {
+        $.getJSON('@Url.Action("GetSupplier", "Purchase")', d => {
+            $('#supplier').empty().append('<option value="">-- Select Supplier --</option>');
+            $.each(d, (i, it) => $('#supplier').append(new Option(it.text, it.value)));
+        });
+        $.getJSON('@Url.Action("GetTaxes", "Purchase")', d => {
+            $('#tax, #item-tax').empty().append('<option value="">-- Select Tax --</option>');
+            $.each(d, function (i, it) {
+                let op = $('<option></option>').val(it.value).text(it.text).attr('data-percent', it.percent).attr('data-type', it.type);
+                $('#tax').append(op.clone()); $('#item-tax').append(op);
+            });
+        });
+        $.getJSON('/Purchase/GetPurchaseType', d => {
+            $('#purchasetype').empty().append('<option value="">-- Select --</option>');
+            $.each(d.data, (i, it) => $('#purchasetype').append(new Option(it.text, it.value)));
+        });
+    }
+
+    function fetchPOs(sid, cb) {
+        $.getJSON('@Url.Action("GetSupplierwisePO", "Purchase")', { supplierid: sid }, res => {
+            $('#poid').empty().append('<option value="">-- Select PO --</option>');
+            if (res.success) { $.each(res.polist, (i, po) => $('#poid').append(new Option(po, po))); if(cb) cb(); }
+        });
+    }
+
+    function getItemDetails() {
+        let code = $('#item-code').val(); if(!code) return;
+        $.getJSON('/Purchase/getItemDetails', { itemCode: code }, d => {
+            if(d.success) { $('#item-name').val(d.itemname); $('#uom').val(d.uomText); $('#basicprice').val(d.Basic); $('#LotNumber').prop('disabled', !d.enablelot).focus(); }
+        });
+    }
+
+    function modifyMRN() {
+        var mrnNo = $('#search-mrn-no').val(); if (!mrnNo) return;
+        $('#wait-sign').show();
+        $.getJSON('@Url.Action("GetMRNDetails", "Purchase")', { vouchernumber: mrnNo }, function (res) {
+            $('#wait-sign').hide();
+            if (res.success) {
+                $('#edit-head-id').val(res.head.Id);
+                $('#bill-number').val(res.head.BillNumber); $('#bill-date').val(res.head.BillDate);
+                $('#pono').val(res.head.pono); $('#podate').val(res.head.podate);
+                $('#gr-number').val(res.head.GRNumber); $('#gr-date').val(res.head.GRDate);
+                $('#GateEntry').val(res.head.GateEntry); $('#gateentrydate').val(res.head.GateEntryDate);
+                $('#frieghtAmount').val(res.head.FrieghtAmount); $('#actualbillAmount').val(res.head.ActualBillAmount);
+                $('#actualtaxAmount').val(res.head.ActualTaxAmount); $('#supplier').val(res.head.Supplier).trigger('change');
+                $('#purchasetype').val(res.head.purchasetype); $('#tax').val(res.head.TaxHead);
+                $('#item-table-body').empty();
+                $.each(res.details, function(i, it) {
+                    $('#item-table-body').append(`<tr><td>${it.ItemCode}</td><td>${it.ItemName}</td><td>${it.LotNo || "NA"}</td><td>${parseFloat(it.BasicPrice).toFixed(2)}</td><td>${it.Quantity}</td><td>${parseFloat(it.Tax).toFixed(2)}</td><td class="fw-bold">${parseFloat(it.TotalPrice).toFixed(2)}</td><td style="display:none;">${it.taxid}</td><td class="text-center"><button class="btn btn-sm text-danger" onclick="$(this).closest('tr').remove(); calculateSummary();"><i class="fa fa-trash"></i></button></td></tr>`);
+                });
+                calculateSummary();
+                $('#save-bill-button').html('<i class="fa fa-edit"></i> UPDATE MRN').addClass('btn-warning');
+            } else toastr.error(res.message);
+        });
+    }
+</script>

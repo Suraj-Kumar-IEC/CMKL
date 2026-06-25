@@ -1,0 +1,189 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if the current context is inside a Bootstrap modal
+            const isInModal = !!(document.querySelector('.modal.show'));
+
+            if (isInModal) {
+                // If inside a modal, wait for a short delay
+                setTimeout(() => {
+                    handleInvalidUser();
+                }, 500); // Adjust the delay as needed
+            } else {
+                // If not in a modal, proceed immediately
+                handleInvalidUser();
+            }
+
+            function handleInvalidUser() {
+                toastr.error("Invalid User");
+
+                setTimeout(function () {
+                    window.location.href = "@Url.Action("Index", "Login")";
+                }, 2000); // Redirect after 2 seconds
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+
+<div class="text-center">
+    <h4 class="card-title text-center" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Filter Options:</h4>
+
+    <div class="btn-group" style="margin-bottom: 10px;">
+        <button type="button" id="allStock" class="btn btn-primary">All</button>
+        <button type="button" id="lowStock" class="btn btn-warning">Low</button>
+        <button type="button" id="highStock" class="btn btn-success">High</button>
+        <button type="button" id="MainItems" class="btn btn-danger">Engine|Alternator|Battery</button>
+        <button type="button" id="FGItems" class="btn btn-dark">FG Items Stock</button>
+        <button type="button" id="NveItems" class="btn btn-info">-Ve Stock</button>
+    </div>
+
+    <div class="table-responsive">
+        <table id="stock-report-table" class="table table-sm table-bordered table-centered">
+            <thead class="thead-dark sticky-header">
+                <tr>
+                    <th scope="col" class="text-center">Item ID</th>
+                    <th scope="col" class="text-center">Item Code</th>
+                    <th scope="col" class="text-center">Item Name</th>
+                    <th scope="col" class="text-center">UOM</th>
+                    <th scope="col" class="text-center">Item Class</th>
+                    <th scope="col" class="text-center">Item Group</th>
+                    <th scope="col" class="text-center">Item Location</th>
+                    <th scope="col" class="text-center">Basic Price</th>
+                    <th scope="col" class="text-center">Min Stock Level</th>
+                    <th scope="col" class="text-center">Max Stock Level</th>
+                    <th scope="col" class="text-center">Opening Stock</th>
+                    <th scope="col" class="text-center">Current Stock</th>
+                    @* <th scope="col" class="text-center">Rejected Stock</th>*@
+                </tr>
+            </thead>
+            <tbody id="stock-report-body">
+            </tbody>
+        </table>
+    </div>
+
+    <style>
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            background-color: #f0f0f0;
+            z-index: 1;
+        }
+
+        .table-responsive {
+            overflow-y: auto;
+            height: 800px; /* adjust the height to your needs */
+        }
+    </style>
+</div>
+
+@section Scripts {
+
+    <script>
+        $(document).ready(function () {
+            $('#allStock, #lowStock, #highStock,#MainItems,#FGItems,#NveItems').click(function () {
+                // Remove the active class from all buttons
+                $('#allStock, #lowStock, #highStock,#MainItems,#FGItems,#NveItems').removeClass('active');
+
+                // Add the active class to the clicked button
+                $(this).addClass('active');
+                $('#wait-sign').show();
+                var stockLevel = $(this).text();
+                $.ajax({
+                    type: 'GET',
+                    url: '@Url.Action("GetStockReport", "StockReport")',
+                    data: { stockLevel: stockLevel },
+                    dataType: 'json',
+                    success: function (data) {
+                        toastr.success('Report Is Loading');
+
+                        $('#stock-report-body').html('');
+                        $.each(data, function (index, item) {
+                            var rowClass = item.TotalQuantityRequired !== item.TotalApprovedQuantity ? 'highlight' : '';
+                            $('#stock-report-body').append('<tr>' +
+                                '<td class="' + rowClass + '">' + item.Itemid + '</td>' +
+                                '<td class="' + rowClass + '">' + item.ItemCode + '</td>' +
+                                '<td class="' + rowClass + '">' + item.ItemName + '</td>' +
+                                '<td class="' + rowClass + '">' + item.UOMText + '</td>' +
+                                '<td class="' + rowClass + '">' + item.itemclass + '</td>' +
+                                '<td class="' + rowClass + '">' + item.itemgroup + '</td>' +
+                                '<td class="' + rowClass + '">' + item.location + '</td>' +                                
+                                '<td class="' + rowClass + '">' + item.BasicPrice + '</td>' +
+                                '<td class="' + rowClass + '">' + item.Minstklvl + '</td>' +
+                                '<td class="' + rowClass + '">' + item.Maxstklvl + '</td>' +
+                                '<td class="' + rowClass + '">' + (item.OpeningStock ? item.OpeningStock : 0) + '</td>' +
+                                '<td class="' + rowClass + '" style="font-weight: bold; background-color: yellow;">' + item.Stock + '</td>' +
+                                @*'<td class="' + rowClass + '">' + item.RejectedStock + '</td>' +*@
+                                @*
+                                '<td class="' + rowClass + '">' + item.TotalQuantityRequired + '</td>' +
+                                '<td class="' + rowClass + '">' + item.TotalApprovedQuantity + '</td>' +
+                                '<td class="' + rowClass + '">' + (item.PendingQualityQty != null ? item.PendingQualityQty : 0) + '</td>' +
+                                *@
+                                '</tr>');
+                        });
+                        $('#wait-sign').hide();
+                        var audio = new Audio('/Sound/Save.mp3');
+                        audio.play();
+                    }
+                });
+            });
+
+            // Auto-refresh functionality
+            function autoRefresh() {
+                var stockLevel = $('#allStock').text();
+                $.ajax({
+                    type: 'GET',
+                    url: '@Url.Action("GetStockReport", "StockReport")',
+                    data: { stockLevel: stockLevel },
+                    dataType: 'json',
+                    success: function (data) {
+                        toastr.success('Report Auto Refreshed');
+                        $('#stock-report-body').html('');
+                        $.each(data, function (index, item) {
+                            var rowClass = item.TotalQuantityRequired !== item.TotalApprovedQuantity ? 'highlight' : '';
+                            $('#stock-report-body').append('<tr>' +
+                                '<td class="' + rowClass + '">' + item.Itemid + '</td>' +
+                                '<td class="' + rowClass + '">' + item.ItemCode + '</td>' +
+                                '<td class="' + rowClass + '">' + item.ItemName + '</td>' +
+                                '<td class="' + rowClass + '">' + item.UOMText + '</td>' +
+                                '<td class="' + rowClass + '">' + item.BasicPrice + '</td>' +
+                                '<td class="' + rowClass + '">' + item.Minstklvl + '</td>' +
+                                '<td class="' + rowClass + '">' + item.Maxstklvl + '</td>' +
+                                '<td class="' + rowClass + '">' + item.Stock + '</td>' +
+                                '<td class="' + rowClass + '">' + item.RejectedStock + '</td>' +
+                                '<td class="' + rowClass + '">' + item.TotalQuantityRequired + '</td>' +
+                                '<td class="' + rowClass + '">' + item.TotalApprovedQuantity + '</td>' +
+                                @*'<td class="' + rowClass + '">' + (item.PendingQualityQty != null ? item.PendingQualityQty : 0) + '</td>' +*@
+                                '</tr>');
+                        });
+                        var audio = new Audio('/Sound/Save.mp3');
+                        audio.play();
+                    }
+                });
+            }
+
+            // Set interval to auto-refresh every 10 seconds
+            //setInterval(autoRefresh, 20000);
+        });
+    </script>
+}
+<img id="wait-sign" src="~/images/wait.gif" class="wait-sign-image" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);" />
+
+<style>
+    .highlight {
+        background-color: #ffff99; /* or any other color you prefer */
+    }
+</style>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.16.2/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>

@@ -1,0 +1,140 @@
+﻿@model CMKL.Models.EmployeeMaster
+@{
+    ViewBag.Title = "AddEmployee";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<div class="row">
+    <div class="col"><hr></div>
+</div>
+
+<div class="container" align="center">
+    <h3>Employee Detail</h3>
+</div>
+
+
+<div class="row">
+    <div class="col"><hr></div>
+</div>
+
+<div>
+    <div class="container" align="center">
+        <div class="col-12">
+            <div class="row">
+
+                <div class="col-sm-3">
+                    <select class="form-control" id="postingcompany" name="Place Of Posting">
+                        <option></option>
+                    </select>
+                </div>
+                <div class="col-sm-3">
+                    <select class="form-control" id="payrollcompany" name="Payroll Company">
+                        <option></option>
+                    </select>
+                </div>
+
+                <div class="col-sm-3">
+
+                    <p>@Html.TextBoxFor(x => x.Name, new { placeholder = "Employee Name", @class = "form-control" }) </p>
+                </div>
+                <div class="col-sm-3">
+
+                    <p>@Html.TextBoxFor(x => x.Dateofbirth, new { placeholder = "Employee Date Of Birth (DD/MM/YY)", @class = "form-control" }) </p>
+                </div>
+                <div class="col-sm-3">
+
+                    <p>@Html.TextBoxFor(x => x.Agemarch31, new { placeholder = "Employee Age As on 31st March", @class = "form-control" }) </p>
+                </div>
+                <div class="col-sm-3">
+
+                    <p>@Html.TextBoxFor(x => x.companyjoiningdate, new { placeholder = "Employee Joining Date (DD/MM/YY)", @class = "form-control" }) </p>
+                </div>
+                <div class="col-sm-3">
+
+                    <p>@Html.TextBoxFor(x => x.experiencewithus, new { placeholder = "Employee Experience with us", @class = "form-control" }) </p>
+                </div>
+                <div class="col-sm-3">
+
+                    <p>@Html.TextBoxFor(x => x.grosssalary, new { placeholder = "Employee Gross Salary", @class = "form-control" }) </p>
+                </div>
+                <div class="col-sm-3">
+
+                    <p>@Html.TextBoxFor(x => x.basicsalary, new { placeholder = "Employee Basic Salary", @class = "form-control" }) </p>
+                </div>
+                <div class="col-sm-3">
+
+                    <p>@Html.TextBoxFor(x => x.fuelreimbursement, new { placeholder = "Fuel Re-imbursement", @class = "form-control" }) </p>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+
+
+
+
+</div>
+<div class="row">
+    <div class="col"><hr></div>
+</div>
+
+<div class="container" align="center">
+    <h4>Employee Details Fin Year Wise</h4>
+</div>
+
+<div class="row">
+    <div class="col"><hr></div>
+</div>
+
+<div>
+    <div class="container" align="center">
+        <div class="col-2">
+            <div class="row">
+                <div class="col-sm-2">
+                    <p>@Html.TextBoxFor(x => x.fuelreimbursement, new { placeholder = "Fuel Re-imbursement", @class = "form-control" }) </p>
+                </div>
+                <div class="col-sm-2">
+                    <p>@Html.TextBoxFor(x => x.fuelreimbursement, new { placeholder = "Fuel Re-imbursement", @class = "form-control" }) </p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+@*Ajax Call to get Date*@
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<link rel="stylesheet" href="/resources/demos/style.css">
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script>
+
+     @{var dt = DateTime.Now.ToString("dd/MM/yyyy"); }
+    $.noConflict();
+   jQuery(document).ready(function ($) {
+        $(function () {
+            $('#Dateofbirth').datepicker({
+                dateFormat: 'dd/mm/yy',
+
+
+            });
+
+
+        });
+       $(function () {
+           $('#companyjoiningdate').datepicker({
+               dateFormat: 'dd/mm/yy',
+
+
+           });
+
+
+       });
+
+    });
+</script>
+

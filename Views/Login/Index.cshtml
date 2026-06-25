@@ -1,0 +1,397 @@
+﻿@model CMKL.Models.tbl_User_Master
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IEPL Intelligence Portal | Secure Sign-In</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="~/toastr/toastr.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+    <style>
+        :root {
+            --brand-primary: #00698f;
+            --brand-gradient: linear-gradient(135deg, #00698f 0%, #003e54 100%);
+            --brand-dark: #0f172a;
+            --input-border: #cbd5e1;
+            --glass-bg: rgba(255, 255, 255, 0.85);
+        }
+
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0f172a;
+            overflow: hidden;
+        }
+
+        /* High-End Split Screen Layout Architecture */
+        .auth-wrapper {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Left Side: Brand Showcase Panel */
+        .brand-panel {
+            flex: 1.2;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 60px;
+            color: white;
+            overflow: hidden;
+        }
+
+        @@media (max-width: 991.98px) {
+            .brand-panel { display: none; }
+        }
+
+        /* Cinematic Video Layer Controls */
+        .video-container {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -2;
+            background-color: var(--brand-dark);
+        }
+        .video-container iframe {
+            width: 100vw;
+            height: 56.25vw;
+            min-height: 100vh;
+            min-width: 177.77vh;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0.35; /* Subtle backend movement */
+            filter: grayscale(30%) contrast(110%);
+        }
+        .brand-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, rgba(0, 105, 143, 0.85) 0%, rgba(15, 23, 42, 0.9) 100%);
+            z-index: -1;
+        }
+
+        /* Brand Typography Content styling */
+        .brand-header img {
+            height: 50px;
+            border-radius: 6px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .brand-body h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            line-height: 1.15;
+            margin-bottom: 20px;
+        }
+        .brand-body p {
+            font-size: 1.1rem;
+            color: rgba(255,255,255,0.8);
+            max-width: 500px;
+            font-weight: 400;
+        }
+        .brand-footer {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 0.5px;
+        }
+
+        /* Right Side: Authentication Panel Control Desk */
+        .form-panel {
+            flex: 1;
+            background: #f8fafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            box-shadow: -10px 0 40px rgba(0,0,0,0.15);
+            position: relative;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 440px;
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 45px;
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.04);
+            border: 1px solid #e2e8f0;
+            transition: transform 0.3s ease;
+        }
+
+        .form-header h2 {
+            color: var(--brand-dark);
+            font-weight: 800;
+            font-size: 1.75rem;
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+        }
+
+        /* Modern Floating Input Design with Interactive Highlights */
+        .custom-input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .custom-input-group i {
+            position: absolute;
+            left: 18px; top: 16px;
+            color: #94a3b8;
+            font-size: 16px;
+            transition: color 0.3s ease;
+            z-index: 10;
+        }
+        .custom-field {
+            width: 100%;
+            height: 52px;
+            background: #f1f5f9 !important;
+            border: 2px solid transparent !important;
+            border-radius: 12px !important;
+            padding: 10px 16px 10px 50px !important;
+            color: var(--brand-dark) !important;
+            font-size: 14.5px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .custom-field:focus {
+            background: #ffffff !important;
+            border-color: var(--brand-primary) !important;
+            box-shadow: 0 0 0 4px rgba(0, 105, 143, 0.1) !important;
+        }
+        .custom-input-group:focus-within i {
+            color: var(--brand-primary);
+        }
+
+        /* Action Login Button styling */
+        .btn-premium-auth {
+            background: var(--brand-gradient);
+            border: none;
+            border-radius: 12px;
+            height: 52px;
+            width: 100%;
+            color: white;
+            font-weight: 700;
+            font-size: 15px;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            box-shadow: 0 4px 12px rgba(0, 105, 143, 0.2);
+        }
+        .btn-premium-auth:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 105, 143, 0.35);
+        }
+        .btn-premium-auth:active {
+            transform: translateY(0);
+        }
+
+        .credential-support {
+            text-align: center;
+            margin-top: 25px;
+        }
+        .credential-support a {
+            color: #64748b;
+            text-decoration: none;
+            font-size: 13.5px;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .credential-support a:hover {
+            color: var(--brand-primary);
+        }
+
+        /* Modern Blurry Loading Shroud Engine */
+        .luxury-loader {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 99999;
+            justify-content: center;
+            align-items: center;
+        }
+        .loader-content {
+            background: white;
+            padding: 30px 45px;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-wrapper">
+
+        <div class="brand-panel">
+            <div class="video-container">
+                <iframe src="https://www.youtube.com/embed/gb4BzlOahis?autoplay=1&mute=1&loop=1&playlist=gb4BzlOahis&controls=0&showinfo=0&rel=0&iv_load_policy=3&enablejsapi=1"
+                        frameborder="0" allow="autoplay; encrypted-media"></iframe>
+            </div>
+            <div class="brand-overlay"></div>
+
+            <div class="brand-header animate__animated animate__fadeInDown">
+                <img src="~/Images/IEC.jpg" alt="Logo" onerror="this.src='https://via.placeholder.com/120x45/00698f/ffffff?text=IEPL+ERP'" />
+            </div>
+
+            <div class="brand-body animate__animated animate__fadeInLeft">
+                <h1>Enterprise <br>Intelligence Matrix.</h1>
+                <p>Secure connection console to IEPL Industrial Production Planning, Supply Chains and Inventory Frameworks.</p>
+            </div>
+
+            <div class="brand-footer animate__animated animate__fadeInUp">
+                &copy; @DateTime.Now.Year IEPL Systems Ecosystem. All Engineering Rights Reserved.
+            </div>
+        </div>
+
+        <div class="form-panel animate__animated animate__fadeIn">
+            <div class="login-card shadow-sm animate__animated animate__zoomIn animate__delay-1s">
+
+                <div class="form-header mb-4">
+                    <h2>Account Gateway</h2>
+                    <p class="text-muted small">Verify identity parameters to initialize workstation session.</p>
+                </div>
+
+                <div class="form-main-content">
+                    @Html.AntiForgeryToken()
+                    @Html.ValidationSummary(true, "", new { @class = "text-danger small mb-3 fw-bold" })
+
+                    <form id="myForm">
+                        <div class="custom-input-group">
+                            <i class="fas fa-calendar-alt"></i>
+                            <select id="FinYear" class="form-select custom-field">
+                                <option value="">Targeting System Timeline...</option>
+                            </select>
+                        </div>
+
+                        <div class="custom-input-group">
+                            <i class="fas fa-building"></i>
+                            <select id="CompanyId" class="form-select custom-field">
+                                <option value="">Mapping Operating Unit...</option>
+                            </select>
+                        </div>
+
+                        <div class="custom-input-group">
+                            <i class="fas fa-shield-user"></i>
+                            @Html.TextBoxFor(x => x.user_name, new { placeholder = "Account ID / Username", @class = "custom-field", autocomplete = "off" })
+                        </div>
+
+                        <div class="custom-input-group mb-3">
+                            <i class="fas fa-fingerprint"></i>
+                            @Html.PasswordFor(x => x.user_password, new { placeholder = "Security Key Token", @class = "custom-field", autocomplete = "off" })
+                        </div>
+
+                        <button class="btn btn-premium-auth" type="button" id="search">
+                            AUTHENTICATE DISPATCH
+                        </button>
+
+                        <div class="credential-support">
+                            <a href="#" id="fp"><i class="fa-solid fa-circle-question me-1 small"></i>Request Access Key Recovery</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="luxury-loader" id="globalShroud">
+        <div class="loader-content animate__animated animate__pulse animate__infinite">
+            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+            <div class="fw-bold text-dark fs-6">Securing Node Handshake...</div>
+            <div class="text-muted small mt-1">Synchronizing server cryptosystems</div>
+        </div>
+    </div>
+
+    <script src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <script src="~/toastr/Js/toastr.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#CompanyId').focus();
+            LoadCompany();
+
+            $("#search").click(function () {
+                var comp = $('#CompanyId').val();
+                var fin = $('#FinYear').val();
+
+                if (!comp) { toastr.warning('Please select Operational Unit parameters.'); return; }
+                if (!fin) { toastr.warning('Please select specific System Timeline parameters.'); return; }
+                if (!$('#user_name').val()) { toastr.warning('Account Node identity missing.'); return; }
+
+                var data = $("#myForm").serialize();
+                data += "&CompanyId=" + comp;
+                data += "&finyear=" + $("#FinYear option:selected").text();
+
+                $('#globalShroud').css('display', 'flex').hide().fadeIn(200);
+
+                $.ajax({
+                    type: "POST",
+                    url: "/Login/Login",
+                    data: data,
+                    success: function (response) {
+                        if (response.success) {
+                            toastr.success("Token Accepted. Provisioning Session Workspace.");
+                            setTimeout(function () {
+                                $('.login-card').addClass('animate__animated animate__fadeOutDown');
+                                setTimeout(function () {
+                                    window.location.href = response.loca;
+                                }, 300);
+                            }, 800);
+                        } else {
+                            $('#globalShroud').fadeOut(100);
+                            toastr.error(response.message);
+                        }
+                    },
+                    error: function () {
+                        $('#globalShroud').fadeOut(100);
+                        toastr.error('Authentication node dropped. Verify physical server sync statuses.');
+                    }
+                });
+            });
+
+            $('#fp').on('click', function (e) {
+                e.preventDefault();
+                toastr.info('Route ticket to Infrastructure Administrator to dispatch updated cryptographic keys.');
+            });
+
+            function LoadCompany() {
+                $.ajax({
+                    url: '/Login/GetCompanies',
+                    type: 'get',
+                    success: function (data) {
+                        $('#CompanyId').empty().append('<option value="">Select Operational Unit</option>');
+                        $.each(data.Company, function (i, item) {
+                            $('#CompanyId').append($('<option>', { value: item.value, text: item.text }));
+                        });
+
+                        $('#FinYear').empty().append('<option value="">Select Timeline Horizon</option>');
+                        $.each(data.FinYear, function (i, item) {
+                            $('#FinYear').append($('<option>', { value: item.value, text: item.text }));
+                        });
+
+                        if (data.FinYear && data.FinYear.length > 0) {
+                            var latestYear = data.FinYear[data.FinYear.length - 1].value;
+                            $('#FinYear').val(latestYear);
+                        }
+                    },
+                    error: function () {
+                        toastr.error('System failed to load parameter lists.');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

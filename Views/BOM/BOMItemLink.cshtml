@@ -1,0 +1,382 @@
+﻿@{
+    ViewBag.Title = "BOMItemLink";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if the current context is inside a Bootstrap modal
+            const isInModal = !!(document.querySelector('.modal.show'));
+
+            if (isInModal) {
+                // If inside a modal, wait for a short delay
+                setTimeout(() => {
+                    handleInvalidUser();
+                }, 500); // Adjust the delay as needed
+            } else {
+                // If not in a modal, proceed immediately
+                handleInvalidUser();
+            }
+
+            function handleInvalidUser() {
+                toastr.error("Invalid User");
+
+                setTimeout(function () {
+                    window.location.href = "@Url.Action("Index", "Login")";
+                }, 2000); // Redirect after 2 seconds
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+
+<title>Link BOM Items</title>
+<style>
+    #save {
+        background-color: #00698f;
+        color: #ffffff;
+        border-color: #0070d2;
+    }
+</style>
+<style>
+    .ui-autocomplete {
+        position: absolute;
+        z-index: 1000;
+        cursor: default;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+        background-color: #f0f0f0;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+
+        .ui-autocomplete li {
+            padding: 3px 20px;
+        }
+
+            .ui-autocomplete li:hover {
+                background-color: #ddd;
+            }
+
+    /* Define the position of the autocomplete list */
+    .ui-autocomplete {
+        top: 35px; /* adjust the top position to your liking */
+        left: 0; /* adjust the left position to your liking */
+    }
+</style>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <form>
+                <div class="form-group mb-3">
+                    <label class="slds-form-element__label" for="master-item">
+                        <span class="slds-text-link" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                            Master Item
+                        </span>
+                    </label>
+                    @*<label for="master-item">Master Item</label>*@
+                    <select class="form-control" id="masteritem">
+                        <option value="">-- Select Master Item --</option>
+                    </select>
+                </div>
+                <div class="form-group mb-3 row">
+                    <div class="col-md-6">
+                        <label class="slds-form-element__label" for="Category">
+                            <span class="slds-text-link" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                                Select Category
+                            </span>
+                        </label>
+                        <select class="form-control" id="category">
+                            <option value="">-- Select Category --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="slds-form-element__label" for="subCategory">
+                            <span class="slds-text-link" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                                Select Sub Category
+                            </span>
+                        </label>
+                        <select class="form-control" id="subcategory">
+                            <option value="">-- Select SubCategory --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group mb-3">
+                    <label class="slds-form-element__label" for="rawitem">
+                        <span class="slds-text-link" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                            Select Raw Item
+                        </span>
+                    </label>
+
+                    <select class="form-control" id="raw">
+                        <option value="">-- Select Raw Item --</option>
+                        <!-- options will be populated dynamically using JavaScript -->
+                    </select>
+                </div>
+                @*<div class="form-group mb-3">
+                        <label class="slds-form-element__label" for="Item">
+                            <span class="slds-text-link" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                                Raw Item
+                            </span>
+                        </label>
+                        <input class="form-control" id="Item" name="Item" placeholder="Enter Name" type="text" value="" />
+                        <input type="hidden" id="ItemId" name="ItemId" />
+                    </div>
+                *@
+                <div class="form-group mb-3">
+                    <label class="slds-form-element__label" for="Quantity">
+                        <span class="slds-text-link" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                            Quantity
+                        </span>
+                    </label>
+                    <input class="form-control" id="Quantity" name="Quantity" placeholder="Enter quantity" type="text" value="0" />
+                </div>
+                <div class="form-group mb-3">
+                    <label class="slds-form-element__label" for="uom">
+                        <span class="slds-text-link" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                            UOM
+                        </span>
+                    </label>
+                    <select class="form-control" id="uom">
+                        <option value="">-- Select UOM --</option>
+
+                    </select>
+                </div>
+                <div class="form-group mb-3">
+                    <button type="button" id="save" class="btn btn-info">
+                        <i class="fa fa-save"></i> Add Item
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+        <div class="col-md-8" id="bom-list">
+            <div class="scroll-container" style="overflow-y: auto; height: 300px;">
+                @Html.Partial("_BOMlinkPartialview")
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.16.2/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.2.1/exceljs.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#raw').change(function () {
+            var rawItemId = $(this).val();
+            if (rawItemId !== '') {
+                $.ajax({
+                    type: 'GET',
+                    url: '@Url.Action("GetUOMByRawItemId", "BOM")',
+                    data: { rawItemId: rawItemId },
+                    success: function (data) {
+                        debugger;
+                        console.log('Data:', data); // log the data to the console
+                        $('#uom').empty(); // clear existing options
+                        var options = '';
+                        if (data.Error) {
+                            options += '<option value=""></option>';
+                            toastr.error(data.Error);
+                        } else {
+                            options += '<option value="' + data.Value + '">' + data.Text + '</option>';
+                        }
+                        console.log('Options:', options); // log the options to the console
+                        $('#uom').append(options); // append new options
+                        //$('#UOM').val(previousItemType); // select the previously selected value
+                    },
+                    error: function (xhr, status, error) {
+                        console.log('Error:', error); // log any errors to the console
+                    }
+                });
+            } else {
+                $('#uom').empty(); // clear existing options
+                $('#uom').append('<option value="">-- Select UOM --</option>'); // add default option
+            }
+        });
+    });
+</script>
+<script>
+    $(document).ready(function () {
+        $('#category').on('change', function () {
+            var categoryId = $(this).val();
+            $.ajax({
+                type: 'GET',
+                url: '/BOM/GetSubCategories',
+                data: { categoryId: categoryId },
+                dataType: 'json',
+                success: function (data) {
+                    $('#subcategory').empty();
+                    $.each(data.subcategory, function (index, item) {
+                        $('#subcategory').append($('<option>', { value: item.value, text: item.text }));
+                    });
+                }
+            });
+        });
+    });
+</script>
+<script>
+    $(document).ready(function () {
+        $.ajaxSetup({
+            type: "GET",
+            url: "/BOM/linkmasterlist",
+            dataType: "json"
+        });
+        $.ajax().done(function (data) {
+            $.each(data.masterlist, function (index, item) {
+                $("#masteritem").append("<option value='" + item.value + "'>" + item.text + "</option>");
+            });
+
+            $.each(data.categorylist, function (index, item) {
+                $("#category").append("<option value='" + item.value + "'>" + item.text + "</option>");
+            });
+
+            $.each(data.rawlist, function (index, item) {
+                $("#raw").append("<option value='" + item.value + "'>" + item.text + "</option>");
+            });
+            // $.each(data.uomlist, function (index, item) {
+            //  $("#uom").append("<option value='" + item.value + "'>" + item.text + "</option>");
+
+
+            //});
+        });
+    });
+</script>
+
+<script>
+    $(document).ready(function () {
+        $('#save').on('click', function () {
+            var masterItemValue = parseInt($('#masteritem').val());
+            var categoryValue = parseInt($('#category').val());
+            var subcategoryValue = parseInt($('#subcategory').val());
+            var uom = parseInt($('#uom').val());
+
+
+            var rawItemValue = parseInt($('#raw').val());
+            //var rawItemValue = $('#ItemId option:selected').text();
+            var quantityDecimal = parseFloat($('#Quantity').val());
+            var uomText = $('#uom option:selected').text();
+            debugger
+
+            if (masterItemValue == '' || categoryValue == '' || rawItemValue == '' || quantityDecimal == '0' || uomText == '') {
+                toastr.info('Please fill in all fields');
+                var audio = new Audio('/Sound/Error.mp3');
+                audio.play();
+                return false;
+            }
+
+            $.ajax({
+                type: "POST",
+                url: "/BOM/savebomlink",
+                data: {
+                    masterItem: masterItemValue,
+                    category: categoryValue,
+                    subcategory: subcategoryValue,
+                    rawItem: rawItemValue,
+                    quantity: quantityDecimal,
+                    uom: uomText
+                },
+                success: function (result) {
+                    var audio = new Audio('/Sound/Save.mp3');
+                    audio.play();
+                    if (result.success) {
+                        toastr.success("Record saved successfully!");
+                        $('#Quantity').val('0');
+                        $('#raw').val('-- Select Raw Item --');
+                        $('#raw').focus();
+                        //$('#raw').click(); // Expand the dropdown list
+
+                        // Refresh and display the partial view
+                        $.ajax({
+                            type: "POST",
+                             url: '@Url.Action("BOMPartialView", "BOM")',
+                            data: { masterItemId: masterItemValue },
+                            dataType: 'html',
+                            success: function (partialViewHtml) {
+                                $("#bom-list").html(partialViewHtml);
+                            }
+                        });
+
+                    }
+                    else
+                    {
+                        toastr.error(result.message);
+                        var audio = new Audio('/Sound/Error.mp3');
+                        audio.play();
+                    }
+                },
+                error: function (xhr, status, error) {
+                    var audio = new Audio('/Sound/Error.mp3');
+                    audio.play();
+                    toastr.error("Error: " + xhr.responseText);
+                }
+            });
+        });
+    });
+</script>
+
+<script>
+    $('#masteritem').on('change', function () {
+        var masterItemId = $(masteritem).val();
+        $.ajax({
+        type: "POST",
+            url: '@Url.Action("BOMPartialView", "BOM")',
+            data: { masterItemId: masterItemId },
+            dataType: 'html',
+            success: function (data) {
+                var audio = new Audio('/Sound/Save.mp3');
+                audio.play();
+        $("#bom-list").html(data);
+        toastr.success('Success');
+            // alert("BOM created successfully!");
+        },
+    error: function (xhr, status, error) {
+        console.log("Error: " + error);
+        console.log("Status: " + status);
+        console.log("XHR: " + xhr.responseText);
+         }
+    });
+        return false;
+    });
+</script>
+
+<script>
+$("#Item").autocomplete({
+    appendTo: $("#Item").parent(), // Append to the parent element of #Item
+    source: function (request, response) {
+        $.ajax({
+            url: '@Url.Action("searchraw", "BOM")',
+            dataType: "json",
+            data: { itemname: request.term },
+            success: function (data) {
+                console.log(data); // Add this to see if data is being received
+                response($.map(data, function (item) {
+                    return { label: item.label, value: item.label };
+                }));
+            },
+            error: function (xhr, status, error) {
+                alert("Error");
+            }
+        });
+    },
+    select: function (event, ui) {
+        // Display the selected itemname in the original input field
+        $(this).val(ui.item.label);
+        // Store the selected itemid in a hidden input field
+        $("#ItemId").val(ui.item.value);
+        // Update the selected option in the dropdown list
+        $("#raw").val(ui.item.label);
+    }
+});
+</script>

@@ -1,0 +1,442 @@
+﻿
+@{
+    ViewBag.Title = "BPRPurchase";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div><div class="container" align="center"><h2>BPR Purchase</h2></div></div>
+
+<div>
+    <div class="container" align="center">
+
+
+        <table id="tablebill" class="table table-bordered">
+            <tr align="center">
+                <th>Bill Number</th>
+                <th>Bill Date</th>
+                <th>Select Company</th>
+            </tr>
+            <tr>
+                <td>
+                    <input type="text" class="form-control" placeholder="Bill Number" id="billno" name="billno" width="30px" required>
+                </td>
+                <td>
+                    <input type="text" class="form-control" placeholder="Bill Date" id="billdt" name="billdt" width="30px" required>
+                </td>
+                <td>
+                    <div class="col-sm-12">
+                        <p>
+                            <select class="form-control" id="company" name="Company" width="30px">
+                                <option>GFE Kathua</option>
+                                <option>IEC Barwala</option>
+                                <option>IEC Panchkula</option>
+                            </select>
+
+                        </p>
+
+                    </div>
+                </td>
+                <td>
+                    <button type="button" id="save" class="btn btn-info" onclick="addProject()">Save Purchase Bill</button>
+                </td>
+
+            </tr>
+
+        </table>
+
+    </div>
+</div>
+
+<div>
+    <div class="container" align="center">
+        <div class="col-12">
+            <table id="itemmaster" class="table table-bordered" align="center">
+                <tr align="center">
+                    <th>Item Code</th>
+                    <th>Item Name</th>
+                    <th>Item Description</th>
+                    <th>Item Category</th>
+                    <th>Norms</th>
+                    <th>Stock</th>
+                    <th>Transit</th>
+                    <th>Basic Value</th>
+                </tr>
+                <tr align="center">
+                    <td>
+                        <input type="text" class="form-control" placeholder="Item Code" id="Itemcode" name="Itemcode" size="50px" required>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" placeholder="Item" id="Item" name="Item" size="50px" required>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" placeholder="Description" id="desc" name="desc" size="25px" disabled>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" placeholder="Item Category" id="category" name="category" size="25px" disabled>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" placeholder="Norms" id="norms" name="norms" size="25px">
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" placeholder="Stock" id="stock" name="stock" size:"5px" disabled>
+                    </td>
+                    <td>
+                        <input type="number" class="form-control pro_price" id="qty" name="qty"
+                               placeholder="qty" min="1" value="1" size:"5px" required disabled>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" placeholder="Basic Value" id="basicvalue" name="basicvalue" size="25px" required>
+                    </td>
+                    <td>
+                        <button class="btn btn-success" type="button" onclick="addproduct()">
+                            Add
+                        </button>
+                    <td>
+                        <input type="hidden" class="form-control" placeholder="itemid" id="itemid" name="itemid" size="5px" required>
+                    </td>
+                </tr>
+            </table>
+
+            <table class="table table table-bordered" id="product_list">
+                <caption>Products</caption>
+
+                <thead>
+                    <tr>
+                        <th style="width: 40px">Remove</th>
+                        <th>Item Code</th>
+                        <th>Item Name</th>
+                        <th>Item Desc</th>
+                        <th>Item Category</th>
+                        <th>Norms</th>
+                        <th>Qty</th>
+                        <th>Basic Price</th>
+
+
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+@*<script src="~/Scripts/jquery-3.7.0.min.js"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>*@
+<link href="https://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" rel="Stylesheet">
+<script src="https://code.jquery.com/jquery-latest.min.js"></script>
+<script src="https://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+
+
+@*Ajax Call to pick item according to Product Code*@
+
+<script>
+    getproductdetail();
+
+    function getproductdetail() {
+
+
+        $("#Itemcode").empty();
+        $("#Itemcode").keyup(function (e) {
+            var q = $("#Itemcode").val();
+
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("getproductdetail", "Inventory")',
+                dataType: "json",
+                data: { dd: $("#Itemcode").val(), dd1: $("#company").val(),},
+                success: function (data) {
+                    console.log(data);
+
+                    $('#Item').val(data.Itemname);
+                    $('#desc').val(data.itemdesc);
+                    $('#category').val(data.Itemcategory);
+                    $('#stock').val(data.presentstock);
+                    $('#itemid').val(data.id);
+                    $('#norms').val(data.norms);
+                    toastr.success("Item Found");
+                    $("#basicvalue").focus();
+
+                },
+                error: function (xhr, status, error) {
+                   // alert("The barcode entered is not correct");
+                    toastr.error("Item Not Found");
+                }
+            });
+            return true;
+        });
+    }
+</script>
+
+
+@*AutoFill Item Name Using Ajax*@
+
+<script>
+    var itemss;
+    $("#Item").autocomplete({
+        source: function (request, response) {
+            $.ajax({
+                url: '@Url.Action("itemdetail", "Inventory")',
+                dataType: "json",
+                data: { dd: $("#Item").val(), dd1: $("#company").val(), },
+                //data: { search: $("#Item").val() },
+                success: function (data) {
+                    itemss = data;
+                    response($.map(data, function (item) {
+                        return { label: item.Itemname, value: item.Itemname };
+
+                    }));
+
+                },
+                error: function (xhr, status, error) {
+                    alert("Error");
+                }
+
+
+            });
+        }
+    });
+</script>
+
+
+@*Ajax Call to get item details*@
+
+<script>
+
+     @{var dt = DateTime.Now.ToString("dd/MM/yyyy"); }
+    $.noConflict();
+   jQuery(document).ready(function ($) {
+        $(function () {
+            $('#billdt').datepicker({
+                dateFormat: 'dd/mm/yy',
+
+
+            });
+            $('#billdt').datepicker('setDate','today')
+
+        });
+
+    });
+</script>
+<script>
+
+        getitemdetail();
+
+        function getitemdetail() {
+
+
+            $("#Item").empty();
+            // $("#Item").keyup(function (e) {
+            $("#Item").keypress(function (e) {
+                var q = $("#Item").val();
+               // if ($('#Item').val().length === 0) {
+                 //   $.alert({
+                 //       title: 'Error!',
+                  //      content: "Please Enter the Barcode",
+                  //      type: 'red',
+                  //      autoClose: 'ok|2000'
+                  //  });
+                  //  return false;
+               // }
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("Getitemdetails", "Inventory")',
+                    dataType: "json",
+                    data: { dd: $("#Item").val() },
+                    success: function (data) {
+                        console.log(data);
+
+                        $('#desc').val(data.itemdesc);
+                        $('#category').val(data.Itemcategory);
+                        $('#stock').val(data.presentstock);
+                        $('#itemid').val(data.id);
+                        $('#Itemcode').val(data.Productcode);
+                        $('#norms').val(data.norms);
+                        $('#basicvalue').focus();
+
+
+
+
+
+                    },
+                    error: function (xhr, status, error) {
+                        //  alert("The barcode entered is not correct");
+                    }
+                });
+                return true;
+            });
+        }
+    </script>
+
+
+<script src="~/Scripts/jquery-3.4.1.js"></script>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery.validate.js"></script>
+<script src="//cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
+
+<script>
+    addproduct();
+
+    function addproduct() {
+        //var sum1 = (
+        //Number($("#pro_price").val()) * Number($("#qty").val())
+        //);
+
+        var product = {
+            itemcode: $("#Itemcode").val(),
+            Item: $("#Item").val(),
+            desc: $("#desc").val(),
+            category: $("#category").val(),
+            norms: $("#norms").val(),
+            qty: $("#qty").val(),
+            itemid: $('#itemid').val(),
+            basicvalue: $('#basicvalue').val(),
+            //discount: 0,
+            // total_cost: $("#total_cost").val(),
+            button: '<button  type="button" class="btn btn-warning btn-xs")">delete</button>'
+        };
+
+        addRow(product);
+        //$('#frmInvoice')[0].reset();
+    }
+
+    var total = 0;
+    var discount = 0;
+    var grosstotal = 0;
+    var qtye = 0;
+    var barcode = 0;
+
+    function addRow(product) {
+        var qty = Number($("#qty").val());
+        if ($('#Itemcode').val().length === 0) {
+            //  $.alert({
+            // title: 'Error!',
+            //    content: "Please Enter the Barcode",
+            //  type: 'red',
+            //  autoClose: 'ok|2000'
+            // });
+            return false;
+        } else {
+            var $tableB = $('#product_list tbody');
+            var $row = $(
+                "<tr><td><Button type='button' class='btn btn-warning btn-xs' name='record' id='deleterow' >Delete</td>" +
+                "<td>" +
+                product.itemcode +
+                "</td><td class=\"price\">" +
+                product.Item +
+                "</td><td>" +
+                product.desc +
+                "</td>  <td>" +
+                product.category +
+                "</td>  <td>" +
+                product.norms +
+                "</td> <td>" +
+                product.qty +
+                "</td> <td>" +
+                product.basicvalue +
+                "</td> <td>" +
+                product.itemid +
+                "</td></tr > ");
+            $row.data("itemcode", product.itemcode);
+            $row.data("Item", product.Item);
+            $row.data("Desc", product.desc);
+            $row.data("Category", product.category);
+            $row.data("norms", product.norms);
+            $row.data("qty", product.qty);
+            $row.data("id", product.basicvalue);
+            $row.data("id", product.itemid);
+            //total += Number(product.total_cost);
+            //$('#total').val(total);
+            //discount += Number(product.discount);
+            //$('#discounttotal').val(discount);
+            //console.log(product.total_cost);
+            //grandtotal = total - discount;
+            //$('#grandtotal').val(grandtotal);
+            qtye += Number(product.qty);
+            $row.find('#deleterow').click(function (event) {
+                deleteRow($row);
+            });
+            $tableB.append($row);
+            $("#Itemcode").focus();
+            $("#Itemcode").val("");
+            $("#Item").val("");
+            $("#desc").val("");
+            $("#category").val("");
+            $("#norms").val("");
+            $("#qty").val("1");
+            $("#basicvalue").val("");
+            $("#itemid").val("");
+
+
+            return true;
+        }
+    }
+
+    addProject();
+
+    function addProject() {
+        var table_data = new Array();
+
+        $('#product_list tbody tr').each(function (row, tr) {
+            //  var barcode = parseInt($(tr).find('td:eq(1)').text());
+            var itemcode = $(tr).find('td:eq(1)').text();
+            var itemname = $(tr).find('td:eq(2)').text();
+            var sum = {
+                //these records i am going to add into sales table
+                'itemcode': itemcode,
+                'itemname': itemname,
+                'desc': $(tr).find('td:eq(3)').text(),
+                'category': $(tr).find('td:eq(4)').text(),
+                'norms': $(tr).find('td:eq(5)').text(),
+                'qty': $(tr).find('td:eq(6)').text(),
+                'basicvalue': $(tr).find('td:eq(7)').text(),
+                'itemid': $(tr).find('td:eq(8)').text(),
+            };
+            table_data.push(sum);
+        });
+        //these records i am going to add into sales
+
+        console.log(table_data);
+        $.post("/Inventory/SaveNew",
+            {
+                data: JSON.stringify({
+                    bill: $("#billno").val(),
+                    date: $("#billdt").val(),
+                    company: $("#company").val(),
+                    // total: $("#total").val(),
+                    data: table_data
+                })
+            },
+            function (data, status) {
+                console.log(data);
+                //alert("Status: " + status + "\nMessage: " + data.message);
+
+                toastr.success(data.message);
+                $("#billno").val(""),
+                    $("#billdt").val(""),
+                    $('#product_list tbody').empty();
+                // location.reload(true);
+            });
+
+    }
+
+    function deleteRow(row) {
+        //var $tableB = $('#product_list tbody');
+        row.remove();
+    }
+</script>
+
+
+
+
+

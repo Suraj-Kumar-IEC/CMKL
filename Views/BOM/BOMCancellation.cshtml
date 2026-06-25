@@ -1,0 +1,319 @@
+﻿
+@{
+    ViewBag.Title = "ManagementApproval";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if the current context is inside a Bootstrap modal
+            const isInModal = !!(document.querySelector('.modal.show'));
+
+            if (isInModal) {
+                // If inside a modal, wait for a short delay
+                setTimeout(() => {
+                    handleInvalidUser();
+                }, 500); // Adjust the delay as needed
+            } else {
+                // If not in a modal, proceed immediately
+                handleInvalidUser();
+            }
+
+            function handleInvalidUser() {
+                toastr.error("Invalid User");
+
+                setTimeout(function () {
+                    window.location.href = "@Url.Action("Index", "Login")";
+                }, 2000); // Redirect after 2 seconds
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<style>
+    .highlight-row {
+        background-color: #ffdddd; /* Light red background */
+        /* Add any other styles you want, like bold text or a border */
+        @@media print {
+            body {
+                font-size: 12pt;
+            }
+
+            table {
+                width: 100%;
+                page-break-inside: auto;
+            }
+
+            tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+
+            th, td {
+                padding: 8px;
+                font-size: 10pt;
+            }
+        }
+    }
+</style>
+
+<h3 style="background-color: #00698f; color: #ffffff; padding: 5px 10px; border-radius: 5px; text-align: center;">BOM Cancellation</h3>
+
+<div class="dashboard-container">
+
+    <table class="table table-sm table-bordered" id="voucher-table">
+        <thead>
+            <tr>
+                <th>Voucher Number</th>
+                <th>Voucher Date & Time</th>
+                <th>Created By</th>
+                <th>Approved By</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="voucher-table-body">
+            <!-- data will be loaded here via AJAX -->
+        </tbody>
+    </table>
+</div>
+
+<!-- modal for viewing lines -->
+<div class="modal fade" id="viewLinesModal" tabindex="-1" role="dialog" aria-labelledby="viewLinesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewLinesModalLabel">View Lines for Voucher</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-sm table-bordered" id="lines-table">
+                    <thead>
+                        <tr>
+                            <th>Category Name</th>
+                            <th>Subcategory Name</th>
+                            <th>Final Item Name</th>
+                            <th>Item Code</th>
+                            <th>Item Name</th>
+                            <th>Quantity Required</th>
+                            <th>Available Stock</th>
+                            <th>UOM</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lines-table-body">
+                        <!-- data will be loaded here via AJAX -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="printTable()">Print</button>
+                <button type="button" class="btn btn-success" onclick="exportToExcel()">Export to Excel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="remarksModal" tabindex="-1" aria-labelledby="remarksModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="remarksModalLabel">Enter Remarks</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="modalBOMVoucherID">  <textarea id="cancellationRemarks" class="form-control" rows="3"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="BOMCancellattion()" id="saveRemarksButton">Final Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<img id="wait-sign" src="~/images/wait.gif" class="wait-sign-image" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);" />
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+    function printTable() {
+        var printWindow = window.open('', '', 'height=600,width=800');
+        printWindow.document.write('<html><head><title>Print Voucher Lines</title>');
+        printWindow.document.write('<style>body { font-family: sans-serif; }</style>'); // Add basic styles if needed
+        printWindow.document.write('</head><body>');
+        printWindow.document.write($('#viewLinesModal .modal-body').html()); // Get the table HTML
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.print();
+    }
+</script>
+<script>
+    $(document).ready(function () {
+        loadVouchers();
+        setInterval(loadVouchers, 5000); // Refresh every 30 seconds
+    });
+
+    function exportToExcel() {
+        var table = document.getElementById("lines-table");
+        var wb = XLSX.utils.table_to_book(table);
+        XLSX.writeFile(wb, 'BOM_Items.xlsx');
+    }
+
+    function loadVouchers() {
+
+        $.ajax({
+            type: 'GET',
+            url: '@Url.Action("GetVouchers", "BOM")',
+            success: function (data) {
+                var audio = new Audio('/Sound/Save.mp3');
+                var hasUnapprovedOrders = false;
+
+                $('#voucher-table-body').empty();
+                $.each(data, function (index, item) {
+                    var approvalButton = '';
+                    if (item.Approvalstatus === 0) {
+                        approvalButton = '<a href="#" class="btn btn-success btn-sm" onclick="approveVoucher(' + item.BOMVoucherID + ')">Approve</a>';
+                        hasUnapprovedOrders = true;
+                    }
+                    $('#voucher-table-body').append(`
+                        <tr>
+                            <td>${item.VoucherNumber}</td>
+                            <td>${formatDate(item.VoucherDate)}</td>
+                            <td>${item.CreatedBy}</td>
+                            <td>${item.ApprovedBY ? item.ApprovedBY : ''}</td>
+                            <td>
+                                <a href="#" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#viewLinesModal" onclick="loadLines(${item.BOMVoucherID})">View Items</a>
+                                <a href="#" class="btn btn-danger btn-sm" onclick="openCancellationModal(${item.BOMVoucherID})">Cancel BOM</a>
+                               @* ${approvalButton}*@
+                            </td>
+                        </tr>
+                    `);
+                });
+                //toastr.success('Order Refresed');
+                if (hasUnapprovedOrders) {
+                    var audio = new Audio('/Sound/Save.mp3');
+                    audio.play();
+                }
+            }
+        });
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) {
+            return ''; // or some other default value
+        }
+        var timestamp = parseInt(dateStr.replace(/\/Date\((\d+)\)\//, '$1'));
+        var date = new Date(timestamp);
+        var day = date.getDate();
+        var month = date.getMonth() + 1;
+        var year = date.getFullYear();
+        var hours = date.getHours();
+        var minutes = date.getMinutes();
+        var seconds = date.getSeconds();
+
+        return `${padZero(day)}/${padZero(month)}/${year} ${padZero(hours)}:${padZero(minutes)}:${padZero(seconds)}`;
+    }
+
+    function padZero(value) {
+        return (value < 10 ? '0' : '') + value;
+    }
+
+    function loadLines(voucherId) {
+    $.ajax({
+        type: 'GET',
+        url: '@Url.Action("GetLines", "BOM")',
+        data: { voucherId: voucherId },
+        success: function (data) {
+            var audio = new Audio('/Sound/Save.mp3');
+            audio.play();
+            $('#lines-table-body').empty();
+            $.each(data, function (index, item) {
+                var row = $(`
+                    <tr>
+                        <td>${item.CategoryName}</td>
+                        <td>${item.SubcategoryName}</td>
+                        <td>${item.FinalItemName}</td>
+                        <td>${item.RawItemcode}</td>
+                        <td>${item.RawItemName}</td>
+                        <td>${item.QuantityRequired}</td>
+                        <td>${item.AvailableStock}</td>
+                        <td>${item.UOM}</td>
+                    </tr>
+                `);
+                if (item.QuantityRequired > item.AvailableStock || item.AvailableStock < 0) {
+                    row.addClass('highlight-row');
+                }
+                $('#lines-table-body').append(row);
+            });
+            $('#viewLinesModal').modal('show');
+        }
+    });
+}
+
+    function approveVoucher(voucherId) {
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("ApproveVoucher", "BOM")',
+            data: { voucherId: voucherId },
+            success: function (data) {
+                if (data.success) {
+                    toastr.success("Voucher approved successfully!");
+                    if (data.Negativeitems.length > 0) {
+                        // Join the items with line breaks for a cleaner display
+                        var message = "Please Review -ve Stock Items:\n" + data.Negativeitems.join("\n");
+
+                        // Display the message using Toastr with a long timeout
+                        toastr.info(message, "", { timeOut: 10000 });
+                    }
+                    // Refresh the page
+                    // window.location.href = window.location.href;
+                    loadVouchers();
+                } else {
+                    toastr.error("Error approving voucher!");
+                }
+            }
+        });
+    }
+    function BOMCancellattion() {
+        $('#wait-sign').show();
+        let BOMVoucherID = $('#modalBOMVoucherID').val();
+        let Remarks = $('#cancellationRemarks').val();
+        $.ajax({
+            type: 'POST',
+            url: '/BOM/CancelBOM',
+            data: { BOMVoucherID: BOMVoucherID, Remarks: Remarks },
+            success: function (data) {
+                $('#modalBOMVoucherID').val('');
+                $('#cancellationRemarks').val('');
+                $('#remarksModal').modal('hide');
+                toastr.success('Bom Has Been Cancelled..');
+                $('#wait-sign').hide();
+            }
+        });
+    }
+    function openCancellationModal(BOMVoucherID) {
+
+        modalBOMVoucherID.value = BOMVoucherID;  // Set the hidden input's value
+        $('#remarksModal').modal('show'); // Open the modal
+    }
+
+    $('#viewLinesModal .close').on('click', function () {
+        $('#viewLinesModal').modal('hide');
+    });
+
+</script>
+
+<img id="wait-sign" src="~/images/wait.gif" class="wait-sign-image" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);" />
+
+<style>
+    .wait-sign-image {
+        width: 200px;
+        height: 200px;
+    }
+</style>

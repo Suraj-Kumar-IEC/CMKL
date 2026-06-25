@@ -1,0 +1,33 @@
+﻿<!-- Views/Vendors/_VendorList.cshtml -->
+@model List<CMKL.Models.Vendor>
+
+@if (Model != null)
+{
+    <table id="Vendorlist-table" class="table table-bordered table-striped">
+        <tr>
+            <th>Vendor Name</th>
+            <th>Contact Name</th>
+            <th>Contact Number</th>
+            <th>Profile</th>
+        </tr>
+        @foreach (var vendor in Model)
+        {
+            <tr class="@(vendor.Id % 2 == 0 ? "even" : "odd")">
+                <td>@vendor.VendorName</td>
+                <td>@vendor.ContactName</td>
+                <td><a href="tel:@vendor.ContactNumber">@vendor.ContactNumber</a></td>
+                <td>@vendor.Profile</td>
+            </tr>
+        }
+    </table>
+}
+
+<style>
+    .even {
+        background-color: #f0f0f0;
+    }
+
+    .odd {
+        background-color: #ffffff;
+    }
+</style>

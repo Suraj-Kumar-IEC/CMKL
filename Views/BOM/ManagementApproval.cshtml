@@ -1,0 +1,399 @@
+﻿@{
+    ViewBag.Title = "BOM Management Approval";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const isInModal = !!(document.querySelector('.modal.show'));
+            const handleInvalidUser = () => {
+                toastr.error("Session Expired. Redirecting to login...");
+                setTimeout(() => { window.location.href = "@Url.Action("Index", "Login")"; }, 2000);
+            };
+            setTimeout(handleInvalidUser, isInModal ? 500 : 0);
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<style>
+    /* Professional Color Palette */
+    :root {
+        --primary: #00698f;
+        --primary-dark: #004d69;
+        --accent: #00b4d8;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --bg-soft: #f8fafc;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+    }
+
+    body {
+        background-color: var(--bg-soft);
+        color: var(--text-main);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    /* Professional Header */
+    .app-header {
+        background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+        padding: 1.25rem;
+        border-radius: 12px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+        .app-header h3 {
+            margin: 0;
+            color: white;
+            font-weight: 700;
+            font-size: 1.25rem;
+            letter-spacing: -0.025em;
+        }
+
+    /* Main Content Card */
+    .content-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+    }
+
+    /* Modern Table styling */
+    .table {
+        margin-bottom: 0;
+    }
+
+        .table thead th {
+            background-color: #f1f5f9;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            padding: 1rem;
+            border: none;
+        }
+
+        .table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-top: 1px solid #f1f5f9;
+            font-size: 0.875rem;
+        }
+
+    /* Action Buttons */
+    .btn-action {
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        padding: 0.5rem 1rem;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-view {
+        background: #f1f5f9;
+        color: var(--primary);
+        border: 1px solid #e2e8f0;
+    }
+
+        .btn-view:hover {
+            background: #e2e8f0;
+            color: var(--primary-dark);
+        }
+
+    .btn-approve {
+        background: var(--success);
+        color: white;
+        border: none;
+    }
+
+        .btn-approve:hover {
+            background: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.4);
+        }
+
+    /* Modal Styling */
+    .modal-content {
+        border-radius: 16px;
+        border: none;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+
+    .modal-header {
+        border-bottom: 1px solid #f1f5f9;
+        padding: 1.5rem;
+    }
+
+    .modal-title {
+        font-weight: 700;
+        color: var(--primary-dark);
+    }
+
+    /* Highlight Row Logic */
+    .highlight-row {
+        background-color: #fff1f2 !important;
+    }
+
+        .highlight-row td {
+            color: #991b1b !important;
+        }
+
+    .stock-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-weight: 700;
+        font-size: 0.75rem;
+    }
+
+    .stock-danger {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    /* SCREEN LOCK / PROCESSING OVERLAY */
+    #screen-lock {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(4px); /* Professional Blur */
+        z-index: 9999;
+        cursor: wait;
+    }
+
+    .processing-box {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 2rem;
+        border-radius: 16px;
+        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+</style>
+
+<div id="screen-lock">
+    <div class="processing-box">
+        <img src="~/images/wait.gif" style="width: 80px; margin-bottom: 1rem;" />
+        <p style="margin:0; font-weight: 700; color: var(--primary-dark);">Processing Request</p>
+        <small class="text-muted">Please do not refresh or close this window.</small>
+    </div>
+</div>
+
+<div class="container-fluid py-4">
+    <header class="app-header">
+        <h3><i class="fa fa-shield-alt mr-2"></i> BOM Store Approval</h3>
+        <div id="live-indicator" class="badge badge-pill badge-light text-primary px-3 py-2">
+            <i class="fa fa-sync fa-spin mr-1"></i> Live Audit Feed
+        </div>
+    </header>
+
+    <div class="content-card">
+        <div class="table-responsive">
+            <table class="table table-hover" id="voucher-table">
+                <thead>
+                    <tr>
+                        <th>Voucher Reference</th>
+                        <th>Issuance Timestamp</th>
+                        <th>Originator</th>
+                        <th>Verifier</th>
+                        <th class="text-right">Operations</th>
+                    </tr>
+                </thead>
+                <tbody id="voucher-table-body">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="viewLinesModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Line Item Verification</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="table-responsive" style="max-height: 60vh;">
+                    <table class="table table-sm" id="lines-table">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Subcategory</th>
+                                <th>Final Product</th>
+                                <th>Part #</th>
+                                <th>Item Description</th>
+                                <th class="text-center">Req Qty</th>
+                                <th class="text-center">Stock</th>
+                                <th>UOM</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lines-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-view btn-action" onclick="printTable()"><i class="fa fa-print"></i> Print</button>
+                <button type="button" class="btn btn-view btn-action" onclick="exportToExcel()"><i class="fa fa-file-excel"></i> Excel</button>
+                <button type="button" class="btn btn-secondary btn-action" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+
+<script>
+    $(document).ready(function () {
+        // GLOBAL AJAX HANDLERS FOR SCREEN LOCK
+        $(document).ajaxStart(function() { $("#screen-lock").show(); });
+        $(document).ajaxStop(function() { $("#screen-lock").hide(); });
+
+        loadVouchers();
+        // setInterval(loadVouchers, 30000); // 30s auto-refresh
+    });
+
+    function loadVouchers() {
+        $.ajax({
+            type: 'GET',
+            url: '@Url.Action("GetVouchers", "BOM")',
+            success: function (data) {
+                var hasUnapproved = false;
+                $('#voucher-table-body').empty();
+
+                $.each(data, function (i, item) {
+                    var approveBtn = '';
+                    if (item.Approvalstatus === 0) {
+                        hasUnapproved = true;
+                        approveBtn = `<button class="btn-action btn-approve" onclick="approveVoucher(${item.BOMVoucherID})">
+                                        <i class="fa fa-check-circle"></i> Approve
+                                      </button>`;
+                    }
+
+                    $('#voucher-table-body').append(`
+                        <tr>
+                            <td class="font-weight-bold">#${item.VoucherNumber}</td>
+                            <td><span class="text-muted"><i class="far fa-calendar-alt mr-1"></i>${formatDate(item.VoucherDate)}</span></td>
+                            <td>${item.CreatedBy}</td>
+                            <td>${item.ApprovedBY ? `<span class="badge badge-light p-2">${item.ApprovedBY}</span>` : '--'}</td>
+                            <td class="text-right">
+                                <button class="btn-action btn-view" onclick="loadLines(${item.BOMVoucherID})">
+                                    <i class="fa fa-eye"></i> View
+                                </button>
+                                ${approveBtn}
+                            </td>
+                        </tr>
+                    `);
+                });
+
+                if (hasUnapproved) {
+                    try { new Audio('/Sound/Save.mp3').play(); } catch(e){}
+                }
+            }
+        });
+    }
+
+    function loadLines(voucherId) {
+        $.ajax({
+            type: 'GET',
+            url: '@Url.Action("GetLines", "BOM")',
+            data: { voucherId: voucherId },
+            success: function (data) {
+                $('#lines-table-body').empty();
+                $.each(data, function (i, item) {
+                    var isShort = item.QuantityRequired > item.AvailableStock;
+                    var rowClass = isShort ? 'highlight-row' : '';
+                    var stockClass = isShort ? 'stock-danger' : '';
+
+                    $('#lines-table-body').append(`
+                        <tr class="${rowClass}">
+                            <td>${item.CategoryName}</td>
+                            <td>${item.SubcategoryName}</td>
+                            <td>${item.FinalItemName}</td>
+                            <td class="font-weight-bold">${item.RawItemcode}</td>
+                            <td>${item.RawItemName}</td>
+                            <td class="text-center font-weight-bold">${item.QuantityRequired}</td>
+                            <td class="text-center"><span class="stock-badge ${stockClass}">${item.AvailableStock}</span></td>
+                            <td><small class="text-muted">${item.UOM}</small></td>
+                        </tr>
+                    `);
+                });
+                $('#viewLinesModal').modal('show');
+            }
+        });
+    }
+
+    function approveVoucher(voucherId) {
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("ApproveVouchernew", "BOM")',
+            data: { voucherId: voucherId },
+            success: function (data) {
+                if (data.success) {
+                    toastr.success(data.message || "Approval Finalized Successfully");
+                    loadVouchers();
+                } else {
+                    handleError(data);
+                }
+            }
+        });
+    }
+
+    function handleError(data) {
+        const msg = data.message || "Request Denied";
+        const details = data.details || [];
+        let html = `<b>${msg}</b>`;
+
+        if(details.length > 0) {
+            html += `<ul style="font-size:11px; margin-top:8px; padding-left:15px; text-align:left;">`;
+            details.forEach(d => { html += `<li>${d}</li>`; });
+            html += `</ul>`;
+        }
+
+        toastr.error(html, "Process Error", { timeOut: 0, closeButton: true, allowHtml: true });
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '';
+        var timestamp = parseInt(dateStr.replace(/\/Date\((\d+)\)\//, '$1'));
+        var d = new Date(timestamp);
+        return d.toLocaleDateString('en-GB') + ' ' + d.toLocaleTimeString('en-GB', {hour: '2-digit', minute:'2-digit'});
+    }
+
+    function printTable() {
+        var content = document.getElementById('lines-table').outerHTML;
+        var win = window.open('', '', 'height=700,width=900');
+        win.document.write('<html><head><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"></head><body class="p-4">');
+        win.document.write('<h2 class="mb-4">BOM Issue Detail</h2>' + content);
+        win.document.write('</body></html>');
+        win.document.close();
+        setTimeout(function(){ win.print(); win.close(); }, 500);
+    }
+
+    function exportToExcel() {
+        var wb = XLSX.utils.table_to_book(document.getElementById("lines-table"));
+        XLSX.writeFile(wb, 'AuditLineItems.xlsx');
+    }
+</script>

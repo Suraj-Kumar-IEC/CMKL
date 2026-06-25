@@ -1,0 +1,300 @@
+﻿@model IEnumerable<CMKL.Models.BOMItem>
+
+@if (Model is not null)
+{
+
+    <table id="items" class="table table-bordered table-sm table-striped col-md-6">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Sub category</th>
+                <th>Item Code</th>
+                <th>Item Name</th>
+                <th>Quantity</th>
+                <th>UOM</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var group in Model.GroupBy(x => x.subCategory))
+            {
+                <tr>
+                    <th colspan="6" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">
+                        <h4 class="card-title text-center">@group.Key Items</h4>
+                    </th>
+                </tr>
+                foreach (var item in group)
+                {
+        <tr>
+            <td>@item.Category</td>
+            <td>@item.subCategory</td>
+            <td>@item.ItemCode</td>
+            <td>@item.RawItemName</td>
+            <td>@item.Quantity.ToString("G0")</td>
+            <td>@item.UOM</td>
+        </tr>
+                }
+            }
+        </tbody>
+    </table>
+
+    //Tables
+
+@*
+    <h4 class="card-title text-center" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Canopy Items</h4>
+    <table id="Canopy" class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Name</th>
+                <th>Quantity</th>
+                <th>UOM</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Where(x => x.Category == "Canopy"))
+            {
+                <tr>
+                    <td>@item.Category</td>
+                    <td>@item.RawItemName</td>
+                    <td>@item.Quantity.ToString("G0")</td>
+                    <td>@item.UOM</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h4 class="card-title text-center" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Base Frame Items</h4>
+    <table id="Canopy" class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Name</th>
+                <th>Quantity</th>
+                <th>UOM</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Where(x => x.Category == "Base Frame"))
+            {
+                <tr>
+                    <td>@item.Category</td>
+                    <td>@item.RawItemName</td>
+                    <td>@item.Quantity.ToString("G0")</td>
+                    <td>@item.UOM</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h4 class="card-title text-center" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Fuel Tank Items</h4>
+    <table id="Canopy" class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Name</th>
+                <th>Quantity</th>
+                <th>UOM</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Where(x => x.Category == "Fuel Tank"))
+            {
+                <tr>
+                    <td>@item.Category</td>
+                    <td>@item.RawItemName</td>
+                    <td>@item.Quantity.ToString("G0")</td>
+                    <td>@item.UOM</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h4 class="card-title text-center" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Exhaust System Items</h4>
+    <table id="Canopy" class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Name</th>
+                <th>Quantity</th>
+                <th>UOM</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Where(x => x.Category == "Exhaust System"))
+            {
+                <tr>
+                    <td>@item.Category</td>
+                    <td>@item.RawItemName</td>
+                    <td>@item.Quantity.ToString("G0")</td>
+                    <td>@item.UOM</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h4 class="card-title text-center" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Acoustic Treatment Items</h4>
+    <table id="Canopy" class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Name</th>
+                <th>Quantity</th>
+                <th>UOM</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Where(x => x.Category == "Acoustic Treatment"))
+            {
+                <tr>
+                    <td>@item.Category</td>
+                    <td>@item.RawItemName</td>
+                    <td>@item.Quantity.ToString("G0")</td>
+                    <td>@item.UOM</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h4 class="card-title text-center" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Assembly Items</h4>
+    <table id="Canopy" class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Name</th>
+                <th>Quantity</th>
+                <th>UOM</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Where(x => x.Category == "Assembly"))
+            {
+                <tr>
+                    <td>@item.Category</td>
+                    <td>@item.RawItemName</td>
+                    <td>@item.Quantity.ToString("G0")</td>
+                    <td>@item.UOM</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h4 class="card-title text-center" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">DG Assembly Items</h4>
+    <table id="Canopy" class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Name</th>
+                <th>Quantity</th>
+                <th>UOM</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Where(x => x.Category == "DG Assy"))
+            {
+                <tr>
+                    <td>@item.Category</td>
+                    <td>@item.RawItemName</td>
+                    <td>@item.Quantity.ToString("G0")</td>
+                    <td>@item.UOM</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+
+
+    <h4 class="card-title text-center" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">With Manual Panel Items</h4>
+    <table id="Canopy" class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Name</th>
+                <th>Quantity</th>
+                <th>UOM</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Where(x => x.Category == "With Manual Panel"))
+            {
+                <tr>
+                    <td>@item.Category</td>
+                    <td>@item.RawItemName</td>
+                    <td>@item.Quantity.ToString("G0")</td>
+                    <td>@item.UOM</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    // code to execute if the condition is true
+
+
+    <h4 class="card-title text-center" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Without Manual Panel Items</h4>
+    <table id="Canopy" class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Name</th>
+                <th>Quantity</th>
+                <th>UOM</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Where(x => x.Category == "Without Manual Panel"))
+            {
+                <tr>
+                    <td>@item.Category</td>
+                    <td>@item.RawItemName</td>
+                    <td>@item.Quantity.ToString("G0")</td>
+                    <td>@item.UOM</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <h4 class="card-title text-center" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">AMF Panel Items</h4>
+    <table id="Canopy" class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Name</th>
+                <th>Quantity</th>
+                <th>UOM</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Where(x => x.Category == "AMF Panel"))
+            {
+                <tr>
+                    <td>@item.Category</td>
+                    <td>@item.RawItemName</td>
+                    <td>@item.Quantity.ToString("G0")</td>
+                    <td>@item.UOM</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <h4 class="card-title text-center" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Final Packing Items</h4>
+    <table id="Canopy" class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Name</th>
+                <th>Quantity</th>
+                <th>UOM</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Where(x => x.Category == "Final Packing"))
+            {
+                <tr>
+                    <td>@item.Category</td>
+                    <td>@item.RawItemName</td>
+                    <td>@item.Quantity.ToString("G0")</td>
+                    <td>@item.UOM</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    // code to execute if the condition is true
+    *@
+
+}

@@ -1,0 +1,423 @@
+﻿
+@{
+    ViewBag.Title = "ItemmasterFG";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if the current context is inside a Bootstrap modal
+            const isInModal = !!(document.querySelector('.modal.show'));
+
+            if (isInModal) {
+                // If inside a modal, wait for a short delay
+                setTimeout(() => {
+                    handleInvalidUser();
+                }, 500); // Adjust the delay as needed
+            } else {
+                // If not in a modal, proceed immediately
+                handleInvalidUser();
+            }
+
+            function handleInvalidUser() {
+                toastr.error("Invalid User");
+
+                setTimeout(function () {
+                    window.location.href = "@Url.Action("Index", "Login")";
+                }, 2000); // Redirect after 2 seconds
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+<div class="container">
+    <div class="text-center" style="margin-bottom: 40px;">
+        <h3 class="card-title text-center" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Item Master FG Products</h3>
+    </div>
+    <h3 class="card-title text-center" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Create FG Item Combination</h3>
+    <form>
+        <div class="row">
+            <div class="form-group col-md-3">
+                <label class="slds-form-element__label" for="final Item" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Final Item</label>
+                <select id="finalItem" class="form-control form-control-sm">
+                    <!-- options will be populated via AJAX -->
+                </select>
+            </div>
+            <div class="form-group col-md-3">
+                <label class="slds-form-element__label" for="Canopy" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Select Canopy</label>
+                <select id="canopy" class="form-control form-control-sm">
+                    <!-- options will be populated via AJAX -->
+                </select>
+            </div>
+            <div class="form-group col-md-3">
+                <label class="slds-form-element__label" for="Fuel Tank" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Select Fuel Tank</label>
+                <select id="fueltank" class="form-control form-control-sm">
+                    <!-- options will be populated via AJAX -->
+                </select>
+            </div>
+            <div class="form-group col-md-3">
+                <label class="slds-form-element__label" for="Exhaust" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Select Exhaust System</label>
+                <select id="exhaustsystem" class="form-control form-control-sm">
+                    <!-- options will be populated via AJAX -->
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group col-md-3">
+                <label class="slds-form-element__label" for="Acoustic Treatment" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Select Acoustic Treatment</label>
+                <select id="acoustictreatment" class="form-control form-control-sm">
+                    <!-- options will be populated via AJAX -->
+                </select>
+            </div>
+            <div class="form-group col-md-3">
+                <label class="slds-form-element__label" for="Final Packing" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Select Final Packing</label>
+                <select id="finalpacking" class="form-control form-control-sm">
+                    <!-- options will be populated via AJAX -->
+                </select>
+            </div>
+            <div class="form-group col-md-3">
+                <label class="slds-form-element__label" for="Assembly" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Select Assembly</label>
+                <select id="assembly" class="form-control form-control-sm">
+                    <!-- options will be populated via AJAX -->
+                </select>
+            </div>
+            <div class="form-group col-md-3">
+                <label class="slds-form-element__label" for="Base Frame" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Select Base Frame</label>
+                <select id="baseframe" class="form-control form-control-sm">
+                    <!-- options will be populated via AJAX -->
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group col-md-3">
+                <label class="slds-form-element__label" for="DG Assy" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Select DG Type</label>
+                <select id="dgassy" class="form-control form-control-sm">
+                    <!-- options will be populated via AJAX -->
+                </select>
+            </div>
+            <div class="form-group col-md-3">
+                <label class="slds-form-element__label" for="Panel" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Select Panel</label>
+                <select id="panel" class="form-control form-control-sm">
+                    <!-- options will be populated via AJAX -->
+                </select>
+            </div>
+            <div class="form-group col-md-3">
+                <label class="slds-form-element__label" for="alternator" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Select Alternator</label>
+                <select id="alternator" class="form-control form-control-sm">
+                    <!-- options will be populated via AJAX -->
+                </select>
+            </div>
+            <div class="form-group col-md-3">
+                <label class="slds-form-element__label" for="electrical" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Select Electrical</label>
+                <select id="electrical" class="form-control form-control-sm">
+                    <!-- options will be populated via AJAX -->
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group col-md-9">
+                <label class="slds-form-element__label" for="Final Product" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Final Product Name</label>
+                <input type="text" id="FinalProduct" class="form-control form-control-sm" disabled />
+            </div>
+            <div class="form-group col-md-3">
+                <label class="slds-form-element__label" for="Final Product" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Final Product Code</label>
+                <input type="text" id="FinalProductCode" class="form-control form-control-sm" disabled />
+            </div>
+        </div>
+        <div class="row">
+            &nbsp;
+        </div>
+        <div class="form-group row col-md-6">
+            <div class="col-md-6 text-center">
+                <button type="submit" id="CreateFGItem" class="btn btn-primary" disabled style=" background-color: #00698f; color: #ffffff; border-color: #0070d2;">Save FG Item</button>
+                <div id="download-button-container"></div>
+
+            </div>
+        </div>
+
+    </form>
+    <!-- The confirmation modal -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <p>Are You Sure to Save This FG Product ?</p>
+                    <p><b>Product Name:</b><span id="FGname"></span></p>
+                    <p><b>Product Code:</b><span id="FGCode"></span></p>
+                    <p><b>UOM:</b><span id="FGUOM"></span></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id="closemodal" style=" background-color: #00698f; color: #ffffff; border-color: #0070d2;">Close</button>
+                    <button type="button" id="continueSave" class="btn btn-primary" data-dismiss="modal" style=" background-color: #00698f; color: #ffffff; border-color: #0070d2;">Save FG Product</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script>
+    $(document).ready(function () {
+
+        $.ajax({
+            type: 'GET',
+            url: '@Url.Action("BOMMasterDropdown", "BOM")',
+            dataType: 'json',
+            success: function(data) {
+                $.each(data.baseframe, function (index, item) {
+                    //$("#baseframe").empty();
+                    $("#baseframe").append("<option value='" + item.value + "'>" + item.text + "</option>");
+                });
+
+                $.each(data.DG, function (index, item) {
+                   // $("#dgassy").empty();
+                    $("#dgassy").append("<option value='" + item.value + "'>" + item.text + "</option>");
+                });
+
+                $.each(data.panel, function (index, item) {
+                   // $("#panel").empty();
+                    $("#panel").append("<option value='" + item.value + "'>" + item.text + "</option>");
+                });
+
+                $.each(data.Alternator, function (index, item) {
+                  //  $("#alternator").empty();
+                    $("#alternator").append("<option value='" + item.value + "'>" + item.text + "</option>");
+                });
+                $.each(data.canopy, function (index, item) {
+                    //  $("#alternator").empty();
+                    $("#canopy").append("<option value='" + item.value + "'>" + item.text + "</option>");
+                });
+                $.each(data.fueltank, function (index, item) {
+                    //  $("#alternator").empty();
+                    $("#fueltank").append("<option value='" + item.value + "'>" + item.text + "</option>");
+                });
+                $.each(data.exhaust, function (index, item) {
+                    //  $("#alternator").empty();
+                    $("#exhaustsystem").append("<option value='" + item.value + "'>" + item.text + "</option>");
+                });
+                $.each(data.acoustic, function (index, item) {
+                    //  $("#alternator").empty();
+                    $("#acoustictreatment").append("<option value='" + item.value + "'>" + item.text + "</option>");
+                });
+                $.each(data.assembly, function (index, item) {
+                    //  $("#alternator").empty();
+                    $("#assembly").append("<option value='" + item.value + "'>" + item.text + "</option>");
+                });
+                $.each(data.final, function (index, item) {
+                    //  $("#alternator").empty();
+                    $("#finalpacking").append("<option value='" + item.value + "'>" + item.text + "</option>");
+                });
+                $.each(data.electrical, function (index, item) {
+                    //  $("#alternator").empty();
+                    $("#electrical").append("<option value='" + item.value + "'>" + item.text + "</option>");
+                });
+
+            }
+        });
+
+    });
+</script>
+
+<script type="text/javascript">
+    $(function () {
+        var previousValue = "";
+        $("#finalItem").click(function () {
+            var currentValue = $(this).val();
+            if (currentValue !== previousValue) {
+                previousValue = currentValue;
+                $.ajax({
+                    url: '@Url.Action("GetFinalItems", "BOM")',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (data) {
+                        $('#finalItem').empty(); // clear existing options
+                        var options = '';
+                        $.each(data, function (index, item) {
+                            options += '<option value="' + item.Value + '">' + item.Text + '</option>';
+                        });
+                        $('#finalItem').append(options); // append new options
+                        $('#finalItem').val(previousValue); // select the previously selected value
+                    }
+                });
+            }
+        });
+    });
+</script>
+<script>
+    $(document).ready(function () {
+        $('#CreateFGItem').click(function (event) {
+            // Prevent the default form submission
+            event.preventDefault();
+
+            if ($('#FinalProductCode').val() === "") {
+                toastr.error('Please Enter Product Code');
+                return false;
+            }
+            // Get the item name and code
+            var itemName = $('#FinalProduct').val();
+            var itemCode = $('#FinalProductCode').val();
+            debugger;
+
+
+            // ... rest of your code to build and show the modal ...
+
+            $('#confirmModal').modal('show');
+            $('#confirmModal').on('shown.bs.modal', function (e) {
+                $('#FGname').text(itemName);
+                $('#FGCode').text(itemCode);
+                $('#FGUOM').text('Nos');
+            });
+        });
+        $('#closemodal').click(function () {
+            $('#confirmModal').modal('hide');
+        });
+
+        // Handle the "Save BOM" button click
+        $('#continueSave').click(function () {
+            debugger;
+            var canopy = $("#canopy").val();
+            var fueltank = $("#fueltank").val();
+            var exhaustsystem = $("#exhaustsystem").val();
+            var acoustictreatment = $("#acoustictreatment").val();
+            var finalpacking = $("#finalpacking").val();
+            var assembly = $("#assembly").val();
+            var electrical = $("#electrical").val();
+            var finalItemv = $("#finalItem").val();
+            var baseframev = $("#baseframe").val();
+            var dgassyv = $("#dgassy").val();
+            var panelv = $("#panel").val();
+            var alternatorv = $("#alternator").val();
+            var masteritemcode = $('#FinalProductCode').val();
+            var masteritemname = $('#FinalProduct').val();
+            var masteruom = '1';
+            // Perform your save logic here, e.g., submit a form
+            var dataToSend = {
+                finalItem: finalItemv,
+                canopy: canopy,
+                fueltank: fueltank,
+                exhaustsystem: exhaustsystem,
+                acoustictreatment: acoustictreatment,
+                finalpacking: finalpacking,
+                assembly: assembly,
+                baseframe: baseframev,
+                dgassy: dgassyv,
+                panel: panelv,
+                alternator: alternatorv,
+                electrical: electrical,
+                masteritemcode: masteritemcode,
+                masteritemname: masteritemname,
+                masteruom: masteruom,
+            };
+            $.ajax({
+                type: 'post',
+                url: '/inventory/saveFGitem',
+                data: dataToSend,
+                success: function (data) {
+                    if (data.success) {
+                        toastr.success(data.msg);
+                        $('#confirmModal').modal('hide');
+                        // ... (other actions on success) ...
+                    } else {
+                        // Handle errors returned from the server
+                        toastr.error(data.msg);
+                        // You might want to display the error message in the modal or on the page
+                    }
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    // Handle AJAX errors (e.g., network issues, server errors)
+                    toastr.error("An error occurred while saving.");
+                    console.error("AJAX Error:", textStatus, errorThrown);
+                }
+            });
+        });
+    });
+</script>
+<script>
+    $(document).ready(function () {
+    // Function to update the final product name and check for existing combinations
+    function updateProductName() {
+        var productName = "";
+
+        // Get selected values from all dropdowns (Values of Selection)
+
+        var canopy = $("#canopy").val();
+        var fueltank = $("#fueltank").val();
+        var exhaustsystem = $("#exhaustsystem").val();
+        var acoustictreatment = $("#acoustictreatment").val();
+        var finalpacking = $("#finalpacking").val();
+        var assembly = $("#assembly").val();
+        var electrical = $("#electrical").val();
+        var finalItemv = $("#finalItem").val();
+        var baseframev = $("#baseframe").val();
+        var dgassyv = $("#dgassy").val();
+        var panelv = $("#panel").val();
+        var alternatorv = $("#alternator").val();
+
+        // Get selected text for product name (Final Product Name Text)
+        var finalItem = $("#finalItem option:selected").text();
+        var baseframe = $("#baseframe option:selected").text();
+        var dgassy = $("#dgassy option:selected").text();
+        var panel = $("#panel option:selected").text();
+        var alternator = $("#alternator option:selected").text();
+
+        // Build the product name string for display
+        var selectedValues = [finalItem + ' With', baseframe + ' - Base Frame', alternator + ' - Alternator', dgassy + ' - Type', panel + ' - Panel'];
+        productName = selectedValues.filter(Boolean).join(" | ");
+
+        // Update the "Final Product" input field
+        $("#FinalProduct").val(productName);
+
+        // Prepare data to send to the controller
+        var dataToSend = {
+            finalItem: finalItemv,
+            canopy: canopy,
+            fueltank: fueltank,
+            exhaustsystem: exhaustsystem,
+            acoustictreatment: acoustictreatment,
+            finalpacking: finalpacking,
+            assembly: assembly,
+            baseframe: baseframev,
+            dgassy: dgassyv,
+            panel: panelv,
+            alternator: alternatorv,
+            electrical: electrical
+        };
+
+        // AJAX call to the controller
+        $.ajax({
+            type: "GET",
+            url: "@Url.Action("CheckProductCombination", "BOM")", // Replace "BOM" with your actual controller name
+            data: dataToSend,
+            success: function (response) {
+                if (response.success) {
+                    toastr.success(response.msg);
+                    debugger;
+                    $('#CreateFGItem').prop('disabled', true);
+                    $('#FinalProductCode').prop('disabled', true);
+                    $('#FinalProductCode').val(response.itemcode);
+                    // Combination does NOT exist, allow saving
+                } else {
+                    toastr.error(response.msg);
+                    $('#CreateFGItem').prop('disabled', false);
+                    $('#FinalProductCode').prop('disabled', false);
+                    $('#FinalProductCode').val('');
+                    // Combination exists, prevent saving
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("Error checking product combination:", error);
+                // ... handle the error (e.g., display an error message)
+            }
+        });
+    }
+        // Attach change event handlers to all select elements
+    $("select.form-control-sm").change(function () {
+        updateProductName();
+    });
+});
+</script>
+

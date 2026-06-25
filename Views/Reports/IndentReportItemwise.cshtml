@@ -1,0 +1,422 @@
+﻿@{
+    ViewBag.Title = "Indent Lifecycle Intelligence";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const isInModal = !!(document.querySelector('.modal.show'));
+            if (isInModal) {
+                setTimeout(() => { handleInvalidUser(); }, 500);
+            } else {
+                handleInvalidUser();
+            }
+            function handleInvalidUser() {
+                toastr.error("Invalid User Session");
+                setTimeout(function () { window.location.href = "@Url.Action("Index", "Login")"; }, 2000);
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<style>
+    .indent-report-container {
+        background-color: #f8fafc;
+        font-family: 'Inter', sans-serif;
+        color: #334155;
+        font-size: 0.8rem;
+    }
+
+    .report-header {
+        background: white;
+        padding: 15px 30px;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid #e2e8f0;
+    }
+
+    /* KPI Stat Cards */
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 15px 20px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.2s;
+        height: 100%;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+    .stat-label {
+        font-size: 0.62rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #64748b;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+
+    .stat-value {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: #00698f;
+        line-height: 1.2;
+    }
+
+    /* Table Styling */
+    .table-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+    }
+
+    .table-responsive-custom {
+        max-height: calc(100vh - 350px);
+        overflow-y: auto;
+    }
+
+    .table-custom thead th {
+        position: sticky;
+        top: 0;
+        background: #f1f5f9;
+        z-index: 10;
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #00698f;
+        border-bottom: 2px solid #e2e8f0;
+        padding: 12px 10px;
+        white-space: nowrap;
+    }
+
+    .table-custom tbody td {
+        padding: 10px;
+        font-size: 0.75rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+        white-space: nowrap;
+    }
+
+    .doc-badge {
+        display: block;
+        font-weight: 800;
+        font-size: 0.8rem;
+        margin-bottom: 2px;
+    }
+
+    .date-text {
+        display: block;
+        font-size: 0.65rem;
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    .perf-badge {
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-weight: 800;
+        font-size: 0.6rem;
+        text-transform: uppercase;
+        display: inline-block;
+        border-width: 1px;
+        border-style: solid;
+    }
+
+    .perf-ontime {
+        background-color: #dcfce7;
+        color: #166534;
+        border-color: #bbf7d0;
+    }
+
+    .perf-delayed {
+        background-color: #fff7ed;
+        color: #9a3412;
+        border-color: #ffedd5;
+    }
+
+    .perf-missing {
+        background-color: #f1f5f9;
+        color: #94a3b8;
+        border-color: #e2e8f0;
+    }
+
+    .filter-select {
+        border-radius: 20px;
+        border: 1.5px solid #e2e8f0;
+        padding: 5px 15px;
+        font-size: 0.8rem;
+        outline: none;
+        background-color: #f8fafc;
+        font-weight: 700;
+        color: #00698f;
+    }
+
+    .animate-up {
+        animation: fadeInUpInd 0.5s ease forwards;
+        opacity: 0;
+    }
+
+    @@keyframes fadeInUpInd {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="indent-report-container container-fluid py-4 px-lg-5">
+    <div class="report-header animate-up">
+        <div>
+            <h4 class="fw-bold m-0 text-dark">Indent & PO Performance Dashboard</h4>
+            <p class="text-muted small m-0">Consolidated trace of Indents - Purchase Orders - Material Receipts (FY @Session["Fin_Year"]).</p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap align-items-center">
+            <select id="lifecycleFilter" class="filter-select shadow-sm me-2">
+                <option value="ALL">Show All Stages</option>
+                <option value="PO_PENDING">PO Not Generated</option>
+                <option value="PO_CREATED">PO Generated</option>
+                <option value="MRN_PENDING">Item Not Received</option>
+                <option value="MRN_RECEIVED">Item Received</option>
+                <option value="RECV_LATE">Received Late</option>
+                <option value="RECV_ONTIME">Received On-Time</option>
+            </select>
+            <input type="text" id="txtSearch" class="form-control form-control-sm rounded-pill px-3 shadow-sm" style="width:220px" placeholder="Quick Search..." />
+            <button class="btn btn-sm btn-success fw-bold px-4 rounded-pill shadow-sm" onclick="exportToExcel()">
+                <i class="fas fa-file-excel me-2"></i> Export
+            </button>
+            <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 shadow-sm" onclick="LoadReportData()">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4 animate-up" style="animation-delay: 0.1s;">
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #00698f;">
+                <span class="stat-label">Total Requisitions</span>
+                <span class="stat-value" id="tileTotalLines">0 Records</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #10b981;">
+                <span class="stat-label">Estimated Exposure</span>
+                <span class="stat-value text-success" id="tileTotalValue">₹ 0.00</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #6366f1;">
+                <span class="stat-label">POs Generated</span>
+                <span class="stat-value" id="tilePOCount" style="color:#6366f1;">0 Orders</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #dc3545;">
+                <span class="stat-label">Material Receipts (MRN)</span>
+                <span class="stat-value text-danger" id="tileMRNCount">0 Deliveries</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-card animate-up shadow-lg" style="animation-delay: 0.2s;">
+        <div class="table-responsive-custom">
+            <table id="IndentTable" class="table table-hover mb-0 table-custom">
+                <thead>
+                    <tr>
+                        <th>Indent No & Date</th>
+                        <th>PO No & Date</th>
+                        <th>Supplier Name</th>
+                        <th class="text-center">Promised Del.</th>
+                        <th>MRN Ref & Date</th>
+                        <th class="text-center">Variance Analysis</th>
+                        <th style="width: 220px;">Item Description</th>
+                        <th class="text-center">Actual Req</th>
+                        <th class="text-center">UOM</th>
+                        <th class="text-center">Stock</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody id="IndentLines">
+                    <tr><td colspan="11" class="text-center py-5 text-muted">Retrieving procurement history...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<img id="wait-sign" src="~/images/wait.gif" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10001; width:80px;" />
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+    let fullIndentData = [];
+
+    $(document).ready(function () {
+        LoadReportData();
+        $("#txtSearch").on("keyup", function () {
+            var value = $(this).val().toLowerCase();
+            $("#IndentLines tr").filter(function () {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+        $("#lifecycleFilter").on("change", function () {
+            renderTableData($(this).val());
+        });
+    });
+
+    function LoadReportData() {
+        $('#wait-sign').show();
+        $.ajax({
+            type: 'GET',
+            url: '/Reports/IndentItemwiseData',
+            success: function (response) {
+                $('#wait-sign').hide();
+                if (!response.success) {
+                    toastr.error(response.message);
+                    return;
+                }
+                const summary = response.Summary;
+                $('#tileTotalLines').text(summary.TotalLines + " Records");
+                $('#tileTotalValue').text("₹ " + summary.TotalValue.toLocaleString('en-IN', { maximumFractionDigits: 0 }));
+                $('#tilePOCount').text(summary.POCreated + " Orders");
+                $('#tileMRNCount').text(summary.ItemsReceived + " Deliveries");
+
+                fullIndentData = response.IndentData;
+                renderTableData($("#lifecycleFilter").val());
+                toastr.success('Procurement matrix synchronized.');
+            },
+            error: function () {
+                $('#wait-sign').hide();
+                toastr.error("Server failure.");
+            }
+        });
+    }
+
+    function renderTableData(filterMode) {
+        var tableBody = $('#IndentLines').empty();
+        if (!fullIndentData || fullIndentData.length === 0) {
+            tableBody.append('<tr><td colspan="11" class="text-center py-5 text-muted">No records found.</td></tr>');
+            return;
+        }
+
+        let filteredData = fullIndentData.filter(item => {
+            if (filterMode === "ALL") return true;
+            if (filterMode === "PO_PENDING") return item.PONumber === "Not Generated";
+            if (filterMode === "PO_CREATED") return item.PONumber !== "Not Generated";
+            if (filterMode === "MRN_PENDING") return item.MRNNumber === "Not Received";
+            if (filterMode === "MRN_RECEIVED") return item.MRNNumber !== "Not Received";
+            if (filterMode === "RECV_LATE") return item.DelayStatus.includes("days later");
+            if (filterMode === "RECV_ONTIME") return item.DelayStatus === "In time received";
+            return true;
+        });
+
+        $.each(filteredData, function (index, item) {
+            const parseDate = (d) => d ? moment(parseInt(d.substr(6))).format('DD/MM/YYYY') : '---';
+
+            var indentDt = parseDate(item.IndentDate);
+            var poDt = item.PODate ? parseDate(item.PODate) : 'N/A';
+            var mrnDt = item.ActualReceipt ? parseDate(item.ActualReceipt) : 'N/A';
+            var promisedDt = item.PromisedDelivery ? parseDate(item.PromisedDelivery) : '---';
+
+            var supplierText = item.PONumber === "Not Generated" ? '---' : (item.SupplierName || 'N/A');
+
+            var varianceHtml = "";
+            if (item.DelayStatus === "In time received") {
+                varianceHtml = `<span class="perf-badge perf-ontime"><i class="fas fa-check-double me-1"></i>${item.DelayStatus}</span>`;
+            } else if (item.DelayStatus && item.DelayStatus.includes("days later")) {
+                varianceHtml = `<span class="perf-badge perf-delayed"><i class="fas fa-clock me-1"></i>${item.DelayStatus}</span>`;
+            } else {
+                varianceHtml = `<span class="perf-badge perf-missing">Awaiting Receipt</span>`;
+            }
+
+            var row = `<tr>
+                <td>
+                    <span class="doc-badge text-dark">${item.IndentNumber}</span>
+                    <span class="date-text"><i class="fas fa-calendar-day me-1"></i>${indentDt}</span>
+                </td>
+                <td>
+                    <span class="doc-badge text-primary">${item.PONumber === "Not Generated" ? '<small class="text-muted">PENDING</small>' : item.PONumber}</span>
+                    <span class="date-text"><i class="fas fa-calendar-alt me-1"></i>${poDt}</span>
+                </td>
+                <td><div class="fw-bold text-dark small" style="max-width:150px; overflow:hidden; text-overflow:ellipsis;">${supplierText}</div></td>
+                <td class="text-center small text-muted">${promisedDt}</td>
+                <td>
+                    <span class="doc-badge text-success">${item.MRNNumber === "Not Received" ? '<small class="text-muted">PENDING</small>' : item.MRNNumber}</span>
+                    <span class="date-text"><i class="fas fa-truck-loading me-1"></i>${mrnDt}</span>
+                </td>
+                <td class="text-center">${varianceHtml}</td>
+                <td style="max-width: 220px; overflow: hidden;">
+                    <div class="fw-bold text-dark text-truncate" title="${item.ItemName}">${item.ItemName}</div>
+                    <div class="small text-muted font-monospace">${item.ItemCode}</div>
+                </td>
+                <td class="text-center fw-bold text-primary">${item.ActualRequirement}</td>
+                <td class="text-center small uppercase">${item.UOM}</td>
+                <td class="text-center fw-bold">${item.AvailableStock || '0'}</td>
+                <td class="small italic text-muted text-truncate" style="max-width:120px;">${item.Remarks || '---'}</td>
+            </tr>`;
+            tableBody.append(row);
+        });
+    }
+
+    function exportToExcel() {
+        if (!fullIndentData || fullIndentData.length === 0) {
+            toastr.warning("No data to export.");
+            return;
+        }
+
+        const excelRows = fullIndentData.map(item => {
+            const parseDate = (d) => d ? moment(parseInt(d.substr(6))).format('DD/MM/YYYY') : '---';
+
+            return {
+                "Indent Number": item.IndentNumber,
+                "Indent Date": parseDate(item.IndentDate),
+                "PO Number": item.PONumber === "Not Generated" ? "PENDING" : item.PONumber,
+                "PO Date": item.PODate ? parseDate(item.PODate) : 'N/A',
+                "Supplier Name": item.PONumber === "Not Generated" ? "---" : (item.SupplierName || "N/A"),
+                "Promised Delivery": item.PromisedDelivery ? parseDate(item.PromisedDelivery) : '---',
+                "MRN Number": item.MRNNumber === "Not Received" ? "PENDING" : item.MRNNumber,
+                "MRN Date": item.ActualReceipt ? parseDate(item.ActualReceipt) : 'N/A',
+                "Status": item.DelayStatus || "Awaiting Receipt",
+                "Item Code": item.ItemCode,
+                "Item Description": item.ItemName,
+                "Qty Required": item.ActualRequirement,
+                "UOM": item.UOM,
+                "Current Stock": item.AvailableStock || 0,
+                "Remarks": item.Remarks || ""
+            };
+        });
+
+        const worksheet = XLSX.utils.json_to_sheet(excelRows);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Lifecycle Report");
+
+        // Setting column widths
+        worksheet['!cols'] = Object.keys(excelRows[0]).map(() => ({ wch: 20 }));
+
+        const fileName = 'Indent_Lifecycle_Audit_' + moment().format('DDMMYYYY_HHmm') + '.xlsx';
+        XLSX.writeFile(workbook, fileName);
+        toastr.info("Excel download started.");
+    }
+</script>

@@ -1,0 +1,556 @@
+﻿@model dynamic
+
+@{
+    ViewBag.Title = "Technical Stock Issuance";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<style>
+    :root {
+        --brand-blue: #00698f;
+        --brand-dark: #004d69;
+        --border-color: #e2e8f0;
+        --bg-light: #f8fafc;
+    }
+
+    body {
+        background-color: var(--bg-light);
+        font-family: 'Inter', sans-serif;
+        color: #334155;
+    }
+
+    .master-header {
+        background: white;
+        padding: 15px 30px;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid var(--border-color);
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 15px 20px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        height: 100%;
+        border-left: 5px solid var(--brand-blue);
+    }
+
+    .stat-label {
+        font-size: 0.62rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #64748b;
+    }
+
+    .stat-value {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--brand-blue);
+    }
+
+    .section-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        padding: 24px;
+        margin-bottom: 25px;
+    }
+
+    .form-label-pill {
+        font-weight: 700;
+        font-size: 0.65rem;
+        color: #ffffff !important;
+        text-transform: uppercase;
+        background-color: var(--brand-blue);
+        padding: 2px 10px;
+        border-radius: 4px;
+        display: inline-block;
+        margin-bottom: 5px;
+    }
+
+    .btn-brand {
+        background-color: var(--brand-blue);
+        color: white;
+        font-weight: 700;
+        border-radius: 8px;
+        padding: 10px 25px;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        border: none;
+    }
+
+    .btn-save-final {
+        background-color: #10b981;
+        color: white;
+        font-weight: 800;
+        border-radius: 30px;
+        padding: 12px 40px;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        border: none;
+    }
+
+    .table-custom thead th {
+        background: #f1f5f9;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        color: var(--brand-blue);
+    }
+
+    .del-btn {
+        color: #dc3545;
+        transition: 0.2s;
+        cursor: pointer;
+        border: none;
+        background: none;
+    }
+
+        .del-btn:hover {
+            color: #a71d2a;
+            transform: scale(1.1);
+        }
+
+    /* Style enhancements for the new radio system */
+    .challan-nature-card {
+        background-color: #fff;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 12px 16px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+        .challan-nature-card:hover {
+            border-color: var(--brand-blue);
+            background-color: #f8fafc;
+        }
+
+    .form-check-input:checked + .form-check-label {
+        color: var(--brand-blue);
+    }
+</style>
+
+<div class="container-fluid py-4 px-lg-5">
+
+    <div class="master-header">
+        <div>
+            <h3 class="fw-bold m-0 text-dark">Stock Issue Voucher</h3>
+            <div id="challanIndicator" style="display:none;" class="mt-1">
+                <span class="badge bg-danger p-2" onclick="$('#challanModal').modal('show')" style="cursor:pointer">
+                    <i class="fas fa-truck me-1"></i> Delivery Challan Mode: Edit Details
+                </span>
+            </div>
+        </div>
+        <div class="text-end">
+            <div class="stat-card py-2 shadow-sm">
+                <span class="stat-label">Total Items</span><br />
+                <span class="stat-value" id="tileItemCount">0</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="section-card shadow-sm">
+                <form id="issueForm">
+                    <div class="mb-3">
+                        <label class="form-label-pill">Target Department</label>
+                        <select id="department" class="form-select fw-bold shadow-sm">
+                            <option value="">-- Select Destination --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-check form-switch mb-3 p-3 bg-light rounded border">
+                        <input class="form-check-input ms-0 me-3" type="checkbox" id="chkChallan" style="width: 40px; height: 20px;">
+                        <label class="form-check-label fw-bold" for="chkChallan">Delivery Challan Mode</label>
+                    </div>
+
+                    <hr>
+
+                    <div class="mb-3">
+                        <label class="form-label-pill">Part Identity (Item Code)</label>
+                        <input type="text" id="item-code" class="form-control fw-bold" placeholder="Press Enter after scanning" autocomplete="off" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label-pill bg-secondary">Item Description</label>
+                        <input type="text" id="item-name" class="form-control bg-light" readonly />
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-4">
+                            <label class="form-label-pill bg-secondary">UOM</label>
+                            <input type="text" id="uom" class="form-control text-center bg-light" readonly />
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label-pill bg-secondary">Stock</label>
+                            <input type="text" id="stock" class="form-control text-center bg-light" readonly />
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label-pill bg-success">Issue Qty</label>
+                            <input type="number" id="quantity" class="form-control text-center fw-bold border-success" />
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label-pill bg-warning text-dark">Item Remarks</label>
+                        <input type="text" id="line-remarks" class="form-control" placeholder="Specific notes" value="NA" />
+                    </div>
+
+                    <button type="button" id="add-button" class="btn btn-brand w-100 py-3 shadow">
+                        <i class="fas fa-plus-circle me-2"></i> Add to Queue
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="section-card shadow-lg flex-column d-flex" style="min-height: 550px; padding: 0;">
+                <div class="p-3 border-bottom bg-white d-flex justify-content-between align-items-center" style="border-radius: 16px 16px 0 0;">
+                    <h6 class="m-0 fw-bold text-primary">Transaction Queue</h6>
+                    <span class="badge bg-light text-muted border px-3" id="tileVoucherType">Internal Issue</span>
+                </div>
+
+                <div class="table-responsive flex-grow-1">
+                    <table class="table table-hover table-custom mb-0" id="item-table">
+                        <thead>
+                            <tr>
+                                <th>Item Code</th>
+                                <th>Description</th>
+                                <th class="text-center">UOM</th>
+                                <th class="text-center">Qty</th>
+                                <th>Remarks</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="item-table-body">
+                            <tr><td colspan="6" class="text-center py-5 text-muted italic">No items scanned yet.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="p-4 bg-light border-top text-center" style="border-radius: 0 0 16px 16px;">
+                    <button type="button" id="save-bill-button" class="btn-save-final shadow" disabled>
+                        <i class="fas fa-check-double me-2"></i> POST STOCK ISSUE
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="challanModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg border-0">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header text-white" style="background: var(--brand-blue);">
+                <h5 class="modal-title fw-bold"><i class="fas fa-truck me-2"></i>Dispatch & Consignee Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+
+                <div class="mb-4">
+                    <label class="form-label-pill bg-dark mb-3">Challan Flow Characterization</label>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="challan-nature-card d-flex align-items-center">
+                                <div class="form-check mb-0">
+                                    <input class="form-check-input" type="radio" name="radChallanNature" id="nature-non-returnable" value="Non-Returnable" checked>
+                                    <label class="form-check-label fw-bold text-dark ms-2" for="nature-non-returnable">Non-Returnable</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="challan-nature-card d-flex align-items-center">
+                                <div class="form-check mb-0">
+                                    <input class="form-check-input" type="radio" name="radChallanNature" id="nature-returnable" value="Returnable">
+                                    <label class="form-check-label fw-bold text-dark ms-2" for="nature-returnable">Returnable</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="challan-nature-card d-flex align-items-center">
+                                <div class="form-check mb-0">
+                                    <input class="form-check-input" type="radio" name="radChallanNature" id="nature-jobwork" value="Job Work">
+                                    <label class="form-check-label fw-bold text-dark ms-2" for="nature-jobwork">Job Work Challan</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-2 mb-4">
+                    <div class="col-md-12">
+                        <div class="form-check form-switch p-3 border rounded bg-light">
+                            <input class="form-check-input ms-0 me-3" type="checkbox" id="is-bilty">
+                            <label class="form-check-label fw-bold text-dark" for="is-bilty">Generate Bilty (LR)</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label-pill">Consignee Name</label>
+                        <input type="text" id="cust-name" class="form-control" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="pro-label text-uppercase fw-bold text-dark small mb-1" style="font-size: 0.65rem; letter-spacing: 0.5px;">Transport Name</label>
+                        <input type="text" id="transport-name" class="form-control" placeholder="e.g. TCI Freight" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label-pill">Billing Address</label>
+                        <textarea id="billing-address" class="form-control" rows="2" placeholder="Registered office address"></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label-pill">Shipping Address</label>
+                        <textarea id="cust-address" class="form-control" rows="2" placeholder="Delivery site address"></textarea>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label-pill">Vehicle No</label>
+                        <input type="text" id="vehicle-no" class="form-control" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label-pill">Contact No</label>
+                        <input type="text" id="cust-contact" class="form-control" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label-pill">Total Value</label>
+                        <input type="number" id="bilty-value" class="form-control" placeholder="0.00" />
+                    </div>
+                </div>
+
+                <div id="bilty-fields" class="mt-4 p-3 border-start border-4 border-warning bg-light" style="display:none;">
+                    <h6 class="fw-bold text-warning mb-3"><i class="fas fa-receipt me-2"></i>Bilty / Lorry Receipt Details</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label-pill bg-warning text-dark">Bilty Number</label>
+                            <input type="text" id="bilty-no" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label-pill bg-warning text-dark">Bilty Date</label>
+                            <input type="date" id="bilty-date" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label-pill bg-warning text-dark">Description of Goods / Bill Details</label>
+                            <input type="text" id="bilty-desc" class="form-control" placeholder="e.g. Electrical Panels as per Inv 102" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 mt-3">
+                    <label class="form-label-pill bg-secondary">Global Remarks</label>
+                    <input type="text" id="head-remarks" class="form-control" />
+                </div>
+            </div>
+            <div class="modal-footer bg-light border-0">
+                <button type="button" class="btn btn-primary px-5 fw-bold" data-bs-dismiss="modal">Confirm Details</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+
+<script>
+    $(document).ready(function () {
+        loadDepartments();
+
+        // 1. Click styling wrapper shortcut for the radio card layouts
+        $('.challan-nature-card').click(function () {
+            $(this).find('input[type="radio"]').prop('checked', true);
+        });
+
+        // 2. Watch the "Generate Bilty (LR)" switch
+        $('#is-bilty').change(function () {
+            if ($(this).is(':checked')) {
+                $('#bilty-fields').slideDown(300, function () {
+                    $('#bilty-no').focus();
+                });
+                toastr.info("Bilty Details Enabled");
+            } else {
+                $('#bilty-fields').slideUp(300);
+                $('#bilty-no, #bilty-value, #bilty-desc').val('');
+            }
+        });
+
+        // 3. Challan Switch Initialization
+        $('#chkChallan').change(function () {
+            if ($(this).is(':checked')) {
+                $('#challanModal').modal('show');
+                $('#challanIndicator').fadeIn();
+                $('#tileVoucherType').text("External Challan").addClass('text-danger border-danger');
+            } else {
+                $('#challanIndicator').fadeOut();
+                $('#tileVoucherType').text("Internal Issue").removeClass('text-danger border-danger');
+            }
+        });
+
+        // 4. Scanning / AJAX Fetch Logic (Enter & Tab)
+        $('#item-code').on('keydown', function (e) {
+            if (e.which === 13 || e.which === 9) {
+                e.preventDefault();
+                let code = $(this).val().trim();
+                if (!code) return;
+
+                $.ajax({
+                    type: 'GET',
+                    url: '@Url.Action("GetIssueItemDetails", "Inventory")',
+                    data: { itemCode: code },
+                    success: function (data) {
+                        if (data.success) {
+                            $('#item-name').val(data.itemname);
+                            $('#uom').val(data.uomText);
+                            $('#stock').val(data.stock);
+                            $('#quantity').focus().select();
+                            toastr.success("Item Identified");
+                        } else {
+                            toastr.error(data.error || "Item Code Not Found");
+                            $('#item-code').val('').focus();
+                            $('#item-name, #uom, #stock, #quantity').val('');
+                        }
+                    }
+                });
+            }
+        });
+
+        // 5. Add to Table Grid Queue Logic
+        $('#add-button').click(function () {
+            let code = $('#item-code').val();
+            let name = $('#item-name').val();
+            let uom = $('#uom').val();
+            let qty = $('#quantity').val();
+            let stk = parseFloat($('#stock').val());
+            let remarks = $('#line-remarks').val() || "NA";
+
+            if (!code || !qty || parseFloat(qty) <= 0) {
+                toastr.warning("Missing Item Code or Quantity");
+                return;
+            }
+
+            if (parseFloat(qty) > stk) {
+                toastr.error("Over-issuance not allowed. Available: " + stk);
+                return;
+            }
+
+            let row = `
+                <tr>
+                    <td class="fw-bold text-primary">${code}</td>
+                    <td>${name}</td>
+                    <td class="text-center text-muted small">${uom}</td>
+                    <td class="text-center fw-bold text-success">${qty}</td>
+                    <td class="small italic text-muted">${remarks}</td>
+                    <td class="text-center">
+                        <button type="button" class="del-btn" title="Delete Row">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                </tr>`;
+
+            if ($('#item-table-body tr td').length === 1) $('#item-table-body').empty();
+
+            $('#item-table-body').append(row);
+
+            $('#item-code, #item-name, #uom, #stock, #quantity').val('');
+            $('#line-remarks').val('NA');
+            $('#item-code').focus();
+
+            updateKPIs();
+            $('#save-bill-button').prop('disabled', false);
+            $('#department').prop('disabled', true);
+        });
+
+        // 6. Delete Row Logic (Delegated Event)
+        $(document).on('click', '.del-btn', function () {
+            $(this).closest('tr').remove();
+
+            if ($('#item-table-body tr').length === 0) {
+                $('#item-table-body').append('<tr><td colspan="6" class="text-center py-5 text-muted italic">No items scanned yet.</td></tr>');
+                $('#save-bill-button').prop('disabled', true);
+                $('#department').prop('disabled', false);
+            }
+            updateKPIs();
+        });
+
+        // 7. Final Transaction Pipeline Submission
+        $('#save-bill-button').click(function () {
+            let headData = {
+                Departmentid: $('#department').val(),
+                IsChallan: $('#chkChallan').is(':checked'),
+
+                // Pass chosen dynamic radio category definition string directly
+                ChallanNature: $('input[name="radChallanNature"]:checked').val(),
+
+                TransportName: $('#transport-name').val(),
+                BillingAddress: $('#billing-address').val(),
+                Address: $('#cust-address').val(),
+
+                CustomerName: $('#cust-name').val(),
+                ContactNo: $('#cust-contact').val(),
+                VehicleNo: $('#vehicle-no').val(),
+                Remarks: $('#head-remarks').val(),
+
+                IsBilty: $('#is-bilty').is(':checked'),
+                BiltyNo: $('#bilty-no').val(),
+                BiltyDate: $('#bilty-date').val(),
+                BiltyTotalValue: $('#bilty-value').val(),
+                BiltyDescription: $('#bilty-desc').val()
+            };
+
+            let tableData = [];
+            $('#item-table-body tr').each(function () {
+                let row = $(this);
+                if (row.find('td').length > 1) {
+                    tableData.push({
+                        ItemCode: row.find('td:eq(0)').text(),
+                        Quantity: row.find('td:eq(3)').text(),
+                        Remarks: row.find('td:eq(4)').text()
+                    });
+                }
+            });
+
+            if (!headData.Departmentid) { toastr.error("Select Target Department first."); return; }
+
+            $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+
+            $.ajax({
+                type: 'POST',
+                url: '/Inventory/issueStock',
+                data: JSON.stringify({ headData: headData, tableData: tableData }),
+                contentType: 'application/json',
+                success: function (res) {
+                    debugger;
+                    if (res.success) {
+                        toastr.success("Voucher Posted: " + res.voucherNumber);
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        toastr.error(res.message);
+                        $('#save-bill-button').prop('disabled', false).html('POST STOCK ISSUE');
+                    }
+                }
+            });
+        });
+
+        function loadDepartments() {
+            $.getJSON('/Inventory/GetDepartment', function (data) {
+                $.each(data, (i, it) => $('#department').append(new Option(it.text, it.value)));
+            });
+        }
+
+        function updateKPIs() {
+            let count = 0;
+            $('#item-table-body tr').each(function () {
+                if ($(this).find('td').length > 1) count++;
+            });
+            $('#tileItemCount').text(count);
+        }
+    });
+</script>

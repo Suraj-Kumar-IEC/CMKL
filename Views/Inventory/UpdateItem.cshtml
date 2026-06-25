@@ -1,0 +1,421 @@
+﻿@{
+    ViewBag.Title = "Update Item Master";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const isInModal = !!(document.querySelector('.modal.show'));
+            if (isInModal) {
+                setTimeout(() => { handleInvalidUser(); }, 500);
+            } else {
+                handleInvalidUser();
+            }
+            function handleInvalidUser() {
+                toastr.error("Invalid User Session");
+                setTimeout(function () { window.location.href = "@Url.Action("Index", "Login")"; }, 2000);
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<style>
+    :root {
+        --brand-blue: #00698f;
+        --border-color: #e2e8f0;
+        --bg-light: #f8fafc;
+    }
+
+    body {
+        background-color: var(--bg-light);
+        font-family: 'Inter', sans-serif;
+        color: #334155;
+    }
+
+    .master-header {
+        background: white;
+        padding: 15px 30px;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid var(--border-color);
+    }
+
+    .section-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        height: 100%;
+    }
+
+    .section-title {
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: var(--brand-blue);
+        letter-spacing: 1px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-bottom: 1px solid #f1f5f9;
+        padding-bottom: 6px;
+    }
+
+    .form-label {
+        font-weight: 700;
+        font-size: 0.65rem;
+        color: #ffffff !important;
+        margin-bottom: 5px;
+        text-transform: uppercase;
+        background-color: var(--brand-blue);
+        padding: 2px 10px;
+        border-radius: 4px;
+        display: inline-block;
+        letter-spacing: 0.5px;
+    }
+
+    .form-control-sm, .form-select-sm {
+        border-radius: 8px;
+        border: 1.5px solid var(--border-color);
+        padding: 8px 12px;
+        font-size: 0.85rem;
+        height: auto;
+        transition: all 0.3s ease;
+    }
+
+        .form-control-sm:focus {
+            border-color: var(--brand-blue);
+            box-shadow: 0 0 0 3px rgba(0, 105, 143, 0.1);
+        }
+
+    .btn-update {
+        background: var(--brand-blue);
+        border: none;
+        border-radius: 12px;
+        padding: 12px 40px;
+        font-weight: 700;
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: 0.3s;
+    }
+
+        .btn-update:hover {
+            background: #005676;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 105, 143, 0.2);
+        }
+
+    .readonly-box {
+        background-color: #f1f5f9 !important;
+        font-weight: 600;
+        color: #475569;
+    }
+
+    /* Custom File Input Styling */
+    .file-input-wrapper {
+        border: 2px dashed #cbd5e1;
+        border-radius: 10px;
+        padding: 10px;
+        text-align: center;
+        background: #f8fafc;
+        transition: 0.3s;
+    }
+
+        .file-input-wrapper:hover {
+            border-color: var(--brand-blue);
+            background: #f0f9ff;
+        }
+
+    /* Animations */
+    .animate-up {
+        animation: fadeInUp 0.6s ease forwards;
+        opacity: 0;
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .stagger-1 {
+        animation-delay: 0.1s;
+    }
+
+    .stagger-2 {
+        animation-delay: 0.2s;
+    }
+
+    .stagger-3 {
+        animation-delay: 0.3s;
+    }
+</style>
+
+<div class="container-fluid py-4 px-lg-5">
+    <div class="master-header animate-up">
+        <div>
+            <h4 class="fw-bold m-0 text-dark">Item Configuration Hub</h4>
+            <p class="text-muted small m-0">Update technical specifications, stock thresholds, and logistics data.</p>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-light text-primary border px-3 py-2 rounded-pill fw-bold">
+                <i class="fas fa-edit me-1"></i> Global Item Master
+            </span>
+        </div>
+    </div>
+
+    <form id="updateForm">
+        <div class="row g-4">
+            <!-- Column 1: Identity & Description -->
+            <div class="col-lg-4 animate-up stagger-1">
+                <div class="section-card shadow-sm">
+                    <div class="section-title"><i class="fas fa-fingerprint"></i> Core Identity</div>
+                    <div class="mb-3">
+                        <label class="form-label">Part / Item Code</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="fas fa-barcode text-muted"></i></span>
+                            <input type="text" class="form-control form-control-sm fw-bold" id="ItemCode" name="ItemCode" placeholder="Enter Code to Fetch" />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Item Name</label>
+                        <input type="text" class="form-control form-control-sm" id="ItemName" name="ItemName" disabled="disabled" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Detailed Description</label>
+                        <textarea class="form-control form-control-sm" id="desc" name="ItemDesc" disabled="disabled" rows="3"></textarea>
+                    </div>
+                    <div>
+                        <label class="form-label">HSN / SAC Code</label>
+                        <input type="text" class="form-control form-control-sm" id="HSN" name="HSN" disabled="disabled" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column 2: Stock & Inventory Control -->
+            <div class="col-lg-4 animate-up stagger-2">
+                <div class="section-card shadow-sm">
+                    <div class="section-title"><i class="fas fa-boxes"></i> Inventory Thresholds</div>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label">Min Stock Level</label>
+                            <input type="number" class="form-control form-control-sm" id="minstklvl" name="MinStock" />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Max Stock Level</label>
+                            <input type="number" class="form-control form-control-sm" id="maxstklvl" name="MaxStock" />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Min Order Qty (MOQ)</label>
+                            <input type="number" class="form-control form-control-sm" id="moq" name="MOQ" />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Current Stock</label>
+                            <input type="text" class="form-control form-control-sm readonly-box" id="Stock" name="Stock" readonly />
+                        </div>
+                    </div>
+                    <hr />
+                    <div class="section-title mt-2"><i class="fas fa-file-pdf"></i> Technical Assets</div>
+                    <div class="file-input-wrapper">
+                        <label class="form-label">Upload Drawing (PDF Max 4MB)</label>
+                        <input class="form-control form-control-sm" type="file" id="drawingupload" name="DrawingData" accept="application/pdf" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column 3: Logistics & Pricing -->
+            <div class="col-lg-4 animate-up stagger-3">
+                <div class="section-card shadow-sm">
+                    <div class="section-title"><i class="fas fa-tags"></i> Classification & Value</div>
+                    <div class="mb-3">
+                        <label class="form-label">Item Class</label>
+                        <select id="itemclass" name="itemclass" class="form-select form-select-sm"></select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Item Group</label>
+                        <select id="itemgroup" name="itemgroup" class="form-select form-select-sm"></select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Warehouse Location</label>
+                        <select id="location" name="location" class="form-select form-select-sm"></select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Assessed Basic Price</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="fas fa-rupee-sign text-success"></i></span>
+                            <input type="text" class="form-control form-control-sm fw-bold text-end" id="basicprice" name="basicprice" disabled="disabled" />
+                        </div>
+                        <small class="text-muted" style="font-size: 0.6rem;">* Price update restricted to Authorized Roles.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4 animate-up stagger-3">
+            <div class="col-md-12 text-center">
+                <button type="button" id="btnReset" class="btn btn-outline-secondary btn-sm rounded-pill px-4 me-2">Reset Form</button>
+                <button type="submit" class="btn-update shadow">
+                    <i class="fas fa-sync-alt me-2"></i> Update Item Master
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Global Wait Sign -->
+<img id="wait-sign" src="~/images/wait.gif" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10002; width: 80px;" />
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+
+<script>
+    $(document).ready(function () {
+        // Load Dropdowns on Init
+        loadDropdowns();
+
+        function loadDropdowns() {
+            $.getJSON('/BOM/Getclass', (data) => {
+                $('#itemclass').empty().append('<option value="0">-- Select Class --</option>');
+                $.each(data, (i, item) => $('#itemclass').append(new Option(item.Text, item.Value)));
+            });
+            $.getJSON('/BOM/Getgroup', (data) => {
+                $('#itemgroup').empty().append('<option value="0">-- Select Group --</option>');
+                $.each(data, (i, item) => $('#itemgroup').append(new Option(item.Text, item.Value)));
+            });
+            $.getJSON('/BOM/Getlocation', (data) => {
+                $('#location').empty().append('<option value="0">-- Select Location --</option>');
+                $.each(data, (i, item) => $('#location').append(new Option(item.Text, item.Value)));
+            });
+        }
+
+        // Fetch Logic
+        $('#ItemCode').on('change', function () {
+            var code = $(this).val().trim();
+            if (!code) return;
+
+            $('#wait-sign').show();
+            $.ajax({
+                type: "GET",
+                url: "/Inventory/GetIssueItemDetails",
+                data: { itemCode: code },
+                success: function (data) {
+                    $('#wait-sign').hide();
+                    if (data && data.itemname) {
+                        $('#ItemName').val(data.itemname);
+                        $('#Stock').val(data.stock);
+                        $('#maxstklvl').val(data.MaxStkLvl);
+                        $('#minstklvl').val(data.MinStkLvl);
+                        $('#moq').val(data.moq);
+                        $('#desc').val(data.Desc);
+                        $('#HSN').val(data.HSN);
+                        $('#basicprice').val(data.basicprice);
+                        $('#ItemCode').prop('readonly', true);
+
+                        // Dropdown selection logic
+                        if (data.itemclass !== 0) $('#itemclass').val(data.itemclass);
+                        if (data.itemgroup !== 0) $('#itemgroup').val(data.itemgroup);
+                        if (data.itemlocation !== 0) $('#location').val(data.itemlocation);
+
+                        // Permission Logic
+                        if (data.role === "SUPERADMIN") {
+                            $("#basicprice").prop("disabled", false);
+                            $("#ItemName").prop("disabled", false);
+                            $("#desc").prop("disabled", false);
+                        }
+
+                        toastr.success("Record loaded successfully.");
+                    } else {
+                        toastr.error("Item code not found.");
+                    }
+                },
+                error: () => { $('#wait-sign').hide(); toastr.error("Server error."); }
+            });
+        });
+
+        // Submit Logic
+        $('#updateForm').on('submit', function (e) {
+            e.preventDefault();
+
+            var fileData = $('#drawingupload').prop('files')[0];
+
+            if (fileData) {
+                if (fileData.size > 4 * 1024 * 1024) {
+                    toastr.error("File size exceeds 4MB limit.");
+                    return;
+                }
+                if (fileData.type !== "application/pdf") {
+                    toastr.error("Please upload only PDF drawings.");
+                    return;
+                }
+
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    executePost(e.target.result);
+                }
+                reader.readAsDataURL(fileData);
+            } else {
+                executePost(null);
+            }
+        });
+
+        function executePost(fileContent) {
+            $('#wait-sign').show();
+            var payload = {
+                itemCode: $('#ItemCode').val(),
+                itemName: $('#ItemName').val(),
+                itemDesc: $('#desc').val(),
+                minStock: $('#minstklvl').val(),
+                maxStock: $('#maxstklvl').val(),
+                HSN: $('#HSN').val(),
+                MOQ: $('#moq').val(),
+                itemclass: $('#itemclass').val(),
+                itemgroup: $('#itemgroup').val(),
+                itemlocation: $('#location').val(),
+                basicprice: $('#basicprice').val(),
+                DrawingData: fileContent
+            };
+
+            $.ajax({
+                type: "POST",
+                url: "/Inventory/UpdateItemMaster",
+                data: payload,
+                success: function (data) {
+                    $('#wait-sign').hide();
+                    if (data.success) {
+                        toastr.success(data.message || "Master record updated.");
+                        resetForm();
+                    } else {
+                        toastr.error("Update failed: " + data.error);
+                    }
+                }
+            });
+        }
+
+        $('#btnReset').click(resetForm);
+
+        function resetForm() {
+            $('#updateForm').trigger('reset');
+            $('#ItemCode').prop('readonly', false).val('').focus();
+            $("#basicprice").prop("disabled", true);
+            $('#itemclass, #itemgroup, #location').val(0);
+        }
+    });
+</script>

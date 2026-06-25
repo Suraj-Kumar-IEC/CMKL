@@ -1,0 +1,323 @@
+﻿
+@{
+    ViewBag.Title = "QualityRejectionReturn";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+    {
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function () {
+                // Check if the current context is inside a Bootstrap modal
+                const isInModal = !!(document.querySelector('.modal.show'));
+
+                if (isInModal) {
+                    // If inside a modal, wait for a short delay
+                    setTimeout(() => {
+                        handleInvalidUser();
+                    }, 500); // Adjust the delay as needed
+                } else {
+                    // If not in a modal, proceed immediately
+                    handleInvalidUser();
+                }
+
+                function handleInvalidUser() {
+                    toastr.error("Invalid User");
+
+                    setTimeout(function () {
+                        window.location.href = "@Url.Action("Index", "Login")";
+                    }, 2000); // Redirect after 2 seconds
+                }
+            });
+        </script>
+        <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+    }
+
+
+
+<h3 style="background-color: #00698f; color: #ffffff; padding: 5px 10px; border-radius: 5px; text-align: center;">Pending QC - MRN Rejection Returns</h3>
+
+<div class="row">
+    <div class="col-md-12">
+        <table id="bill-table" class="table table-sm table-bordered">
+            <thead>
+                <tr>
+                    <th>Supplier Name</th>
+                    <th>Bill No</th>
+                    <th>Bill Date</th>
+                    <th>Material</th>
+                    <th>Rejection Qty</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- bills will be loaded here via ajax -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+
+<!-- modal for creating return -->
+<div class="modal fade" id="create-return-modal" tabindex="-1" role="dialog" aria-labelledby="create-return-modal-label" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="create-return-modal-label">Create Return</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="create-return-form">
+                    <div class="form-group">
+                        <label for="return-type">Return Type</label>
+                        <select id="return-type" class="form-control">
+                            <!-- AJAX will load options here -->
+                        </select>
+                    </div>
+                    <div class="form-group1" style="display: none;">
+                        <label for="rejection-area">Return Area</label>
+                        <select id="rejection-area" class="form-control">
+                            <!-- AJAX will load options here -->
+                        </select>
+                    </div>
+                    <div class="form-group2" style="display: none;">
+                        <label for="rejection-area">Supplier</label>
+                        <select id="Supplier" class="form-control">
+                            <!-- AJAX will load options here -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="remarks">Remarks</label>
+                        <textarea id="remarks" class="form-control"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="rejection-quantity">Rejection Quantity</label>
+                        <input type="number" id="rejection-quantity" class="form-control" readonly />
+                    </div>
+                    <div class="form-group" hidden="hidden">
+                        <label for="lineid">lineid</label>
+                        <textarea id="lineid" class="form-control"></textarea>
+                    </div>
+                    <div class="form-group" hidden="hidden">
+                        <label for="itemid">lineid</label>
+                        <textarea id="itemid" class="form-control"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" id="closemodal">Close</button>
+                <button type="button" id="create-return-btn-modal" class="btn btn-primary">Create Return</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script>
+
+    $(document).ready(function () {
+        // Load rejection types
+        $.ajax({
+            type: "GET",
+            url: "/Inventory/GetRejectionTypes",
+            dataType: "json",
+            success: function (data) {   
+                $("#return-type").append("<option value=''>Select Rejection Type</option>");
+                $.each(data, function (index, item) {
+                    $("#return-type").append("<option value='" + item.Value + "'>" + item.Text + "</option>");
+                });
+            }
+        });
+    
+
+        // Load rejection areas based on selected rejection type
+        $("#return-type").on("change", function () {
+            debugger;
+            var rejectionTypeId = $(this).val();
+            var billId = $("#create-return-btn-modal").data("bill-id");
+            $("#rejection-area").empty(); // Clear existing options
+
+            if (rejectionTypeId == 1) {
+                $.ajax({
+                    type: "GET",
+                    url: "/Inventory/GetRejectionAreas",
+                    data: { rejectionTypeId: rejectionTypeId },
+                    dataType: "json",
+                    success: function (data) {
+                        if (data.length > 0) {
+                            $(".form-group1").show();
+                            $(".form-group2").hide();                            
+                            $.each(data, function (index, item) {
+                                $("#rejection-area").append("<option value='" + item.Value + "'>" + item.Text + "</option>");
+                            });
+                            // Show the modal if data is available
+                            $("#myModal").modal("show");
+                        } else {
+                            $(".form-group1").hide();
+                            console.log("No rejection areas found for the selected rejection type.");
+                        }
+                    }
+                });
+            } else if (rejectionTypeId == 2) {
+                $(".form-group1").hide();
+                $(".form-group2").show();
+                $.ajax({
+                    type: "GET",
+                    url: "/Inventory/GetBillSuppliers",
+                    data: { billId: billId },
+                    dataType: "json",
+                    success: function (data) {
+                        if (data.length > 0) {
+                            $("#Supplier").empty();                            
+                            $.each(data, function (index, item) {
+                                $("#Supplier").append("<option value='" + item.Value + "'>" + item.Text + "</option>");
+                            });
+                        } else {
+                            console.log("No suppliers found.");
+                        }
+                    }
+                });
+            }
+        });
+    });
+
+    $(document).ready(function () {
+        $('#closemodal').click(function () {
+            $(this).closest('.modal').modal('hide');
+            $(this).closest('.modal').find('form')[0].reset(); // Clear form data
+            $(this).closest('.modal').find('input, select, textarea').val(''); // Clear input fields
+        });
+    });
+
+    $(document).ready(function () {
+        // load bills via ajax
+        
+            $.ajax({
+                type: "GET",
+                url: "/Inventory/GetBills",
+                success: function (data) {
+                    $.each(data, function (index, bill) {
+                        var billDate = moment(bill.BillDate);
+                        var formattedDate = billDate.format('DD/MM/YYYY');
+
+                        $("#bill-table tbody").append("<tr>" +
+                            "<td>" + bill.Supplier + "</td>" +
+                            "<td>" + bill.BillNo + "</td>" +
+                            "<td>" + formattedDate + "</td>" +
+                            "<td>" + bill.Material + "</td>" +
+                            "<td>" + bill.RejectionQty + "</td>" +
+                            "<td style='display: none;'>" + bill.itemlineid + "</td>" +
+                            "<td style='display: none;'>" + bill.itemid + "</td>" +
+                            "<td><button class='btn btn-primary create-return-btn' data-bill-id='" + bill.id + "'>Create Return</button></td>" +
+                            "</tr>");
+                    });
+                }
+            });
+        
+
+        // create return button click event
+
+        $(document).on("click", ".create-return-btn", function () {
+            debugger;
+            var $row = $(this).closest("tr"); // Define $row here
+            var billId = $(this).data("bill-id");
+            var qty = $row.find("td:eq(4)").text();
+            var lineid = $row.find("td:eq(5)").text();
+            var itemid = $row.find("td:eq(6)").text();
+            $("#create-return-modal").modal('show'); // Use 'show' instead of 'modal("show")'
+            $("#create-return-btn-modal").data("bill-id", billId);
+            $("#rejection-quantity").val(qty);
+            $("#lineid").val(lineid);
+            $("#itemid").val(itemid);
+
+
+        });
+        
+
+        // create return button click event in modal
+        $(document).ready(function () {
+            $('#create-return-btn-modal').click(function () {
+                debugger;
+                $("#create-return-modal").modal('hide');
+                var billId = $("#create-return-btn-modal").data("bill-id");
+                var itemLineId = $("#lineid").val();
+                var rejectionQty = $("#rejection-quantity").val();
+                var supplier = $("#Supplier").val();
+                var billNo = $("#bill-table").find("tr").find("td:nth-child(2)").text();
+                var material = $("#bill-table").find("tr").find("td:nth-child(4)").text();
+                var remarks = $("#remarks").val();
+                var rejectionArea = $("#rejection-area").val();
+                var returnType = $("#return-type").val();
+                var itemid = $("#itemid").val();
+
+                var data = {
+                    billId: billId,
+                    itemLineId: itemLineId,
+                    rejectionQty: rejectionQty,
+                    supplier: supplier,
+                    billNo: billNo,
+                    material: material,
+                    remarks: remarks,
+                    rejectionArea: rejectionArea,
+                    returnType: returnType,
+                    itemid: itemid
+                };
+
+                console.log("Sending AJAX request with data:");
+                console.log(data);
+
+                $.ajax({
+                    type: "POST",
+                    url: "/Inventory/SaveQualityReturn",
+                    data: JSON.stringify(data),
+                    contentType: "application/json; charset=utf-8",
+                    success: function (data) {
+                        if (data.success) {
+                            toastr.success(data.message);
+                            loadBills(); // Call loadBills function here
+                        } else {
+                            toastr.error(data.message); // Show error message if data.success is false
+                            // Create else logic here
+                            loadBills(); // Call createQualityReturn function here
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.log("AJAX request failed:");
+                        console.log(xhr.responseText);
+                    }
+                });
+            });
+
+            function loadBills() {
+                $.ajax({
+                    type: "GET",
+                    url: "/Inventory/GetBills",
+                    success: function (data) {
+                        $("#bill-table tbody").empty(); // Clear the table body
+                        $.each(data, function (index, bill) {
+                            var billDate = moment(bill.BillDate);
+                            var formattedDate = billDate.format('DD/MM/YYYY');
+
+                            var rowHtml = "<tr>" +
+                                "<td>" + bill.Supplier + "</td>" +
+                                "<td>" + bill.BillNo + "</td>" +
+                                "<td>" + formattedDate + "</td>" +
+                                "<td>" + bill.Material + "</td>" +
+                                "<td>" + bill.RejectionQty + "</td>" +
+                                "<td style='display: none;'>" + bill.itemlineid + "</td>" +
+                                "<td style='display: none;'>" + bill.itemid + "</td>" +
+                                "<td><button class='btn btn-primary create-return-btn' data-bill-id='" + bill.id + "'>Create Return</button></td>" +
+                                "</tr>";
+
+                            $("#bill-table tbody").append(rowHtml);
+                        });
+                    }
+                });
+            }
+        });
+    });
+</script>

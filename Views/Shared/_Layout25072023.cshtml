@@ -1,0 +1,170 @@
+﻿<!DOCTYPE html>
+
+
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>IEPL Menu</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700&display=fallback">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.0.3/css/bootstrap.min.css" media="screen" />
+    <script src="~/Scripts/jquery-3.4.1.min.js"></script>
+    @*<link rel="stylesheet" type="text/css" href="styles.css" />*@
+    <style>
+        body {
+            font-family: 'Source Sans Pro', sans-serif;
+        }
+
+        .navbar {
+            background-color: #ffffff; /* white background */
+            border-color: #ffffff; /* white border */
+        }
+
+        .navbar-brand {
+            color: #333; /* dark gray text for brand */
+        }
+
+        .navbar-nav > li > a {
+            color: #333; /* dark gray text for nav links */
+        }
+
+            .navbar-nav > li > a:hover,
+            .navbar-nav > li > a:focus {
+                color: #333; /* dark gray text on hover */
+                background-color: #f5f5f5; /* light gray background on hover */
+            }
+    </style>
+</head>
+<html>
+<body>
+
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+
+                <a class="navbar-brand" href="#">
+                    <img src="~/images/IEC.jpg" alt="IEPL Logo" width="60" height="30">
+
+                </a>
+
+             
+
+            </div>
+            @if (Session["EndCustomer"] != null)
+            {
+
+                if (Session["EndCustomer"].ToString() == "ADMIN")
+
+                {
+                    <div class="collapse navbar-collapse" id="navbar-collapse">
+                        <ul class="nav navbar-nav">
+
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Inventory <span class="caret"></span></a>
+                                <ul class="dropdown-menu">
+
+                                    <li>@Html.ActionLink("Purchase Voucher IEPL", "PurchaseVoucher", "Purchase")</li>
+                                    <li>@Html.ActionLink("Indent Voucher IEPL", "Indent", "Purchase")</li>
+                                    <li>@Html.ActionLink("Stock Issue IEPL", "Stockissue", "Inventory")</li>
+                                    <li>@Html.ActionLink("Quality Approve IEPL", "GetHeads", "Inventory")</li>
+                                    <li>@Html.ActionLink("Production Planning IEPL", "BOMPlanning", "BOM")</li>
+
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">BOM<span class="caret"></span></a>
+                                <ul class="dropdown-menu">
+                                    <li>@Html.ActionLink("BOM Item Linking", "BOMItemLink", "BOM")</li>
+                                    <li>@Html.ActionLink("Remove | Change BOM Quantity", "EditBOMLink", "BOM")</li>
+                                    <li>@Html.ActionLink("BOM", "BOM", "BOM")</li>
+                                    <li>@Html.ActionLink("Store Approval (BOM)", "StoreApproval", "BOM")</li>
+
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Masters<span class="caret"></span></a>
+                                <ul class="dropdown-menu">
+                                    <li>@Html.ActionLink("Item Master - IEPL", "itemmaster", "BOM")</li>
+                                    <li>@Html.ActionLink("Update Item Detail & Stock", "UpdateItem", "Inventory")</li>
+                                    <li>@Html.ActionLink("Supplier Master", "SupplierMaster", "Master")</li>
+                                    <li>@Html.ActionLink("Department Master", "DepartmentMaster", "Master")</li>
+
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Management Approval<span class="caret"></span></a>
+                                <ul class="dropdown-menu">
+                                    <li>@Html.ActionLink("Managment Approvals (BOM)", "ManagementApproval", "BOM")</li>
+                                    <li>@Html.ActionLink("Indent Managment Approvals (BOM)", "BOMIndentApproval", "BOM")</li>
+
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Reports<span class="caret"></span></a>
+                                <ul class="dropdown-menu">
+                                    <li>@Html.ActionLink("Stock Report - IEPL", "Index", "StockReport")</li>
+                                    <li>@Html.ActionLink("Purchase Report - IEPL", "PurcahseReportBill", "Reports")</li>
+                                    <li>@Html.ActionLink("Quality Pending Report - IEPL", "PendingQualityReport", "StockReport")</li>
+                                    <li>@Html.ActionLink("Stock Issue Report - IEPL", "PendingStockIssueReport", "StockReport")</li>
+
+                                </ul>
+                            </li>
+                            @if (Session["U_Role"].ToString() == "SuperAdmin")
+                            {
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin<span class="caret"></span></a>
+                                    <ul class="dropdown-menu">
+                                        <li>@Html.ActionLink("Email", "EmailView", "EmailManage")</li>
+                                        <li>@Html.ActionLink("Vendor Contacts", "Create", "Vendors")</li>
+                                        <li>@Html.ActionLink("Enquiry Revision", "ReverseEnquiry", "EnquiryStatus")</li>
+                                        <li>@Html.ActionLink("Split Enquiry", "SplitEnquirySearch", "EnquiryStatus")</li>
+                                        <li>@Html.ActionLink("Update Customer Detail", "CustomerDetail", "EnquiryStatus")</li>
+                                        <li>@Html.ActionLink("CPCBII Permission", "CPCBPermission", "OE")</li>
+                                        <li>@Html.ActionLink("Remove and Check Master Item Linking", "BOMlinkandItemDetail", "BOM")</li>
+
+                                    </ul>
+                                </li>
+
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Other<span class="caret"></span></a>
+                                    <ul class="dropdown-menu">
+                                        <li>@Html.ActionLink("Travelling Allowance", "TAView", "TA")</li>
+                                        <li>@Html.ActionLink("Branch Payment Update", "Authoriseddealerview", "OE")</li>
+                                        <li>@Html.ActionLink("Dealer Payment Update", "DealerView", "OE")</li>
+                                        <li>@Html.ActionLink("Logistic Payment View", "LogisticApproval", "OE")</li>
+                                        <li>@Html.ActionLink("Bill Series Wise Count", "Index", "Reports")</li>
+                                        <li>@Html.ActionLink("Item Master", "ItemMaster", "Inventory")</li>
+                                        <li>@Html.ActionLink("BPR Voucher", "Purchase", "Inventory")</li>
+                                        <li>@Html.ActionLink("Logistic Stock In (Bill Wise)", "BPRPendingCases", "Inventory")</li>
+                                        <li>@Html.ActionLink("Logistic Stock In (Item Wise)", "Logisticin", "Inventory")</li>
+                                        <li>@Html.ActionLink("Plant Stock In (Item Wise)", "Plantin", "Inventory")</li>
+                                        <li>@Html.ActionLink("Quality In (Ready For Allocation)", "Qualityin", "Inventory")</li>
+                                        <li>@Html.ActionLink("Stock Report", "StockRPT", "Inventory")</li>
+                                    </ul>
+                                </li>
+                            }
+                            <li>@Html.ActionLink("Change Password", "ChangePassword", "Login")</li>
+                            <li>@Html.ActionLink("Logout", "logout", "Login")</li>
+                        </ul>
+                    </div>
+                }
+            }
+        </div>
+    </nav>
+
+    <div class="container">
+        @RenderBody()
+        @RenderSection("Scripts", required: false) <!-- This is the missing part -->
+
+    </div>
+
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.0.3/js/bootstrap.min.js"></script>
+    <script src="~/Scripts/jquery-3.4.1.min.js"></script>
+   
+</body>
+</html>

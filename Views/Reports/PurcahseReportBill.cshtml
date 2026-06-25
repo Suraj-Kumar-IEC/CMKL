@@ -1,0 +1,118 @@
+﻿
+@{
+    ViewBag.Title = "PurcahseReportBill";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .wait-sign-image {
+        width: 200px;
+        height: 200px;
+    }
+</style>
+<h3 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">Purchase Report</h3>
+@*<button id="generate-excel" class="btn btn-primary">Generate Excel</button>*@
+<table id="purchase-report-table" class="table table-striped table-bordered">
+    @* <thead>
+            <tr>
+                <th>Bill Number</th>
+                <th>Bill Date</th>
+                <th>Supplier Name</th>
+                <th>Total Amount</th>
+            </tr>
+        </thead>
+    *@
+    <tbody id="purchase-report-body">
+    </tbody>
+</table>
+
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.16.2/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#wait-sign').show();
+        $.ajax({
+            type: "GET",
+            url: "/Reports/GetPurchaseReport",
+            dataType: "json",
+            success: function (data) {
+
+                $.each(data, function (index, item) {
+                    var billHead = "<tr style='background-color: #f0f0f0'>";
+                    billHead += "<th colspan='8' style='text-align: center; font-weight: bold'>Bill Details</th>";
+                    billHead += "</tr>";
+
+                    var billDetail = "<tr>";
+                    billDetail += "<td style='text-align: center; font-weight: bold'>Bill Number: </td><td style='text-align: center'>" + item.BillNumber + "</td>";
+                    billDetail += "<td style='text-align: center; font-weight: bold'>Bill Date: </td><td style='text-align: center'>" + moment(item.BillDate).format("DD-MM-YYYY") + "</td>";
+                    billDetail += "</tr>";
+
+                    billDetail += "<tr>";
+                    billDetail += "<td style='text-align: center; font-weight: bold'>GR Number: </td><td style='text-align: center'>" + item.GRNumber + "</td>";
+                    billDetail += "<td style='text-align: center; font-weight: bold'>GR Date: </td><td style='text-align: center'>" + moment(item.GRDate).format("DD-MM-YYYY") + "</td>";
+                    billDetail += "</tr>";
+
+                    billDetail += "<tr>";
+                    billDetail += "<td style='text-align: center; font-weight: bold'>Supplier Name: </td><td style='text-align: center'>" + item.SupplierName + "</td>";
+                    billDetail += "<td style='text-align: center; font-weight: bold'>Frieght On Bill: </td><td style='text-align: center'>" + item.FrieghtAmount + "</td>";
+                    billDetail += "</tr>";
+
+                    billDetail += "<tr>";
+                    billDetail += "<td style='text-align: center; font-weight: bold'>Total Tax Amount: </td><td style='text-align: center'>" + item.TotalTaxAmount + "</td>";
+                    billDetail += "<td style='text-align: center; font-weight: bold'>Total Amount: </td><td style='text-align: center'>" + item.TotalAmount + "</td>";
+                    billDetail += "</tr>";
+
+                    var billLines = "<tr><td colspan='8'>";
+                    billLines += "<table class='table table-striped table-bordered'>";
+                    billLines += "<thead><tr>";
+                    billLines += "<th style='text-align: center'>Item Code</th>";
+                    billLines += "<th style='text-align: center'>Bill Quantity</th>";
+                    billLines += "<th style='text-align: center'>Quantity Recieved</th>";
+                    billLines += "<th style='text-align: center'>Basic Price</th>";
+                    billLines += "<th style='text-align: center'>Tax Amount</th>";
+                    billLines += "<th style='text-align: center'>Total Amount</th>";
+                    billLines += "<th style='text-align: center'>Quality Approved</th>";
+                    billLines += "<th style='text-align: center'>Quality Rejected</th>";
+                    billLines += "</tr></thead>";
+                    billLines += "<tbody>";
+
+                    $.each(item.Items, function (index, subItem) {
+                        billLines += "<tr>";
+                        billLines += "<td style='text-align: center'>" + subItem.ItemName + "</td>";
+                        billLines += "<td style='text-align: center'>" + subItem.BillQuantity + "</td>";
+                        billLines += "<td style='text-align: center'>" + subItem.Quantity + "</td>";
+                        billLines += "<td style='text-align: center'>" + subItem.BasicPrice + "</td>";
+                        billLines += "<td style='text-align: center'>" + subItem.TaxAmount + "</td>";
+                        billLines += "<td style='text-align: center'>" + subItem.TotalAmount + "</td>";
+                        billLines += "<td style='text-align: center'>" + subItem.QualityApprove + "</td>";
+                        billLines += "<td style='text-align: center'>" + subItem.QualityRejected + "</td>";
+                        billLines += "</tr>";
+                    });
+
+                    billLines += "</tbody></table>";
+                    billLines += "</td></tr>";
+
+                    $("#purchase-report-body").append(billHead);
+                    $("#purchase-report-body").append(billDetail);
+                    $("#purchase-report-body").append(billLines);
+
+                });
+                $('#wait-sign').hide();
+            }
+        });
+    });
+</script>
+
+<script>
+    $(document).ready(function () {
+        $('#generate-excel').click(function () {
+            window.location.href = '/Reports/GetPurchaseReportExcel';
+        });
+    });
+</script>
+<img id="wait-sign" src="~/images/wait.gif" class="wait-sign-image" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);" />

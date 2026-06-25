@@ -1,0 +1,346 @@
+﻿@{
+    Layout = null;
+    var head = Model.IndentHead;
+    var lines = Model.IndentLines as IEnumerable<dynamic> ?? new List<dynamic>();
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indent Advisory - @head.IndentNumber</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f1f5f9;
+            margin: 0;
+            padding: 0;
+            color: #334155;
+        }
+
+        .wrapper {
+            width: 100%;
+            max-width: 850px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #004d69 0%, #00698f 100%);
+            color: #ffffff;
+            padding: 30px 40px;
+        }
+
+            .header h1 {
+                margin: 0;
+                font-size: 22px;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+
+        .company-tag {
+            font-size: 11px;
+            font-weight: 700;
+            opacity: 0.9;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        /* KPI Dashboard */
+        .dashboard {
+            padding: 20px;
+            background-color: #f8fafc;
+            display: table;
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 8px;
+        }
+
+        .stat-card {
+            display: table-cell;
+            background: #ffffff;
+            padding: 12px 15px;
+            border-radius: 10px;
+            text-align: center;
+            width: 25%;
+            border: 1px solid #e2e8f0;
+            vertical-align: middle;
+        }
+
+        .stat-label {
+            font-size: 8px;
+            font-weight: 800;
+            color: #94a3b8;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 13px;
+            font-weight: 800;
+            color: #00698f;
+        }
+
+        /* Content Area */
+        .content {
+            padding: 30px 40px;
+        }
+
+        .section-title {
+            font-size: 11px;
+            font-weight: 800;
+            color: #1e293b;
+            text-transform: uppercase;
+            border-left: 4px solid #00698f;
+            padding-left: 10px;
+            margin-bottom: 15px;
+        }
+
+        /* Details Grid */
+        .details-box {
+            background: #ffffff;
+            border: 1px solid #f1f5f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .detail-row {
+            display: table;
+            width: 100%;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .detail-label {
+            display: table-cell;
+            width: 35%;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .detail-val {
+            display: table-cell;
+            color: #1e293b;
+            font-weight: 700;
+            text-align: right;
+        }
+
+        /* Items Table */
+        .table-wrapper {
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10.5px;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: #64748b;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 10px 8px;
+            text-align: left;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+        }
+
+        /* Status Tags */
+        .pill {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 800;
+            font-size: 9px;
+            display: inline-block;
+            text-transform: uppercase;
+        }
+
+        .pill-pending {
+            background: #f1f5f9;
+            color: #64748b;
+            border: 1px solid #cbd5e1;
+        }
+
+        .pill-approved {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .pill-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .code-tag {
+            font-family: monospace;
+            font-weight: 700;
+            color: #00698f;
+            background: #f0f9ff;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .footer {
+            padding: 25px;
+            text-align: center;
+            border-top: 1px solid #f1f5f9;
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        .btn-erp {
+            display: inline-block;
+            background-color: #00698f;
+            color: #ffffff !important;
+            padding: 8px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Header Section -->
+        <div class="header">
+            <span class="company-tag">@head.CompanyName</span>
+            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                    <td><h1>Material Indent Requisition</h1></td>
+                    <td align="right">
+                        <div style="background: rgba(255,255,255,0.2); padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: 800; border: 1px solid rgba(255,255,255,0.3);">
+                            NO: @head.IndentNumber
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Dashboard KPIs -->
+        <div class="dashboard">
+            <div class="stat-card" style="border-top: 3px solid #00698f;">
+                <span class="stat-label">Indent Date</span>
+                <span class="stat-value">@head.IndentDate.ToString("dd MMM yyyy")</span>
+            </div>
+            <div class="stat-card" style="border-top: 3px solid #6366f1;">
+                <span class="stat-label">Initiated By</span>
+                <span class="stat-value">@head.CreatedBy</span>
+            </div>
+            <div class="stat-card" style="border-top: 3px solid #10b981;">
+                <span class="stat-label">Authorized By</span>
+                <span class="stat-value">@(!string.IsNullOrEmpty(head.SAdminApproval) ? head.SAdminApproval : "Pending")</span>
+            </div>
+            <div class="stat-card" style="border-top: 3px solid #94a3b8;">
+                <span class="stat-label">Volume</span>
+                <span class="stat-value">@head.TotalQuantity Items</span>
+            </div>
+        </div>
+
+        <!-- Details Section -->
+        <div class="content">
+            <div class="section-title">Authorization Trail</div>
+            <div class="details-box">
+                <div class="detail-row">
+                    <span class="detail-label">Plant Head Approval:</span>
+                    <span class="detail-val">@(string.IsNullOrEmpty(head.ApprovedBy) ? "Awaiting Review" : head.ApprovedBy)</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Suspension / Hold By:</span>
+                    <span class="detail-val">@(string.IsNullOrEmpty(head.HoldBy) ? "Active Flow" : head.HoldBy)</span>
+                </div>
+            </div>
+
+            <div class="section-title">Technical Specifications & Stock Audit</div>
+            <div class="table-wrapper">
+                <table border="0" cellpadding="0" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Part Detail</th>
+                            <th align="center">Req Qty</th>
+                            <th>Stock Context</th>
+                            <th>Last Purchase</th>
+                            <th align="center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in lines)
+                        {
+                            <tr>
+                                <td>
+                                    <div style="font-weight: 700; color: #1e293b;">@item.ItemName</div>
+                                    <div style="margin-top: 3px;"><span class="code-tag">@item.ItemCode</span> <span style="color:#94a3b8">(@item.UOM)</span></div>
+                                </td>
+                                <td align="center" style="font-weight: 800; font-size: 12px; color: #00698f;">@item.Quantity</td>
+                                <td>
+                                    <div style="color: #64748b;">Avail: <b style="color: #0f172a;">@item.AvailableStock</b></div>
+                                    <div style="color: #64748b; font-size: 9px;">Avg Cons: @item.Average</div>
+                                </td>
+                                <td>
+                                    <div style="font-weight: 600;">₹ @item.LastPrice</div>
+                                    <div style="font-size: 9px; color: #64748b; line-height: 1.2;">
+                                        Supp: @item.LastSupplier<br />
+                                        Date: @item.LastOrderDate
+                                    </div>
+                                </td>
+                                <td align="center">
+                                    @if (item.IsApproved == 1 && item.IsRejected == 0)
+                                    {
+                                        <span class="pill pill-approved">Approved</span>
+                                    }
+                                    else if (item.IsApproved == 0 && item.IsRejected == 1)
+                                    {
+                                        <span class="pill pill-rejected">Rejected</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="pill pill-pending">Pending</span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(item.Remarks))
+                                    {
+                                        <div style="font-size: 8.5px; color: #94a3b8; font-style: italic; margin-top: 4px; max-width: 80px;">@item.Remarks</div>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="margin-top: 25px; text-align: center;">
+                <a href="http://erp.iecelectric.co.in/" class="btn-erp shadow">Review in ERP Portal</a>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>System-generated analytical briefing from <strong>IEPL ERP Cloud</strong>.</p>
+            <p style="margin-top: 6px;">&copy; @DateTime.Now.Year IEC Electric Power Limited | <a href="http://erp.iecelectric.co.in/">Management Console</a></p>
+        </div>
+    </div>
+</body>
+</html>

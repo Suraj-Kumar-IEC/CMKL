@@ -1,0 +1,376 @@
+﻿
+  
+<div class="container">
+    <div class="card">
+        <div class="card-header text-center">
+            Enquiry Detail
+        </div>
+
+        <div class="form-container">
+            <form id="enquiryForm">
+                <div class="form-section-title">Enquiry Details</div>
+                <div class="row">
+                    <div class="form-group col-md-3">
+                        <label for="series">Series</label>
+                        <select class="form-control" id="series"></select>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label for="financialYear">Financial Year</label>
+                        <select class="form-control" id="financialYear">
+                        </select>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label for="enquiryNo">Enquiry No *</label>
+                        <input type="text" class="form-control" id="enquiryNo" required placeholder="Enter Enquiry No.">
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label for="month">Month</label>
+                        <select class="form-control" id="month">
+                            <option value="JAN">January</option>
+                            <option value="FEB">February</option>
+                            <option value="MAR">March</option>
+                            <option value="JUL" selected>July</option>
+                            <option value="DEC">December</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="projectClient">Project/Client</label>
+                    <input type="text" class="form-control" id="projectClient" placeholder="Enter Project/Client Name">
+                </div>
+
+                <div class="form-section-title mt-4">Contact Information</div>
+                <div class="row">
+                    <div class="form-group col-md-4">
+                        <label for="industryType">Industry Type</label>
+                        <input type="text" class="form-control" id="industryType" placeholder="Enter Industry Type">
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="contactName">Contact Name</label>
+                        <input type="text" class="form-control" id="contactName" placeholder="Enter Contact Name">
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="technicalContact">Technical Contact</label>
+                        <input type="text" class="form-control" id="technicalContact" placeholder="Enter Technical Contact">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-4">
+                        <label for="commercialContact">Commercial Contact</label>
+                        <input type="text" class="form-control" id="commercialContact" placeholder="Enter Commercial Contact">
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="contactNumber">Contact Number</label>
+                        <input type="tel" class="form-control" id="contactNumber" placeholder="Enter Contact Number">
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="emailId">Email ID</label>
+                        <input type="email" class="form-control" id="emailId" placeholder="Enter Email ID">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="address">Address</label>
+                    <textarea class="form-control" id="address" rows="3" placeholder="Enter Address"></textarea>
+                </div>
+
+                <div class="form-section-title mt-4">Financial Details</div>
+                <div class="row">
+                    <div class="form-group col-md-3">
+                        <label for="receivedFrom">Received From</label>
+                        <input type="text" class="form-control" id="receivedFrom" placeholder="Enter Source">
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label for="typeOfEnquiry">Type Of Enquiry</label>
+                        <select class="form-control" id="typeOfEnquiry">
+                            <option>Purchase</option>
+                            <option>Service</option>
+                            <option>Information</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label for="orderBasicValue">Order Basic Value</label>
+                        <input type="number" class="form-control" id="orderBasicValue" placeholder="0.00">
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label for="totalGstValue">Total GST Value</label>
+                        <input type="number" class="form-control" id="totalGstValue" placeholder="0.00">
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label for="totalAmount">Total Amount</label>
+                        <input type="number" class="form-control" id="totalAmount" placeholder="0.00" readonly>
+                    </div>
+                </div>
+
+
+                <div class="form-section-title mt-4">Item Details</div>
+                <div id="itemDetailsContainer">
+                    <div class="card mb-3 item-row">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="form-group col-md-4">
+                                    <label for="descOfPanel_1">Description of Panel</label>
+                                    <input type="text" class="form-control" id="descOfPanel_1" placeholder="Enter Description">
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label for="hsnCode_1">HSN Code</label>
+                                    <input type="text" class="form-control" id="hsnCode_1" placeholder="HSN">
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label for="unitPrice_1">Unit Price</label>
+                                    <input type="number" class="form-control" id="unitPrice_1" placeholder="0.00">
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label for="quantity_1">Quantity</label>
+                                    <input type="number" class="form-control" id="quantity_1" placeholder="1">
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label for="totalValue_1">Total Value</label>
+                                    <input type="number" class="form-control" id="totalValue_1" placeholder="0.00" readonly>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group col-md-2">
+                                    <label for="r1_1">R1</label>
+                                    <input type="text" class="form-control" id="r1_1" placeholder="R1">
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label for="r2_1">R2</label>
+                                    <input type="text" class="form-control" id="r2_1" placeholder="R2">
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label for="r3_1">R3</label>
+                                    <input type="text" class="form-control" id="r3_1" placeholder="R3">
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label for="r4_1">R4</label>
+                                    <input type="text" class="form-control" id="r4_1" placeholder="R4">
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label for="r5_1">R5</label>
+                                    <input type="text" class="form-control" id="r5_1" placeholder="R5">
+                                </div>
+                                <div class="col-md-2 d-flex align-items-end justify-content-end">
+                                    <button type="button" class="btn btn-danger btn-sm remove-item">Remove</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-right mb-4">
+                    <button type="button" class="btn btn-outline-primary" id="addItem">Add Item</button>
+                </div>
+
+                <div class="form-section-title mt-4">Status & Remarks</div>
+                <div class="row">
+                    <div class="form-group col-md-4">
+                        <label for="receivedDT">Received Date</label>
+                        <input type="date" class="form-control" id="receivedDT">
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="sentDT">Sent Date</label>
+                        <input type="date" class="form-control" id="sentDT">
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="status">Status</label>
+                        <select class="form-control" id="status">
+                            <option>IN PROGRESS</option>
+                            <option>COMPLETED</option>
+                            <option>PENDING</option>
+                            <option>CANCELLED</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="remarks">Remarks</label>
+                    <textarea class="form-control" id="remarks" rows="3" placeholder="Enter any remarks"></textarea>
+                </div>
+
+                <div class="d-flex justify-content-center mt-5">
+                    <button type="submit" class="btn btn-primary btn-lg px-5">Update</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            let itemCounter = 1; // To keep track of item rows for unique IDs
+
+            // Function to add a new item row
+            function addItemRow() {
+                itemCounter++;
+                const newItemHtml = `
+                    <div class="card mb-3 item-row" data-item-id="${itemCounter}">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="form-group col-md-4">
+                                    <label for="descOfPanel_${itemCounter}">Description of Panel</label>
+                                    <input type="text" class="form-control" id="descOfPanel_${itemCounter}" placeholder="Enter Description">
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label for="hsnCode_${itemCounter}">HSN Code</label>
+                                    <input type="text" class="form-control" id="hsnCode_${itemCounter}" placeholder="HSN">
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label for="unitPrice_${itemCounter}">Unit Price</label>
+                                    <input type="number" class="form-control" id="unitPrice_${itemCounter}" placeholder="0.00">
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label for="quantity_${itemCounter}">Quantity</label>
+                                    <input type="number" class="form-control" id="quantity_${itemCounter}" placeholder="1">
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label for="totalValue_${itemCounter}">Total Value</label>
+                                    <input type="number" class="form-control" id="totalValue_${itemCounter}" placeholder="0.00" readonly>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group col-md-2">
+                                    <label for="r1_${itemCounter}">R1</label>
+                                    <input type="text" class="form-control" id="r1_${itemCounter}" placeholder="R1">
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label for="r2_${itemCounter}">R2</label>
+                                    <input type="text" class="form-control" id="r2_${itemCounter}" placeholder="R2">
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label for="r3_${itemCounter}">R3</label>
+                                    <input type="text" class="form-control" id="r3_${itemCounter}" placeholder="R3">
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label for="r4_${itemCounter}">R4</label>
+                                    <input type="text" class="form-control" id="r4_${itemCounter}" placeholder="R4">
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label for="r5_${itemCounter}">R5</label>
+                                    <input type="text" class="form-control" id="r5_${itemCounter}" placeholder="R5">
+                                </div>
+                                <div class="col-md-2 d-flex align-items-end justify-content-end">
+                                    <button type="button" class="btn btn-danger btn-sm remove-item">Remove</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                $('#itemDetailsContainer').append(newItemHtml);
+            }
+
+            // Add Item button click handler
+            $('#addItem').on('click', function () {
+                addItemRow();
+            });
+
+            // Remove Item button click handler (delegated event for dynamically added elements)
+            $('#itemDetailsContainer').on('click', '.remove-item', function () {
+                $(this).closest('.item-row').remove();
+                // Optionally re-index item IDs here if needed for server-side processing
+            });
+
+            // Calculate Total Value for each item (example for one row)
+            $('#itemDetailsContainer').on('input', 'input[id^="unitPrice_"], input[id^="quantity_"]', function() {
+                const row = $(this).closest('.item-row');
+                const unitPrice = parseFloat(row.find('input[id^="unitPrice_"]').val()) || 0;
+                const quantity = parseFloat(row.find('input[id^="quantity_"]').val()) || 0;
+                row.find('input[id^="totalValue_"]').val((unitPrice * quantity).toFixed(2));
+                calculateGrandTotal();
+            });
+
+            // Calculate Grand Total for the entire form
+            function calculateGrandTotal() {
+                let totalBasicValue = parseFloat($('#orderBasicValue').val()) || 0;
+                let totalGstValue = parseFloat($('#totalGstValue').val()) || 0;
+
+                $('.item-row').each(function() {
+                    const itemTotal = parseFloat($(this).find('input[id^="totalValue_"]').val()) || 0;
+                    totalBasicValue += itemTotal; // Assuming item total contributes to basic value
+                });
+
+                $('#totalAmount').val((totalBasicValue + totalGstValue).toFixed(2));
+            }
+
+            // Recalculate grand total on changes to orderBasicValue and totalGstValue
+            $('#orderBasicValue, #totalGstValue').on('input', calculateGrandTotal);
+
+            // Initial calculation if there are default values
+            calculateGrandTotal();
+
+            // Form Submission (for demonstration, you'd send an AJAX request to your MVC controller)
+            $('#enquiryForm').on('submit', function (e) {
+                e.preventDefault(); // Prevent default form submission
+
+                // Collect all form data
+                const formData = {
+                    Series: $('#series').val(),
+                    FinancialYear: $('#financialYear').val(),
+                    EnquiryNo: $('#enquiryNo').val(),
+                    Month: $('#month').val(),
+                    ProjectClient: $('#projectClient').val(),
+                    IndustryType: $('#industryType').val(),
+                    ContactName: $('#contactName').val(),
+                    TechnicalContact: $('#technicalContact').val(),
+                    CommercialContact: $('#commercialContact').val(),
+                    ContactNumber: $('#contactNumber').val(),
+                    EmailId: $('#emailId').val(),
+                    Address: $('#address').val(),
+                    ReceivedFrom: $('#receivedFrom').val(),
+                    TypeOfEnquiry: $('#typeOfEnquiry').val(),
+                    OrderBasicValue: parseFloat($('#orderBasicValue').val()) || 0,
+                    TotalGstValue: parseFloat($('#totalGstValue').val()) || 0,
+                    TotalAmount: parseFloat($('#totalAmount').val()) || 0,
+                    ReceivedDT: $('#receivedDT').val(),
+                    SentDT: $('#sentDT').val(),
+                    Status: $('#status').val(),
+                    Remarks: $('#remarks').val(),
+                    ItemDetails: []
+                };
+
+                // Collect dynamic item details
+                $('.item-row').each(function () {
+                    const item = {
+                        DescOfPanel: $(this).find('input[id^="descOfPanel_"]').val(),
+                        HsnCode: $(this).find('input[id^="hsnCode_"]').val(),
+                        UnitPrice: parseFloat($(this).find('input[id^="unitPrice_"]').val()) || 0,
+                        Quantity: parseInt($(this).find('input[id^="quantity_"]').val()) || 0,
+                        TotalValue: parseFloat($(this).find('input[id^="totalValue_"]').val()) || 0,
+                        R1: $(this).find('input[id^="r1_"]').val(),
+                        R2: $(this).find('input[id^="r2_"]').val(),
+                        R3: $(this).find('input[id^="r3_"]').val(),
+                        R4: $(this).find('input[id^="r4_"]').val(),
+                        R5: $(this).find('input[id^="r5_"]').val()
+                    };
+                    formData.ItemDetails.push(item);
+                });
+
+                console.log("Form Data:", formData);
+
+                // Example of sending data via AJAX to an MVC controller action:
+                // $.ajax({
+                //     url: '/Enquiry/UpdateEnquiry', // Replace with your MVC controller action URL
+                //     type: 'POST',
+                //     contentType: 'application/json',
+                //     data: JSON.stringify(formData),
+                //     success: function (response) {
+                //         if (response.success) {
+                //             alert('Enquiry updated successfully!');
+                //             // Redirect or show success message
+                //         } else {
+                //             alert('Error: ' + response.message);
+                //         }
+                //     },
+                //     error: function (xhr, status, error) {
+                //         console.error("AJAX Error:", status, error);
+                //         alert('An error occurred while updating the enquiry.');
+                //     }
+                // });
+            });
+        });
+    </script>
+
+</html>

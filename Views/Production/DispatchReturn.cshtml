@@ -1,0 +1,258 @@
+﻿
+@{
+    ViewBag.Title = "DispatchReturn";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if the current context is inside a Bootstrap modal
+            const isInModal = !!(document.querySelector('.modal.show'));
+
+            if (isInModal) {
+                // If inside a modal, wait for a short delay
+                setTimeout(() => {
+                    handleInvalidUser();
+                }, 500); // Adjust the delay as needed
+            } else {
+                // If not in a modal, proceed immediately
+                handleInvalidUser();
+            }
+
+            function handleInvalidUser() {
+                toastr.error("Invalid User");
+
+                setTimeout(function () {
+                    window.location.href = "@Url.Action("Index", "Login")";
+                }, 2000); // Redirect after 2 seconds
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+<div class="container">  
+    <h3 style="background-color: #00698f; color: #ffffff; padding: 5px 10px; border-radius: 5px; text-align: center;">Dispatch Return Voucher</h3>
+    <div class="row col-md-12">
+        <div class="col-md-4">
+            <label for="itemCode">FG Item Code:</label>
+            <input type="text" id="itemCode" class="form-control form-control-sm" placeholder="Enter Item Code">
+        </div>
+        <div class="col-md-4">
+            <label for="returndate">Return Date:</label>
+            <input type="date" id="returndate" class="form-control form-control-sm">
+        </div>
+        <div class="col-md-4">
+            <label for="engineSerial">Engine Serial Number:</label>
+            <select id="engineSerial" class="form-control form-control-sm">
+                <option value="">Select Engine Serial</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="voucherNumber">Voucher Number:</label>
+            <input type="text" id="voucherNumber" class="form-control form-control-sm" disabled>
+            <input type="text" id="dispatchid" class="form-control form-control-sm" style="display:none">
+        </div>
+        <div class="col-md-4">
+            <label for="voucherDate">Voucher Date:</label>
+            <input type="text" id="voucherDate" class="form-control form-control-sm" disabled>
+        </div>
+        <div class="col-md-4">
+            <label for="customerName">Customer Name:</label>
+            <input type="text" id="customerName" class="form-control form-control-sm" disabled>
+        </div>
+        <div class="col-md-4">
+            <label for="customerAddress">Customer Address:</label>
+            <textarea id="customerAddress" class="form-control form-control-sm" disabled></textarea>
+        </div>
+        <div class="col-md-4">
+            <label for="dateoftesting">Date of Testing:</label>
+            <input type="text" id="dateoftesting" class="form-control form-control-sm" disabled>
+        </div>
+        <div class="col-md-4">
+            <label for="model">Model:</label>
+            <input type="text" id="model" class="form-control form-control-sm" disabled>
+        </div>
+        <div class="col-md-4">
+            <label for="alternatorSerialNumber">Alternator Serial Number:</label>
+            <input type="text" id="alternatorSerialNumber" class="form-control form-control-sm" disabled>
+        </div>
+        <div class="col-md-4">
+            <label for="gensetRating">Genset Rating:</label>
+            <input type="text" id="gensetRating" class="form-control form-control-sm" disabled>
+        </div>
+        <div class="col-md-4">
+            <label for="panelSerialNo">Panel Serial No:</label>
+            <input type="text" id="panelSerialNo" class="form-control form-control-sm" disabled>
+        </div>
+        <div class="col-md-4">
+            <label for="krmNo">KRM No:</label>
+            <input type="text" id="krmNo" class="form-control form-control-sm" disabled>
+        </div>
+        <div class="col-md-4">
+            <label for="batteryRating">Battery Rating:</label>
+            <input type="text" id="batteryRating" class="form-control form-control-sm" disabled>
+        </div>
+        <div class="col-md-4">
+            <label for="batterySerialNo">Battery Serial No:</label>
+            <input type="text" id="batterySerialNo" class="form-control form-control-sm" disabled>
+        </div>
+        <div class="col-md-4">
+            <label for="batteryQuantity">Battery Quantity:</label>
+            <input type="text" id="batteryQuantity" class="form-control form-control-sm" disabled>
+        </div>
+        <div class="col-md-4">
+            <label for="remarks">Remarks:</label>
+            <textarea id="remarks" class="form-control form-control-sm"></textarea>
+        </div>
+    </div>
+    <div style="float: right;">
+        <button id="submitReturn" class="btn btn-primary" style="background-color: #00698f; color: #ffffff; border-color: #0070d2;">Submit Return</button>
+    </div>
+</div>
+<img id="wait-sign" src="~/images/wait.gif" class="wait-sign-image" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);" />
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+
+<script>
+    $(document).ready(function () {
+        $('#itemCode').on('keydown', function (event) {
+            if (event.key === 'Tab' || event.key === 'Enter') {
+                event.preventDefault(); // Prevent default tab/enter behavior
+                var itemCode = $(this).val();
+                if (itemCode) {
+                    $.ajax({
+                        url: '/Production/GetDispatchedSerialNumbers',
+                        type: 'GET',
+                        data: { itemCode: itemCode },
+                        success: function (data) {
+                            toastr.success('Engine Serial Number Retrieved..')
+                            $('#engineSerial').empty().append('<option value="">Select Engine Serial</option>');
+                            $.each(data.list, function (i, item) {
+                                $('#engineSerial').append('<option value="' + item.value + '">' + item.text + '</option>');
+                            });
+                        }
+                    });
+                }
+            }
+        });
+        $('#engineSerial').on('change', function () {
+            debugger;
+            var ewapid = $(this).val();
+            // debugger; // Keep debugger if you need it for debugging
+            if (ewapid) { // Corrected: Use ewapid instead of engineSerial
+                $.ajax({
+                    url: '/Production/GetDispatchReturnDetails',
+                    type: 'GET',
+                    data: { ewapid: ewapid },
+                    success: function (response) {
+                        if (response.success) {
+                            var data = response.data;
+                            toastr.success('Data Retrieved..');
+                            var voucherDate = moment(data.voucherDate).format('DD/MM/YYYY');
+                            var testingDate = moment(data.dateoftesting).format('DD/MM/YYYY');
+
+                            $('#voucherNumber').val(data.voucherNumber);
+                            $('#dispatchid').val(data.dispatchid);
+                            $('#voucherDate').val(voucherDate);
+                            $('#customerName').val(data.customerName);
+                            $('#customerAddress').val(data.customerAddress);
+                            $('#dateoftesting').val(testingDate);
+                            $('#model').val(data.model);
+                            $('#alternatorSerialNumber').val(data.alternatorSerialNumber);
+                            $('#gensetRating').val(data.gensetRating);
+                            $('#panelSerialNo').val(data.panelSerialNo);
+                            $('#krmNo').val(data.krmNo);
+                            $('#batteryRating').val(data.batteryRating);
+                            $('#batterySerialNo').val(data.batterySerialNo);
+                            $('#batteryQuantity').val(data.batteryQuantity);
+                        } else {
+                            toastr.error("Error: " + response.error);
+                            $('#voucherNumber').val('');
+                            $('#dispatchid').val('');
+                            $('#voucherDate').val('');
+                            $('#customerName').val('');
+                            $('#customerAddress').val('');
+                            $('#dateoftesting').val('');
+                            $('#model').val('');
+                            $('#alternatorSerialNumber').val('');
+                            $('#gensetRating').val('');
+                            $('#panelSerialNo').val('');
+                            $('#krmNo').val('');
+                            $('#batteryRating').val('');
+                            $('#batterySerialNo').val('');
+                            $('#batteryQuantity').val('');
+                        }
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.error("AJAX request failed:", textStatus, errorThrown);
+                        alert("Error: Failed to retrieve data.");
+                    }
+                });
+            } else {
+                // Clear fields when no ewapid is selected
+                $('#voucherNumber').val('');
+                $('#dispatchid').val('');
+                $('#voucherDate').val('');
+                $('#customerName').val('');
+                $('#customerAddress').val('');
+                $('#dateoftesting').val('');
+                $('#model').val('');
+                $('#alternatorSerialNumber').val('');
+                $('#gensetRating').val('');
+                $('#panelSerialNo').val('');
+                $('#krmNo').val('');
+                $('#batteryRating').val('');
+                $('#batterySerialNo').val('');
+                $('#batteryQuantity').val('');
+            }
+        });
+        $('#submitReturn').on('click', function () {
+            $('#wait-sign').show();
+            var ewapid = $('#engineSerial option:selected').val();
+            var dispatchid = $('#dispatchid').val();
+            var remarks = $('#remarks').val();
+            var returndate = $('#returndate').val();
+            debugger;
+            $.ajax({
+                url: '/Production/SubmitDispatchReturn',
+                type: 'POST',
+                data: { remarks: remarks, ewapid: ewapid, dispatchid: dispatchid, returndate: returndate },
+                success: function (response) {
+                    if (response.success) {
+                        toastr.success('Return Saved - ' + response.data);
+                        // Clear fields or redirect as needed
+                        $('#itemCode').val('');
+                        $('#returndate').val('');
+                        $('#engineSerial').val('');
+                        $('#dispatchid').val('');
+                        $('#remarks').val('');
+                        $('#voucherNumber').val('');
+                        $('#voucherDate').val('');
+                        $('#customerName').val('');
+                        $('#customerAddress').val('');
+                        $('#dateoftesting').val('');
+                        $('#model').val('');
+                        $('#alternatorSerialNumber').val('');
+                        $('#gensetRating').val('');
+                        $('#panelSerialNo').val('');
+                        $('#krmNo').val('');
+                        $('#batteryRating').val('');
+                        $('#batterySerialNo').val('');
+                        $('#batteryQuantity').val('');
+                        // If engine serial is a select, reset the selected option:
+                        $('#engineSerial').empty();
+                        $('#wait-sign').hide();
+                    } else {
+                        toastr.error('Something Went Wrong..');
+                        $('#wait-sign').hide();
+                    }
+                }
+            });
+        });
+    });
+</script>
+
+

@@ -1,0 +1,275 @@
+﻿@model CMKL.VMModels.Splitjobclass
+@{
+    ViewBag.Title = "CustomerDetail";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#search1").click(function () {
+            //debugger
+
+            var data = $("#myform").serialize();
+            $.ajax({
+
+                type: "Get",
+                url: "OrderDetail",
+                data: data
+                , success: function (Detail) {
+                    if (Detail != null) {
+                        $("#CID").val(Detail.Master.ID);
+                        $("#project").val(Detail.Master.Project_Client);
+                        $("#contact").val(Detail.Master.Contact);
+                        $("#contactname").val(Detail.Master.Contact_Name);
+                        $("#technicalcontact").val(Detail.Master.TechnicalContact);
+                        $("#commercialcontact").val(Detail.FinancialContact);
+                        $("#email").val(Detail.Email);
+                        $("#address").val(Detail.Address);
+                        $("#tab").val(Detail.Items);
+
+
+
+                        $("#jq").slideDown(3000);
+                        $("#myform").fadeOut(3000);
+                        toastr.success("Loading Customer Details");
+
+                    }
+                    else {
+                        toastr.error(response.message);
+                    }
+
+
+                },
+                error: function () {
+                    toastr.error('Record not Found / There is Somthing Wrong');
+
+                    // toastr.error('there is some problem with the input', 'Error alert', new { timeout: 300 });
+
+                }
+
+            });
+        })
+    })
+</script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#update1").click(function () {
+            //debugger
+
+            var data = $("#myform1").serialize();
+            $.ajax({
+
+                type: "Post",
+                url: "UpdateCustomerDetail",
+                data: data
+                , success: function (response) {
+
+                    if (response.success == true) {
+                        toastr.success(response.message);
+                        $("#jq").slideUp(3000);
+                    }
+                    else {
+                        toastr.error("Something is Wrong");
+                    }
+
+
+                },
+                error: function () {
+                    toastr.error('Record not Found / There is Somthing Wrong');
+
+                    // toastr.error('there is some problem with the input', 'Error alert', new { timeout: 300 });
+
+                }
+
+            });
+        })
+    })
+</script>
+
+@if (ViewBag.Saved != null)
+{
+    {
+        <script src="~/Scripts/jquery-3.4.1.min.js"></script>
+        <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+        <script src="~/toastr/Js/toastr.js"></script>
+        <link href="~/toastr/toastr.css" rel="stylesheet" />
+
+        <script type="text/javascript">
+        window.onload = function () {
+            toastr.success("@ViewBag.Saved")
+            //this.alert("@ViewBag.Delete")
+        }
+        </script>
+    }
+}
+
+
+        <h2>Split Enquiry</h2>
+        <hr />
+        @using (Html.BeginForm("OrderDetail", "EnquiryStatus", FormMethod.Get))
+        {
+            <form id="myform">
+                @*<div class="container">
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <input type="text" id="ID" name="ID" class="form-control" />
+
+                        </div>
+                        <div class="col-sm-3">
+                            <p><button type="submit" name="Search" id="search" class="btn btn-primary">Search</button></p>
+                        </div>
+
+
+                    </div>*@
+            </form>
+            <br />
+
+
+            <form id="myform1">
+                <div class="container" id="jq">
+                    <h4>Customer Detail</h4>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            @*<p><input type="text" hidden="hidden" id="CID" name="id" class="form-control" readonly="readonly" /></p>*@
+                            <p>@Html.Label("ID")</p>
+                            <p>@Html.TextBoxFor(x => x.CE.ID, new { id = "CID", @readonly = "readonly", placeholder = "ID", @class = "form-control" })</p>
+                        </div>
+                        <div class="col-sm-3">
+                            <p>@Html.Label("Series")</p>
+                            <p>@Html.TextBoxFor(x => x.CE.Billseries, new { id = "billseries", @readonly = "readonly", placeholder = "Bill Series", @class = "form-control" })</p>
+                        </div>
+                        <div class="col-sm-3">
+                            <p>@Html.Label("Series")</p>
+                            <p>@Html.TextBoxFor(x => x.CE.Enquiry_Month, new { id = "Month", @readonly = "readonly", placeholder = "Month", @class = "form-control" })</p>
+                        </div>
+                        <div class="col-sm-3">
+                            <p>@Html.Label("Fin Year")</p>
+                            <p>@Html.TextBoxFor(x => x.CE.Year, new { id = "finyear", @readonly = "readonly", placeholder = "Fin Year", @class = "form-control" })</p>
+                        </div>
+                        <div class="col-sm-3">
+                            <p>@Html.Label("Enquiry No")</p>
+                            <p>@Html.TextBoxFor(x => x.CE.EnquiryN, new { id = "enquiryno", @readonly = "readonly", placeholder = "Enquiry Number", @class = "form-control" })</p>
+                        </div>
+                        <div class="col-sm-3">
+                            <p>@Html.Label("Project Name")</p>
+                            <p>@Html.TextBoxFor(x => x.CE.Project_Client, new { id = "project", @readonly = "readonly", placeholder = "Project Name", @class = "form-control" })</p>
+                        </div>
+                        <div class="col-sm-3">
+                            <p>@Html.Label("Industry Type")</p>
+                            <p>@Html.TextBoxFor(x => x.CE.Industry, new { id = "industry", @readonly = "readonly", placeholder = "Industry Type", @class = "form-control" })</p>
+                        </div>
+                        <div class="col-sm-3">
+                            <p>@Html.Label("Contact Person")</p>
+                            <p>@Html.TextBoxFor(x => x.CE.Contact_Name, new { id = "contactname", @readonly = "readonly", placeholder = "Contact Name", @class = "form-control" })</p>
+                        </div>
+                        <div class="col-sm-3">
+                            <p>@Html.Label("Contact Number")</p>
+                            <p>@Html.TextBoxFor(x => x.CE.Contact, new { id = "contact", @readonly = "readonly", placeholder = "Contact Number", @class = "form-control" })</p>
+                        </div>
+
+                        <div class="col-sm-3">
+                            <p>@Html.Label("Technical Person")</p>
+                            <p>@Html.TextBoxFor(x => x.CE.TechnicalContact, new { id = "technicalcontact", @readonly = "readonly", placeholder = "Technical Contact Person", @class = "form-control" })</p>
+                        </div>
+                        <div class="col-sm-3">
+                            <p>@Html.Label("Financial Contact")</p>
+                            <p>@Html.TextBoxFor(x => x.CE.FinancialContact, new { id = "commercialcontact", @readonly = "readonly", placeholder = "Commercial Contact Person", @class = "form-control" })</p>
+                        </div>
+                        <div class="col-sm-3">
+                            <p>@Html.Label("Email ID")</p>
+                            <p>@Html.TextBoxFor(x => x.CE.Email, new { id = "email", @readonly = "readonly", placeholder = "Email ID", @class = "form-control" })</p>
+                        </div>
+                        <div class="col-sm-3">
+                            <p>@Html.Label("Address")</p>
+                            <p>@Html.TextBoxFor(x => x.CE.Address, new { id = "address", @readonly = "readonly", placeholder = "Address", @class = "form-control" })</p>
+                        </div>
+                        <div class="col-sm-3">
+                            <p>@Html.Label("Recieved From")</p>
+                            <p>@Html.TextBoxFor(x => x.CE.ReceivedFrom, new { id = "recievedfrom", @readonly = "readonly", placeholder = "Recieved From", @class = "form-control" })</p>
+                        </div>
+                        <div class="col-sm-3">
+                            <p>@Html.Label("Type Of Enquiry")</p>
+                            <p>@Html.TextBoxFor(x => x.CE.EnquiryType, new { id = "enquirytype", @readonly = "readonly", placeholder = "Enquiry Type", @class = "form-control" })</p>
+                        </div>
+                        <div class="col-sm-3">
+                            <p> @Html.Label("Total Basic Value")</p>
+                            <p>@Html.TextBoxFor(x => x.CE.TotalBasicValue, new { id = "basicvalue", @readonly = "readonly", placeholder = "Basic Value", @class = "form-control" })</p>
+                        </div>
+                        <div class="col-sm-3">
+
+                        </div>
+                        <br />
+
+                        <div class="col-sm-3">
+                            <p><label id="NewEnquiry">New Enquiry Number</label> </p>
+                            <p><input type="text" id="NewEnquiry" name="split" class="form-control" placeholder="Enter New Enquiry Number" /></p>
+                        </div>
+
+                        <div class="col-sm-3">
+                            <p><button type="submit" name="split" id="split" class="btn btn-danger">Split Order</button></p>
+                        </div>
+                        <div class="col-sm-3">
+                            <p>@Html.Label("")</p>
+
+                        </div>
+                    </div>
+
+                </div>
+                <hr />
+                <div>
+                    @if (Model.CEI != null)
+                    {
+                        <table class="table table-striped" id="tab">
+                            <thead>
+                                <tr>
+                                    <th>Desc</th>
+                                    <th>QTY</th>
+                                    <th>Unit Price</th>
+                                    <th>Total Price</th>
+                                    <th>HSN</th>
+                                    <th>R1</th>
+                                    <th>R2</th>
+                                    <th>R3</th>
+                                    <th>R4</th>
+                                    <th>R5</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.CEI)
+                                {
+                                    <tr>
+                                        @*  <th scope="row">@item.EnquiryNo</th>*@
+                                        <td>@item.Item_Desc</td>
+                                        <td>@item.Qty</td>
+                                        <td>@item.Unitprice</td>
+                                        <td>@item.Total_Price</td>
+                                        <td>@item.HSNCode</td>
+                                        <td>@item.Rone</td>
+                                        <td>@item.RTwo</td>
+                                        <td>@item.Rthree</td>
+                                        <td>@item.Rfour</td>
+                                        <td>@item.Rfive</td>
+                                        <td>
+                                            @*<a data-value="@item.ID"
+        href="javascript:void(0)" class="btnEdit">Move</a>*@
+                                        </td>
+                                    </tr>
+
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+            </form>
+        }
+
+
+
+

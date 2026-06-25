@@ -1,0 +1,435 @@
+﻿@{
+    ViewBag.Title = "BOM Item Issue Intelligence";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const isInModal = !!(document.querySelector('.modal.show'));
+            const handleInvalidUser = () => {
+                toastr.error("Session Expired. Please Login.");
+                setTimeout(() => { window.location.href = "@Url.Action("Index", "Login")"; }, 2000);
+            };
+            setTimeout(handleInvalidUser, isInModal ? 500 : 0);
+        });
+    </script>
+    <div class="vh-100 vw-100 bg-white"></div>
+}
+
+<style>
+    :root {
+        --brand-blue: #00698f;
+        --brand-dark: #004d69;
+        --light-bg: #f8fafc;
+        --border-color: #e2e8f0;
+        --cancel-red: #991b1b;
+    }
+
+    body {
+        background-color: var(--light-bg);
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+    }
+
+    /* Executive Header */
+    .report-header {
+        background: linear-gradient(135deg, var(--brand-blue) 0%, var(--brand-dark) 100%);
+        color: white;
+        padding: 1.5rem 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    /* KPI Stat Cards */
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 18px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.2s ease;
+        height: 100%;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+    .stat-label {
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #64748b;
+        letter-spacing: 0.5px;
+        margin-bottom: 5px;
+    }
+
+    .stat-value {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: var(--brand-blue);
+    }
+
+    /* Layout Containers */
+    .custom-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .card-header-custom {
+        background: #fff;
+        padding: 15px 25px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .card-title-line {
+        font-weight: 700;
+        color: var(--brand-blue);
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        margin: 0;
+    }
+
+    /* Form Elements */
+    .form-label-pill {
+        font-weight: 700;
+        font-size: 0.65rem;
+        color: #ffffff !important;
+        text-transform: uppercase;
+        background-color: var(--brand-blue);
+        padding: 2px 10px;
+        border-radius: 4px;
+        display: inline-block;
+        margin-bottom: 5px;
+    }
+
+    .form-control-sm, .form-select-sm {
+        border-radius: 8px;
+        border: 1.5px solid var(--border-color);
+        padding: 8px 12px;
+        font-size: 0.85rem;
+        height: auto;
+        transition: all 0.3s ease;
+    }
+
+    /* Table & Cancelled Row Styling */
+    .table-container {
+        max-height: 550px;
+        overflow-y: auto;
+    }
+
+    .table thead th {
+        background: #f1f5f9;
+        color: var(--brand-blue);
+        font-weight: 800;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .row-cancelled {
+        background-color: #fff1f2 !important;
+        text-decoration: line-through;
+        color: var(--cancel-red);
+    }
+
+        .row-cancelled td {
+            opacity: 0.6;
+        }
+
+    /* Status Badges */
+    .status-pill {
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-weight: 800;
+        font-size: 0.6rem;
+        text-transform: uppercase;
+    }
+
+    .status-issued {
+        background: #dcfce7;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+    }
+
+    .status-cancelled {
+        background: var(--cancel-red);
+        color: white;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.6rem;
+        text-decoration: none !important;
+        display: inline-block;
+    }
+
+    .lot-tag {
+        font-family: 'JetBrains Mono', monospace;
+        color: var(--brand-blue);
+        font-weight: 700;
+        background: #f0f9ff;
+        padding: 2px 6px;
+        border-radius: 4px;
+    }
+
+    .search-input {
+        border-radius: 25px !important;
+        padding-left: 40px !important;
+        background: #f8fafc !important;
+    }
+
+    .animate-up {
+        animation: fadeInUp 0.5s ease forwards;
+        opacity: 0;
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="container-fluid px-4 py-4 animate-up">
+    <div class="report-header d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="mb-0 fw-bold"><i class="fas fa-file-invoice mr-3"></i> BOM Item Issue Audit</h2>
+            <small class="text-white-50">Detailed trace of material consumption with cancellation audit.</small>
+        </div>
+        <div class="text-end">
+            <button class="btn btn-success btn-sm rounded-pill px-4 fw-bold shadow-sm" onclick="exportToExcel()">
+                <i class="fas fa-file-excel me-2"></i> Export Report
+            </button>
+        </div>
+    </div>
+
+    <div class="custom-card shadow-sm mb-4">
+        <div class="card-header-custom bg-light">
+            <h6 class="card-title-line"><i class="fas fa-search me-2"></i> Document Selection</h6>
+        </div>
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label-pill">Active BOM Voucher</label>
+                    <select id="bomid" class="form-select form-select-sm border-primary shadow-sm fw-bold">
+                        <option value="">Scanning Vouchers...</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label-pill bg-secondary">Product Series</label>
+                    <input type="text" id="fgseries" class="form-control form-control-sm" disabled />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label-pill bg-secondary">FG Code</label>
+                    <input type="text" id="fgcode" class="form-control form-control-sm" disabled />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label-pill bg-secondary">Finished Good Description</label>
+                    <input type="text" id="fgdesc" class="form-control form-control-sm" disabled />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4" id="kpi-row" style="display:none;">
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid var(--brand-blue);">
+                <span class="stat-label">Total Lines (Incl. Cancelled)</span>
+                <span class="stat-value" id="kpi-count">0</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #10b981;">
+                <span class="stat-label">Total Qty (Active Only)</span>
+                <span class="stat-value text-success" id="kpi-qty">0.00</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #6366f1;">
+                <span class="stat-label">Active Lot Tracks</span>
+                <span class="stat-value text-primary" id="kpi-lots">0</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #f59e0b;">
+                <span class="stat-label">Audit Result</span>
+                <span class="stat-value text-warning">Verified Live</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="custom-card shadow-lg">
+        <div class="card-header-custom">
+            <h6 class="card-title-line"><i class="fas fa-list-ul me-2"></i> Consumed Components List</h6>
+            <div class="position-relative" style="width: 350px;">
+                <input type="text" id="quickSearch" class="form-control form-control-sm search-input" placeholder="Quick find item or serial...">
+            </div>
+        </div>
+        <div class="table-container">
+            <table id="itemlist" class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Part Identity</th>
+                        <th>Category</th>
+                        <th class="text-center">Issued Qty</th>
+                        <th class="text-center">UOM</th>
+                        <th>Authorization Trail</th>
+                        <th class="text-center">Lot / Serial Trace</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="6" class="text-center py-5 text-muted">Select a BOM Voucher to begin audit.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<img id="wait-sign" src="~/images/wait.gif" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10005; width: 80px;" />
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            loadBOMDropdown();
+
+            $("#quickSearch").on("keyup", function () {
+                var value = $(this).val().toLowerCase();
+                $("#itemlist tbody tr").filter(function () {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+
+            $('#bomid').change(function () {
+                var bomidnumber = $(this).val();
+                if (bomidnumber) GetBOMItems(bomidnumber);
+            });
+        });
+
+        function loadBOMDropdown() {
+            $.ajax({
+                type: 'GET',
+                url: '/Reports/GetBomNumbers',
+                success: function (data) {
+                    var dropdown = $('#bomid');
+                    dropdown.empty().append('<option value="">-- Select BOM Voucher --</option>');
+                    if (data.list) {
+                        $.each(data.list, function (i, item) {
+                            dropdown.append(new Option(item.text, item.value));
+                        });
+                    }
+                }
+            });
+        }
+
+        function GetBOMItems(bomidnumber) {
+            $('#wait-sign').show();
+            $.ajax({
+                type: 'GET',
+                url: '/Reports/GetBOMItems',
+                data: { bomidnumber: bomidnumber },
+                success: function (data) {
+                    $('#wait-sign').hide();
+                    var tbody = $('#itemlist').find('tbody');
+                    tbody.empty();
+
+                    $('#fgcode').val(data.head.fgcode || 'NA');
+                    $('#fgdesc').val(data.head.fgdesc || 'NA');
+                    $('#fgseries').val(data.finalitemdesc || 'NA');
+
+                    let totalQty = 0, lotCount = 0;
+
+                    if (data.items && data.items.length > 0) {
+                        $('#kpi-row').fadeIn();
+                        $.each(data.items, function (i, item) {
+
+                            // Handling Cancelled Logic
+                            var isCancelled = item.IsDeleted == 1;
+                            var rowClass = isCancelled ? 'row-cancelled' : '';
+                            var statusBadge = isCancelled ?
+                                '<span class="status-cancelled">CANCELLED</span>' :
+                                '<span class="status-pill status-issued">ACTIVE</span>';
+
+                            var appDate = item.ApprovedDate ?
+                                moment(parseInt(item.ApprovedDate.substr(6))).format('DD/MM/YYYY hh:mm A') : '---';
+
+                            var lotDate = item.LotDate ?
+                                moment(parseInt(item.LotDate.substr(6))).format('DD/MM/YYYY') : '---';
+
+                            var qty = parseFloat(item.Quantity || 0);
+
+                            // KPI updates only for non-cancelled items
+                            if (!isCancelled) {
+                                totalQty += qty;
+                                if (item.Lot && item.Lot !== "NA") lotCount++;
+                            }
+
+                            var row = `<tr class="${rowClass}">
+                                        <td>
+                                            <div class="fw-bold">${item.ItemName} ${statusBadge}</div>
+                                            <div class="small text-muted font-monospace">${item.RItemCode}</div>
+                                        </td>
+                                        <td>
+                                            <div class="small fw-bold text-muted uppercase" style="font-size:0.6rem">${item.Category}</div>
+                                            <div class="small text-muted">${item.SubCategory || 'General'}</div>
+                                        </td>
+                                        <td class="text-center fw-bold">${qty.toFixed(2)}</td>
+                                        <td class="text-center small font-weight-bold">${item.UOM}</td>
+                                        <td>
+                                            <div class="small fw-bold">${item.ApprovedBy || '---'}</div>
+                                            <div class="small text-muted"><i class="far fa-clock me-1"></i>${appDate}</div>
+                                        </td>
+                                        <td>
+                                            ${item.Lot && item.Lot !== 'NA' ?
+                                    `<div class="lot-tag text-center shadow-sm">${item.Lot}</div>
+                                             <div class="text-center mt-1" style="font-size:0.65rem">Recv: ${lotDate}</div>` :
+                                    '<div class="text-center text-muted small italic">Bulk Item</div>'}
+                                        </td>
+                                    </tr>`;
+                            tbody.append(row);
+                        });
+
+                        $('#kpi-count').text(data.items.length);
+                        $('#kpi-qty').text(totalQty.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+                        $('#kpi-lots').text(lotCount);
+
+                        toastr.success('BOM Consumption Data Loaded.');
+                    } else {
+                        tbody.append('<tr><td colspan="6" class="text-center py-5 text-muted">No data found.</td></tr>');
+                    }
+                },
+                error: function () { $('#wait-sign').hide(); toastr.error("Sync Error."); }
+            });
+        }
+
+        function exportToExcel() {
+            var table = document.getElementById("itemlist");
+            var wb = XLSX.utils.table_to_book(table, { raw: true });
+            var bomRef = $('#bomid option:selected').text();
+            XLSX.writeFile(wb, 'BOM_Audit_' + bomRef.replace('/', '-') + '.xlsx');
+        }
+    </script>
+}

@@ -1,0 +1,303 @@
+﻿  body {
+            margin: 20px;
+            font-family: "Segoe UI", Verdana, Helvetica, Sans-Serif;
+        }
+
+        label {
+            width: 80px;
+            display: inline-block;
+            font-size: 12px;
+             font-weight:bold;
+        }
+
+        button {
+            display: inline-block;
+            outline: none;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            padding: .2em 1.1em .2em;
+            color: #fef4e9;
+            border: solid 1px #006fb9;
+            background: #1276bb;
+            width:50px;height:25px;
+            font-size:11px;
+        }
+
+            button:hover {
+                text-decoration: none;
+                background: #282828;
+                border: solid 1px #000;
+            }
+
+/* ----------------------------------------------Wrapper-------------------------------------*/
+.datagrid{ background-color:#F6F6F6;width:99%;  }
+.datagrid table { margin: 1em; border-collapse: collapse;width:95%;font-size:11px;  }
+
+div.wrapper{
+	display:block;
+	width:100%;
+	margin:0;
+	text-align:left;
+	border-bottom:1px solid #E3E3E3;
+	}
+
+div.wrapper h1, div.wrapper h2, div.wrapper h3, div.wrapper h4, div.wrapper h5, div.wrapper h6{
+	margin:0 0 15px 0;
+	padding:0;
+	font-size:20px;
+	font-weight:normal;
+	line-height:normal;
+	}
+
+.col0, .col0 a{color:#FFFFFF; background-color:#666666;}
+.col2{color:#FFFFFF; background-color:#F6F6F6;}
+
+.btnasp
+{
+  display: inline-block;
+  outline: none;
+  cursor: pointer;
+  text-align: center;
+   text-decoration: none;
+  padding: .2em 1.1em .2em;
+ color: #fef4e9;
+border: solid 1px #006fb9;
+ background: #1276bb;
+ width:90px;height:25px;
+  font-size:12px;
+ 
+}
+.Dmvctextbox
+{
+  width: 450px;
+  height:15px;
+ font-size: 11px;
+ border-width:thin; 
+ border-color:#1276bb;
+  background: #dddddd;
+ 
+}
+.Dmvctextbox1
+{
+  width: 335px;
+  height:15px;
+ font-size: 11px;
+ border-width:thin; 
+ border-color:#1276bb;
+  background: #dddddd;
+}
+.Dmvctextbox5
+{
+  width: 250px;
+  height:15px;
+ font-size: 11px;
+ border-width:thin; 
+ border-color:#1276bb;
+  background: #dddddd;
+}
+.Dmvctextbox2
+{
+  width: 100px;
+  height:15px;
+ font-size: 11px;
+ border-width:thin; 
+ border-color:#1276bb;
+  background: #dddddd;
+}
+.Dmvctextbox3
+{
+  width: 200px;
+  height:15px;
+ font-size: 11px;
+ border-width:thin; 
+ border-color:#1276bb;
+  background: #dddddd;
+}
+.Dmvctextbox4
+{
+    border-width: thin;
+    border-color: #1276bb;
+    font-size: 11px;
+    background: #dddddd;
+}
+
+.mvctextbox1
+{
+  width: 335px;
+  height:15px;
+ font-size: 11px;
+ border-width:thin; 
+ border-color:#1276bb;
+
+}
+.mvctextbox2
+{
+  width: 100px;
+  height:10px;
+ font-size: 11px;
+ border-width:thin; 
+ border-color:#1276bb;
+}
+.mvctextbox3
+{
+  width: 200px;
+  height:10px;
+ font-size: 11px;
+ border-width:thin; 
+ border-color:#1276bb;
+}
+.mvctextbox4
+{
+    border-width: thin;
+    border-color: #1276bb;
+     font-size: 11px;
+}
+.Trline
+{
+    font-size:11px;
+    outline:solid .001em black;
+}
+.bordertable
+{
+  width:50%;border-left: solid 1px black; border-top:solid 1px black;border-right: solid 1px black; border-bottom:solid 1px black;  
+    }
+.content-wrapper {
+    margin: 0 auto;
+    max-width: 960px;
+}
+
+        table {
+            padding-top: 1em;
+        }
+
+        thead, tfoot {
+            font-weight: 600;
+            font-size:small;
+            color:white;
+        }
+
+        th, td {
+           /* padding: .1em .5em; */
+            text-align: left;
+        }
+
+            td li, td ul {
+                margin: 0;
+                padding: 0;
+            }
+
+            td li {
+                display: inline;
+            }
+
+                td li::after {
+                    content: ',';
+                }
+
+                td li:last-child::after {
+                    content: '';
+                }
+
+               
+                .webGrid {background-color:#1276bb;color:white;font-family:Arial,Helventica,sans-serif;font-size:12px;}
+        .header { background-color: #1276bb;font-size:12px; font-weight: bold; color: #FFF; }
+        .webGrid th, .webGrid td { border: 1px solid #C0C0C0; padding: 5px; }
+        .alt { background-color: #1276bb; color: #000; }
+        .gridHead a:hover {text-decoration:underline;}
+        .description { width:auto}
+        .select{background-color: #389DF5} 
+
+           .edit-mode
+    {
+    }
+
+    .edit-user
+    {
+    }
+
+        .edit-user display-mode
+        {
+        }
+
+    .save-user edit-mode
+    {
+    }
+
+    .display-mode
+    {
+        color: black;
+        text-align: center;
+        text-decoration: none;
+        font-family: Arial,Helvetica,sans-serif;
+        font-size: 12px;
+    }
+
+    .cancel-user
+    {
+    }
+
+    .webgrid-table
+    {
+        font-family: Arial,Helvetica,sans-serif;
+        font-size: 12px;
+        font-weight: normal;
+        width: 650px;
+        display: table;
+        border-collapse: collapse;
+        border: solid px #C5C5C5;
+        background-color: white;
+    }
+
+        .webgrid-table td
+        {
+            border: 1px solid #C5C5C5;
+            padding: 3px 7px 2px;
+        }
+
+        .webgrid-table th
+        {
+            background-color: #1276bb;
+            padding: 3px 7px 2px;
+            color: white;
+            font-family: Arial,Helventica,sans-serif;
+            font-size: 12px;
+        }
+
+    .webgrid-header, .webgrid-header a
+    { 
+        background-color: #1276bb;
+        color: #ff0000;
+        text-align: left;
+        font-family: Arial,Helvetica,sans-serif;
+        font-size: 12px;
+      }
+
+    .webgrid-footer
+    {
+    }
+
+    .webgrid-row-style
+    {
+        padding: 3px 7px 2px;
+    }
+
+    .webgrid-alternating-row
+    {
+        background-color: #F5F5F5;
+        padding: 3px 7px 2px;
+    }
+       .col3Width
+    {
+        width: 150px;
+    }
+
+    .col1Width
+    {
+        width: 30px;
+    }
+
+    .col2Width
+    {
+        width: 100px;
+    }

@@ -1,0 +1,93 @@
+﻿@model IEnumerable<CMKL.Models.Logisticin>
+
+@{
+    ViewBag.Title = "Logisticin";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+
+
+@if (TempData["message"] != null)
+{ 
+    <script type="text/javascript">
+        window.onload = function () {
+            toastr.success("@TempData["message"]")
+            //this.alert("@ViewBag.Delete")
+        }
+    </script>
+    TempData.Clear();
+}
+
+<h3 style="text-align:center">Plant In Item Wise</h3>
+
+
+@*<p>
+        @Html.ActionLink("Create New", "Create")
+    </p>
+*@
+<div class="container">
+    <table class="table" style="border-block-start">
+        <tr>
+            <th>
+                @Html.DisplayName("Company Name")
+
+            </th>
+            <th>
+                @Html.DisplayName("Bill No")
+
+            </th>
+            <th>
+                @Html.DisplayName("Bill Date")
+
+            </th>
+            <th>
+                @Html.DisplayName("Item Name")
+
+            </th>
+            <th>
+                @Html.DisplayName("Product Code")
+
+            </th>
+            <th>
+                @Html.DisplayName("Quantity")
+
+            </th>
+
+            <th></th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CompanyName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Billno)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.billdate)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Itemname)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Productcode)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.qty)
+                </td>
+
+                <td>
+                    @Html.ActionLink("Stock Take IN (Plant)", "approveplantin", new { ids = item.id})
+                    @* @Html.ActionLink("Details", "Details", new { id=item.id }) |
+                        @Html.ActionLink("Delete", "Delete", new { id=item.id })*@
+                </td>
+            </tr>
+        }
+
+    </table>
+</div>

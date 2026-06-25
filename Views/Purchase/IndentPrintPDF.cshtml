@@ -1,0 +1,271 @@
+﻿@model CMKL.Models.IndentViewModel
+<title>A4 Paper Size with Shade - Centered Content</title>
+<style>
+    /* Set A4 size */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    @@page {
+        size: A4;
+        margin: 0; /* Remove default page margins */
+    }
+
+    @@media print {
+        .watermark {
+            display: block !important; /* Ensure it's visible */
+        }
+        /* Add border to each page */
+        body {
+            border: 2px solid black; /* Adjust border style as needed */
+            box-sizing: border-box; /* Include border in element's total width and height */
+        }
+    }
+
+    .watermark-container {
+        position: fixed; /* or absolute, depending on your layout */
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1; /* Place it behind other content */
+        pointer-events: none; /* Allow clicks to pass through */
+    }
+
+
+    /* Set content to fill the entire A4 page */
+    html,
+    .setting > div {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column; /* Arrange content vertically */
+        text-align: center;
+    }
+
+        .setting > div h4 {
+            margin: 0; /* Remove default margin on the heading */
+        }
+
+    /* Style content with shaded background */
+    .content {
+        width: 80%;
+        height: 80%;
+        padding: 20px;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+    }
+
+    .table-container {
+        width: 100%;
+        font-size: 8px; /* Set font-size for the table container */
+        overflow-x: auto;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .table th, .table td {
+            border: 1px solid black;
+            padding: 5px;
+            text-align: left;
+            word-wrap: break-word;
+            font-size: inherit; /* Inherit font-size from the table container */
+        }
+
+    .inrow {
+        padding: 10px 0;
+    }
+
+    /* Prevent page breaks within the table */
+    .table-container {
+        page-break-inside: avoid;
+    }
+
+    /* Add top margin to the second page */
+    @@media print {
+        .setting > div:nth-child(n+13) { /* Adjust the selector if needed */
+            margin-top: 20px; /* Add some top margin to the second page content */
+        }
+    }
+</style>
+
+<div class="setting">
+    <div style="border: 2px solid; padding: 2px; /* Reduced padding */ margin-bottom: -2px; line-height: 0.8; /* Adjusted line-height */ display: flex; justify-content: center; align-items: center;">
+        <span>Indent Order</span>
+    </div>
+    <div style="border: 2px solid; padding: 10px; margin-bottom: -2px; line-height: 2px; text-align: center;">
+        <span style="font:bold 14px">IEC ELECTRIC POWER LIMITED</span>
+        <div class="row" style="display: flex;">
+            <div style="text-align: left; width: 70%; font-size:10px">
+                <p><strong style="font-size:12px">Bill & Delivery Address:</strong></p>
+                <p><strong><span id="CompanyName">Company Name:</span></strong></p>
+                <p><strong>Plot No. 1-6A, SICOP, IID Center, Govindsar</strong></p>
+                <p><strong>Kathua (J&K) PIN CODE 184102, BHARAT</strong></p>
+                <p><strong>GST :01AAHCI2554H1ZW</strong></p>
+                <p><strong>PAN :AAHCI2554H</strong></p>
+                <p><strong>Contact:Mr. V.S.Yadav (Cell: 09316369002), Mr. Gopal (09596757703)</strong></p>
+                <p><strong>Delivery Desination : Kathua (J & K - 184102)</strong></p>
+                <p style="color: red;"><strong>Item Code & PO Number Must be Mentioned in Your Invoice.</strong></p>
+            </div>
+            <div style="width: 30%; display: flex; justify-content: flex-end; align-items: center;">
+                <img src="~/Images/IEC.jpg" alt="IEPL Logo" style="height: 50px;" />
+            </div>
+        </div>
+    </div>
+    <div style="border: 2px solid; padding: 2px; margin-bottom: -2px; line-height: 2px; text-align: center;">
+        <div class="row inrow">
+            <div>
+                <p><strong>Indent Detail:</strong></p>
+                <p><strong>Indent Number:<span>@Model.IndentHeadData.IndentNumber</span></strong></p>
+                <p><strong>Indent Date:<span>@Model.IndentHeadData.IndentDate.ToString("dd/MM/yyyy")</span></strong></p>
+                <p><strong>Total Items:<span>@Model.IndentHeadData.TotalQuantity</span></strong></p>
+                <p><strong>Created By:<span>@Model.IndentHeadData.CreatedBy</span></strong></p>
+                <p><strong>Approved By:<span>@Model.IndentHeadData.ApprovedBy</span></strong></p>
+            </div>
+            <div></div> <div></div>
+        </div>
+    </div>
+
+    <div class="setting">
+        <div class="table-container">
+            <table class="table" id="table">
+                <thead>
+                    <tr>
+                        <th>Item Code</th>
+                        <th>Item Name</th>
+                        <th>Quantity</th>
+                        <th>UOM</th>
+                        <th>Last Order Date</th>
+                        <th>Last Order Quantity</th>
+                        <th>Last Supplier</th>
+                        <th>Last Price</th>
+                        <th>Min Level</th>
+                        <th>MOQ</th>
+                        <td>Monthly Cons. (Avg.)</td>
+                        <th>Available Stock</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.IndentItemDetail)
+                    {
+                        <tr>
+                            <td>@item.ItemCode</td>
+                            <td>@item.ItemName</td>
+                            <td>@item.Quantity</td>
+                            <td>@item.UOM</td>
+                            <td>@item.LastOrderDate</td>
+                            <td>@(item.LastOrderQuantity != null ? item.LastOrderQuantity.ToString() : "NA")</td>
+                            <td>@(item.LastSupplier != null ? item.LastSupplier.ToString() : "NA")</td>
+                            <td>@(item.LastPrice != null ? item.LastPrice.ToString("0.00") : "NA")</td>
+                            <td>@(item.MinimumLevel != null ? item.MinimumLevel.ToString() : "NA")</td>
+                            <td>@(item.MOQ != null ? item.MOQ.ToString() : "NA")</td>
+                            <td>@(item.Average() != null ? item.Average().ToString() : "NA")</td>
+                            <td>@item.AvailableStock</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div>
+        <div class="row inrow">
+            <div>
+                <img src="@Url.Content(Model.IndentHeadData.ImagePath)" alt="Signature" />
+                <p>Plant Head</p>
+            </div>
+            <div></div>
+            <div>
+                <img src="@Url.Content(Model.IndentHeadData.simagepath)" alt="Signature" />
+                <p>Management</p>
+            </div>
+        </div>
+    </div>
+    <div style="border: 2px solid; padding: 2px; margin-bottom: -2px; line-height: 2px;">
+        <div style="text-align:center; width:100%; font-size:6px;margin-right:5px">
+
+            <p><strong> CORPORATE OFFICE SCO. 36, SEC 26, MADHYA MARG, CHANDIGARH (160019) (U.T) PH.NO 0172-4374437,441,442,444,455 FAX NO:0172-4374466 </strong></p>
+        </div>
+    </div>
+</div>
+
+<button id="Print" onclick="printContent()">Print</button>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script>
+    //$(document).ready(function () {
+    //    $('#Print').click();
+    //})
+    function printContent() {
+        var printWindow = window.open('', '', 'height=794,width=612'); // A4 dimensions in pixels
+        printWindow.document.write('<html><head><title></title></head><body>');
+        printWindow.document.write(document.querySelector('.setting').innerHTML);
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.print();
+    }
+</script>
+<script>
+    $(document).ready(function () {
+
+            var id = @ViewBag.id;
+            $.ajax({
+                type: 'get',
+                url: '/Purchase/IndentPrintOutData',
+                data: { id: id },
+                success: function (data)
+                {
+
+                    //load Head Data
+                    const formattedindentDate = moment(data.IndentHeadData.IndentDate).format('DD/MM/YYYY');
+
+                    $('#IndentNumber').text(data.IndentHeadData.IndentNumber);
+                    $('#IndentDate').text(formattedindentDate);
+                    $('#TotalItems').text(data.IndentHeadData.TotalQuantity);
+                    $('#CreatedBy').text(data.IndentHeadData.CreatedBy);
+                    $('#ApprovedBy').text(data.IndentHeadData.ApprovedBy);
+                    var imageUrl = '@Url.Content("~/")' + data.IndentHeadData.ImagePath.substring(2);
+                    var simageurl = '@Url.Content("~/")' + data.IndentHeadData.simagepath.substring(2);
+                    $('#signatureImage').attr('src', imageUrl);
+                    $('#ssignatureImage').attr('src', simageurl);
+
+                    const itemsTbody = document.getElementById('items');
+                    let totalQuantity = 0;
+                    data.IndentItemDetail.forEach(item => {
+                        const rowHTML = `
+                            <tr>
+                        <td>${item.ItemCode}</td>
+                        <td>${item.ItemName}</td>
+                        <td>${parseFloat(item.Quantity).toFixed(3)}</td>
+                        <td>${item.UOM}</td>
+                        <td>${item.LastOrderDate}</td>
+                        <td>${item.LastOrderQuantity ? parseFloat(item.LastOrderQuantity).toFixed(3) : 'NA'}</td>
+                        <td>${item.LastSupplier || 'NA'}</td>
+                        <td>${item.LastPrice ? parseFloat(item.LastPrice).toFixed(2) : 'NA'}</td>
+                        <td>${item.MinimumLevel ? parseFloat(item.MinimumLevel).toFixed(3) : 'NA'}</td>
+                        <td>${item.MOQ ? parseFloat(item.MOQ).toFixed(3) : 'NA'}</td>
+                        <td>${item.Average ? parseFloat(item.Average).toFixed(3) : 'NA'}</td>
+                        <td>${parseFloat(item.AvailableStock).toFixed(3)}</td>
+                            </tr>
+                        `;
+                        itemsTbody.innerHTML += rowHTML;
+                    });
+                    debugger;
+                    //$('#Print').click();
+
+
+                }
+
+            });
+        })
+
+
+</script>
+
+

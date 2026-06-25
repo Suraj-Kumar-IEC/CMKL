@@ -1,0 +1,113 @@
+﻿@model CMKL.Models.tbl_User_Master
+@{
+    ViewBag.Title = "Login Page";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row"> </div>
+<div class="alert alert-info">
+    <a class="close" data-dismiss="alert" href="#">&times;</a>
+    
+        <h2>Web Application Login Page</h2>
+    
+</div>
+<div class="container"></div>
+@* @using (Html.BeginForm("Login", "Login", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "bootstrap-admin-login-form" }))*@
+@* {*@
+@Html.AntiForgeryToken()
+@Html.ValidationSummary(true)
+
+@*<h1>Login</h1>*@
+<br />
+<hr />
+<form id="myForm" style="text-align:center">
+    <div class="row">
+        <div class="col-md-3">
+
+            @Html.TextBoxFor(x => x.user_name, new { placeholder = "UserName", @class = "form-control" })
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-3">
+            @Html.PasswordFor(x => x.user_password, new { placeholder = "Password", @class = "form-control" })
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <button class="btn btn-lg btn-primary" type="button" id="search">Login</button>
+    </div>
+</form>
+@**@
+
+
+
+<br />
+
+
+
+
+
+
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+
+
+
+<script type="text/javascript">
+    $(function () {
+        // Setting focus
+        $('input[name="UserName"]').focus();
+        // Setting width of the alert box
+        var formWidth = $('.bootstrap-admin-login-form').innerWidth();
+        var alertPadding = parseInt($('.alert').css('padding'));
+        $('.alert').width(formWidth - 2 * alertPadding);
+    });
+
+
+    $(document).ready(function () {
+
+        // $("#search").click(function () {
+        // $("#loaderDiv").show();
+        $("#search").click(function () {
+            var data = $("#myForm").serialize();
+            // console.log("dadada", data);
+            $.ajax({
+
+                type: "POST",
+                url: "/Login/Login",
+
+                data: data
+
+                , success: function (response) {
+                    if (response.success == true) {
+
+                        window.location.href = response.loca;
+                        toastr.success(response.message);
+
+                    }
+                    else {
+                        toastr.error(response.message);
+                    }
+                    // $("#loaderDiv").hide();
+                    //  $("#myModal").modal("hide");
+
+                },
+                error: function () {
+                    toastr.error(response.message);
+
+                    //toastr.error('there is some problem with the input', 'Error alert', new { timeout: 300 });
+
+                }
+
+            });
+        });
+    })
+
+
+
+
+</script>
+

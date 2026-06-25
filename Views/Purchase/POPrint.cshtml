@@ -1,0 +1,497 @@
+﻿<title>A4 Paper Size with Shade - Centered Content</title>
+<style>
+    /* Set A4 size */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    @@page {
+        size: A4;
+        margin: 5mm; /* Remove default page margins */
+    }
+
+    @@media print {
+        .watermark {
+            display: block !important;
+        }
+
+        body {
+            /* border: none; */ /* Try removing the border */
+            border: 1px solid black; /* Or reduce the size */
+            box-sizing: border-box;
+        }
+    }
+
+    .watermark-container {
+        position: fixed; /* or absolute, depending on your layout */
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1; /* Place it behind other content */
+        pointer-events: none; /* Allow clicks to pass through */
+    }
+
+
+    /* Set content to fill the entire A4 page */
+    html,
+    .setting > div {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column; /* Arrange content vertically */
+        text-align: center;
+    }
+
+        .setting > div h4 {
+            margin: 0; /* Remove default margin on the heading */
+        }
+
+    /* Style content with shaded background */
+    .content {
+        width: 80%;
+        height: 80%;
+        padding: 20px;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+    }
+
+    .table-container {
+        width: 100%;
+        font-size: 8px; /* Set font-size for the table container */
+        overflow-x: auto;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .table th, .table td {
+            border: 1px solid black;
+            padding: 5px;
+            text-align: left;
+            word-wrap: break-word;
+            font-size: inherit; /* Inherit font-size from the table container */
+        }
+
+    .inrow {
+        padding: 10px 0;
+    }
+
+    /* Prevent page breaks within the table */
+    .table-container {
+        page-break-inside: avoid;
+    }
+
+    /* Add top margin to the second page */
+    @@media print {
+        /* ... other print styles ... */
+
+        .setting > div:nth-child(7) { /* Targeting the table-container div */
+            min-height: 300px; /* Adjust this value as needed - a bit less than a full page */
+            page-break-inside: avoid; /* Keep table rows together as much as possible */
+        }
+
+        .supplier-acceptance {
+            page-break-before: avoid; /* Try to keep it on the same page */
+        }
+    }
+    @@media print {
+        /* ... other print styles ... */
+
+        .terms-and-conditions ul li {
+            line-height: 0.9; /* Adjust this value as needed */
+            margin-bottom: 2px; /* Optional: Reduce space between list items */
+        }
+
+            .terms-and-conditions ul li p {
+                line-height: inherit; /* Ensure paragraph inherits the li's line-height */
+                margin-bottom: 0; /* Remove default paragraph bottom margin */
+            }
+    }
+</style>
+
+
+<div class="setting">
+    <div style="border: 2px solid; padding: 2px; /* Reduced padding */ margin-bottom: -2px; line-height: 0.8; /* Adjusted line-height */ display: flex; justify-content: center; align-items: center;">
+        <span id="Heading"></span>
+    </div>
+    <div style="border: 2px solid; padding: 10px; margin-bottom: -2px; line-height: 2px; text-align: center;">
+        <span id="CompanyNameHeader" style="font:bold 14px"></span>
+        <div class="row" style="display: flex;">
+            <div style="text-align: left; width: 70%; font-size:10px">
+                <p><strong style="font-size:12px">Bill & Delivery Address:</strong></p>
+                <p><strong><span id="CompanyName">Company Name:</span></strong></p>
+                <p><strong><span id="CAddress"></span></strong></p>
+                <p><strong><span id="CAddress1"></span></strong></p>
+                <p><strong>GST :<span id="CGST"></span></strong></p>
+                <p><strong>PAN :<span id="CPAN"></span></strong></p>
+                <p><strong>Contact :<span id="CContact"></span></strong></p>                
+                <p>
+                    <strong>
+                        <span id="DateLabeldest">Delivery Destination :</span>
+
+                        <span id="CDestination"></span>
+                    </strong>
+                </p>
+                <p style="color: red;"><strong>Item Code & PO Number Must be Mentioned in Your Invoice.</strong></p>
+                <p style="color: red;"><strong>MSME Number Type and Category Must be Mentioned in Your Invoice.</strong></p>
+                <p style="color: red;"><strong>e.g Micro | Small , Manufacturer | Service Provider | Trader</strong></p>
+            </div>
+            <div style="width: 30%; display: flex; justify-content: flex-end; align-items: center;">
+                <img id="companyLogoImage" src="" alt="IEPL Logo" style="height: 50px;" />
+            </div>
+        </div>
+    </div>
+    <div style="border: 2px solid; padding: 5px; margin-bottom: -2px; line-height: 1.2; text-align: center; box-sizing: border-box;">
+        <div class="row inrow" style="display: flex; align-items: flex-start;">
+
+            <div style="text-align: left; width: 39%; font-size:10px;">
+                <p style="margin: 0 0 2px 0;"><strong>To:</strong></p>
+                <p style="margin: 0 0 2px 0;"><strong><span id="SupplierName"></span></strong></p>
+                <p style="margin: 0 0 2px 0; word-wrap: break-word;"><strong>Address: </strong><span id="SupplierAddress" style="font-weight:normal;"></span></p>
+                <p style="margin: 0 0 2px 0; word-wrap: break-word;"><span id="SupplierAddress1" style="font-weight:normal;"></span></p>
+                <p style="margin: 0 0 2px 0;"><strong>State: </strong><span id="SupplierState" style="font-weight:normal;"></span></p>
+                <p style="margin: 0 0 2px 0;"><strong>Email: </strong><span id="SupplierEmail" style="font-weight:normal;"></span></p>
+            </div>
+
+            <div style="text-align: left; width: 33%; font-size:10px;">
+                <p style="margin: 0 0 2px 0;"><strong>GST: </strong><span id="SupplierGST" style="font-weight:normal;"></span></p>
+                <p style="margin: 0 0 2px 0;"><strong>Contact Person: </strong><span id="ContactPerson" style="font-weight:normal;"></span></p>
+                <p style="margin: 0 0 2px 0;"><strong>Contact: </strong><span id="SupplierContact" style="font-weight:normal;"></span></p>
+                <p style="margin: 0 0 2px 0;">
+                    <strong>
+                        <span id="DateLabel">Delivery Date:</span>
+                        <span id="DeliveryDate" style="font-weight:normal;"></span>
+                    </strong>
+                </p>
+                <p id="DelCondContainer" style="color:red; margin: 0; line-height: 1;">
+                    <strong class="service-hide" id="DelCond" style="font-size: 8px;">Must Be Delivered on or Before Delivery Date</strong>
+                </p>
+            </div>
+
+            <div style="text-align:left; width: 28%; font-size:10px;">
+                <p style="margin: 0 0 2px 0;"><strong>PO No: </strong><span id="PONumber" style="font-weight:normal;"></span></p>
+                <p style="margin: 0 0 2px 0;"><strong>PO Date: </strong><span id="PODate" style="font-weight:normal;"></span></p>
+                <p style="margin: 0 0 2px 0;"><strong>Indent No: </strong><span id="IndentNumber" style="font-weight:normal;"></span></p>
+                <p style="margin: 0 0 2px 0;"><strong>Indent Date: </strong><span id="IndentDate" style="font-weight:normal;"></span></p>
+            </div>
+
+        </div>
+    </div>
+    <div style="border: 2px solid; padding: 2px; margin-bottom: -2px; line-height: 2px; text-align: center;">
+        <div class="inrow" style="text-align: left; width:100%; font-size:10px">
+            <p><strong>Payment Terms:<span id="paymentterms"></span></strong></p>
+        </div>
+    </div>
+    <div style="border: 2px solid black; padding: 2px 5px; margin-bottom: -2px; width: 100%; box-sizing: border-box;">
+        <div style="text-align: left; font-size: 9px; line-height: normal;">
+            <p style="margin: 0; padding: 0; text-indent: 0; display: block; word-wrap: break-word; white-space: pre-wrap;">
+                <strong style="float: left; margin-right: 4px;">Remarks:</strong>
+                <span id="remarks" style="display: block; overflow: hidden; text-align: justify;"></span>
+            </p>
+            <div style="clear: both;"></div>
+        </div>
+    </div>
+    <div style="border: 2px solid; padding: 2px; margin-bottom: -2px; line-height: 2px; text-align: center;">
+        <div class="inrow" style="text-align: left; width: 100%; font-size:10px">            
+            <p>
+                <strong>
+                    <span id="DateLabelmode">Delivery Mode:</span>
+                    <span id="deliverymode"></span>
+                </strong>
+            </p>
+        </div>
+    </div>
+    <div class="setting">
+        <div class="table-container" style="border:2px solid;margin-bottom:-2px">
+            <table class="table" id="table" style="font-size:9px;width:100%">
+                <thead>
+                    <tr style="border:2px solid">
+                        <th>Item Code</th>
+                        <th>Goods/Services</th>
+                        <th>Make</th>
+                        <th>Qty</th>
+                        <th>UOM</th>
+                        <th>List Price</th>
+                        <th>Discount%</th>
+                        <th>Net Basic</th>
+                        <th>Taxable Amount</th>
+                        <th>Tax</th>
+                        <th>Tax Amount</th>
+                        <th>Gross Amount</th>
+                    </tr>
+                </thead>
+                <tbody id="items" style="text-align:center;align-content:center;align-items:center;font-size:8px">
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div style="border: 2px solid; padding: 2px; margin-bottom: -2px; line-height: 2px; text-align: center;">
+        <div class="row inrow" style="display: flex;">
+            <div style="text-align: left; width: 15%; font-size:10px">
+                <p id="f1"><strong>Frieght</strong></p>
+                <p><strong>Insurance</strong></p>
+                <p><strong>P & F</strong></p>
+                <p><strong>Other Charges</strong></p>
+            </div>
+            <div style="text-align: left; width:10%; font-size:10px">
+                <p id="f2"><strong>: <span id="Frieghtamt"></span></strong></p>
+                <p><strong>: <span id="Insuranceamt"></span></strong></p>
+                <p><strong>: <span id="PFChargeamt"></span></strong></p>
+                <p><strong>: <span id="OtherChargeamt"></span></strong></p>
+            </div>
+            <div style="text-align: left; width:10%; font-size:10px">
+                <p id="f3"><strong> <span id="FrieghtTax"></span></strong></p>
+                <p><strong> <span id="InsuranceTax"></span></strong></p>
+                <p><strong> <span id="PFChargeTax"></span></strong></p>
+                <p><strong> <span id="OtherChargeTax"></span></strong></p>
+            </div>
+            <div style="text-align:left; width:10%; font-size:10px">
+                <p id="f4"><strong> <span id="FrieghtCharge"></span></strong></p>
+                <p><strong> <span id="InsuranceCharge"></span></strong></p>
+                <p><strong> <span id="PFCharge"></span></strong></p>
+                <p><strong> <span id="OtherCharge"></span></strong></p>
+            </div>
+
+            <div style="text-align: left; width:30%; font-size:10px">
+                <p id="f5"><strong><span id="FrieghtType"></span></strong></p>
+                <p><strong><span id="InsuranceType"></span></strong></p>
+                <p><strong><span id="PFType"></span></strong></p>
+                <p><strong><span id="OtherType"></span></strong></p>
+            </div>
+            <div style="text-align:left; width:9%; font-size:10px">
+                <p><strong>Total Taxable</strong></p>
+                <p><strong>IGST</strong></p>
+                <p><strong>SGST</strong></p>
+                <p><strong>CGST</strong></p>
+                <p><strong>Total Amount</strong></p>
+            </div>
+            <div style="text-align:left; width: 1%; font-size:10px">
+                <p><strong>:</strong></p>
+                <p><strong>:</strong></p>
+                <p><strong>:</strong></p>
+                <p><strong>:</strong></p>
+                <p><strong>:</strong></p>
+            </div>
+            <div style="text-align:right; width: 12%; font-size:10px;margin-right:5px">
+                <p><strong><span id="TaxableAmount"></span></strong></p>
+                <p><strong><span id="IGSTAmount"></span></strong></p>
+                <p><strong><span id="SGSTAmount"></span></strong></p>
+                <p><strong><span id="CGSTAmount"></span></strong></p>
+                <p><strong><span id="TotalAmount"></span></strong></p>
+            </div>
+        </div>
+    </div>
+    <div style="border: 2px solid; padding: 2px; margin-bottom: -2px; line-height: 2px; text-align: center;">
+        <div class="inrow" style="text-align:center; width: 100%; font-size:10px">
+            <p style="color:red"><strong>Terms and Conditions</strong></p>
+        </div>
+    </div>
+    <div style="border: 2px solid; padding: 2px; margin-bottom: -2px; line-height: 10px;">
+        <div class="inrow" style="text-align:left; width: 100%; font-size:6px; word-wrap:break-word; overflow-wrap: break-word; hyphens: auto;">
+            <ul>
+                <li class="service-hide"><p style="color: red;">TEST CERTIFICATES & MSDS, IF APPLICABLE, MUST BE SENT WITH THE CONSIGNMENT OTHERWISE MATERIAL WILL NOT BE ACCEPTED.</p></li>
+                <li class="service-hide"><p>MATERIAL SUPPLIED SHALL BE UNDER GUARANTEE/WARRANTEE AGAINST DEFFECTIVE MATERIAL OR FAULTY WORKMANSHIP FOR A PERIOD OF 12 MONTHS. IN CASE OF ANY COMPLAINT, IT WILL BE YOUR RESPONSIBILITY TO DEPUTE YOUR SERVICE ENGINEER AT OUR WORKS TO REPAIR/REPLACE THE DEFFECTIVE MATERIAL AND SORT OUT THE PROBLEM WITHIN 24 HOURS OF COMPLAINT AT YOUR OWN COST & RISK.</p></li>
+                <li class="service-hide"><p>DELIVERY PERIOD IS BASIC ASSENCE OF THE PURCHASE ORDER HENCE YOU MUST ADHERE TO THE DELIVERY SCHEDULE GIVEN HEREIN. IF MATERIAL IS NOT DELIVERED WITHIN THE GIVEN DELIVERY SCHEDULE THE SAME WILL BE PROCURED FROM LOCAL MARKET AT YOUR COST & RISK.</p></li>
+                <li class="service-hide"><p>PACKING OF MATERIAL MUST BE GOOD ENOUGH TO PREVENT ANY DAMAGE/SHORTAGE IN TRANSIT. IT IS FULLY YOUR RESPONSIBILITY TO DELIVER MATERIAL AT OUR WORKS IN FULL & IN GOOD CONDITION. DETAILED PACKING LIST CLEARLY MENTIONING NO. OF BOXES / QUANTITY IN EACH BOX / WEIGHT MUST BE SENT WITH THE CONSIGNMENT. QUANTITY/WEIGHT OF EACH BOX MUST BE MENTIONED ON EACH BOX.	</p></liclass="service-hide">
+                <li class="service-hide"><p>THREE COPIES OF INVOICE i.e. ORIGINAL for BUYER COPY, TRANSPORTER's COPY & EXTRA COPY MUST BE SENT WITH THE CONSIGNMENT. ORIGINAL COPY SHOULD BE PACKED IN SEPARATE ENVELOPE FOR CONSIGNEE. PAYMENT OF IGST/CGST/SGST WILL BE MADE ONLY AFTER YOUR CORRECT UPLOADING OF DETAILS ON GOVT. GST PORTAL MEETING OUR PURCHASE DETAILS. IN CASE OF ANY DISCREPENCY ON YOUR PART YOU WILL BE LIABLE TO PAY US IGST/CGST/SGST AMOUNT ALONG WITH CONSEQUENCIAL DAMAGES/LOSS/INTEREST/PENALITY, IF ANY.</p></li>
+                <li class="service-hide"><p>DISPATCH DETAILS i.e. PHOTOCOPY OF INVOICE & GR MUST BE SENT TO US AT OUR CORPORATE OFFICE THRU COURIER & E MAIL / FAX IMMEDIATELY AFTER DISPATCH.</p></li>
+                <li class="service-hide"><p>VEHICLE CARRYING MATERIAL MUST BE DRIVEN BY A PERSON HAVING VALID DRIVING LICENSE & PUC CERTIFICATE. WITHOUT THESE VEHICLE WILL NOT BE ALLOWED TO ENTER THE WORKS PREMISES & IT WILL BE YOUR RESPONSIBILITY TO UNLOAD MATERIAL FROM OUTSIDE THE FACTORY GATE AT YOUR OWN COST & RISK. TRANSPORTATION OF MATERIAL SHALL MEET LATESTUPDATED ALLAPPLICABLE GST NORMS, TERMS & CONDITIONS AS SPECIFIED IN GST LAW / RULES / NOTIFICATION BY GOVERNMET OF INDIA.</p></li>
+                <li class="service-show"><p>SHARE ORIGINAL INK SIGNED COPY OF INVOICE ON OR BEFORE DATE OF COMMENCEMENT OF SERVICE</p></li>
+                <li><p>PROCESS / EQUIPMENT / PRODUCT SHOULD BE DESIGNED IN A WAY TO PROVIDE OPTIMIZED ENERGY EFFICIENCY.</p></li>
+                <li><p>PROCESS / EQUIPMENT / PRODUCT SHOULD BE FREE FROM LEGALLY RESTRICTED SUBSTANCES & SHOULD BE SAFE IN USE TO PREVENT ANY HEALTH & SAFETY HAZARDS.</p></li>
+                <li><p>DISPUTES, IF ANY, ARE SUBJECT TO CHANDIGARH (U.T.) JURISDICTION ONLY. ONLY INK SIGNED COPY OF PO IS VALID FOR ALL LEGAL PURPOSES.</p></li>
+                <li><p>THIS PURCHASE ORDER SUPERCEDES ALL OTHER TERMS & CONDITIONS WRITTEN OR VERBAL COMMUNICATED IN YOUR OFFER OR OTHERWISE.</p></li>
+                <li><p>PLEASE FORWARD US  YOUR ACCEPTANCE TO THIS P.O.. IF WE DO NOT RECEIVE ANY THING CONTRARY TO THIS PURCHASE ORDER WITHIN TWO DAYS FROM THE DATE OF OUR P.O. IT WILL BE TREATED AS YOUR UNCONDITIONAL ACCEPTANCE.</p></li>
+                <li>
+                    <p>
+                        IN THE EVENT OF REJECTION OF MATERIAL/Service THE MATERIAL/Service SHOULD BE
+                        REPLACED OR RECTIFIED INLINE WITH TECHNICAL SPECIFICATION OF THE PURCHASE ORDER
+                        WITHIN
+                        <span class="service-hide">15</span>
+                        <span class="service-show" style="display:none;">2</span>
+                        DAYS FROM THE DATE OF REPORTING THE MATTER.
+                    </p>
+                </li>
+                <li><p>WE WILL DEDUCT TDS 0.1% ON BASIC VALUE OF PURCHASE FROM ALL SUPPLIERS FROM WHOM PURCHASE IS MORE THAN 50 LACS DURING THE F.Y. 2025-26.</p></li>
+            </ul>
+        </div>
+    </div>
+    <div class="supplier-acceptance" style="border: 2px solid; padding: 2px; margin-bottom: -2px; line-height: 2px;">
+        <div class="row inrow" style="display: flex;">
+            <div style="text-align:left; width: 60%; font-size:10px;">
+                <p style="margin-bottom: 80px;"><strong>Supplier Accptance</strong></p>
+                <p>Signature and Office Seal</p>
+            </div>
+            <div style="text-align:right;width: 5%; font-size:10px;">
+
+            </div>
+            <div style="text-align:right; width: 35%; font-size:10px;">
+                <p><strong>For <span id="companyfooter"></span></strong></p>
+                <img id="signatureImage" alt="Signature" style="width: 80px; height: 60px;" />
+                <p id="SignatoryName">Ajay Garg</p>
+                <p id="Signatory">Executive Director</p>
+                <p id="SignatoryEmail">Email:ajay.garg@iecgensets.com</p>
+            </div>
+        </div>
+    </div>
+    <div style="border: 2px solid; padding: 2px; margin-bottom: -2px; line-height: 2px;">
+        <div style="text-align:center; width:100%; font-size:6px;margin-right:5px">
+
+            <p><strong> CORPORATE OFFICE SCO. 36, SEC 26, MADHYA MARG, CHANDIGARH (160019) (U.T) PH.NO 0172-4374437,441,442,444,455 FAX NO:0172-4374466 </strong></p>
+        </div>
+    </div>
+</div>
+
+<button id="Print" onclick="printContent()">Print</button>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script>
+    //$(document).ready(function () {
+    //    $('#Print').click();
+    //})
+    function printContent() {
+        var printWindow = window.open('', '', 'height=794,width=612'); // A4 dimensions in pixels
+        printWindow.document.write('<html><head><title></title></head><body>');
+        printWindow.document.write(document.querySelector('.setting').innerHTML);
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.print();
+    }
+</script>
+<script>
+    $(document).ready(function () {
+
+            var poId = @ViewBag.PoId;
+            $.ajax({
+                type: 'get',
+                url: '/Purchase/GetPrintData',
+                data: { poId: poId },
+                success: function (data)
+                {
+
+                    var isService = data.poHeadData.servicepo || false;
+
+                    if (isService) {
+                        
+                        $('#DateLabeldest').text("Service Destination:");
+                        $('#DelCond').text("Must Be Servied on or Before Service Completion Date");                        
+                        $('#DateLabel').text("Service Start Date:");
+                        $('#DateLabelmode').text("Service Completion Date:");
+                        $('.service-hide').hide(); // Hides "15"
+                        $('.service-show').show(); // Shows "2"
+                       // $('#f1, #f2, #f3, #f4, #f5').hide();
+                        
+                        
+                        //$('#DeliveryDate').text(d.ServiceDate ?? "NA");
+                    } else {
+                        $('#DateLabeldest').text("Delivery Destination:");
+                        $('#DelCond').text("Must Be Delivered on or Before Delivery Date"); 
+                        $('#DateLabel').text("Delivery Date:");
+                        $('#DateLabelmode').text("Delivery Mode:");
+                        $('.service-hide').show(); // Shows "15"
+                        $('.service-show').hide(); // Hides "2"
+                        //$('#f1, #f2, #f3, #f4, #f5').show();
+                        //$('#DeliveryDate').text(d.DeliveryDate ?? "NA");
+                    }
+                    //load Head Data
+                    const formattedPODate = moment(data.poHeadData.PODate).format('DD/MM/YYYY');
+                    const formattedIndentDate = moment(data.poHeadData.IndentDate).format('DD/MM/YYYY');
+                    const formattedDeliveryDate = moment(data.poHeadData.DeliveryDate).format('DD/MM/YYYY');
+                    $('#PODate').text(formattedPODate);
+                    $('#Heading').text(data.Heading);
+                    $('#PONumber').text(data.poHeadData.PONumber);
+                    $('#CAddress').text(data.poHeadData.CAddress);
+                    $('#CAddress1').text(data.poHeadData.CAddress1);
+                    $('#CGST').text(data.poHeadData.CGST);
+                    $('#CPAN').text(data.poHeadData.CPAN);
+                    $('#CContact').text(data.poHeadData.CContact);
+                    $('#CDestination').text(data.poHeadData.CDestination);
+                    //$('#companyLogoImage').attr('src', '@Url.Content("' + data.poHeadData.Clogo + '")');
+                    $('#IndentNumber').text(data.poHeadData.IndentNumber);
+                    $('#IndentDate').text(formattedIndentDate);
+                    $('#SupplierName').text(data.poHeadData.SupplierName);
+                    $('#SupplierAddress').text(data.poHeadData.supplierAddress);
+                    $('#SupplierAddress1').text(data.poHeadData.supplierAddress1);
+                    $('#SupplierState').text(data.poHeadData.supplierState);
+                    $('#SupplierEmail').text(data.poHeadData.SEmail);
+                    $('#SupplierGST').text(data.poHeadData.SupplierGST);
+                    $('#ContactPerson').text(data.poHeadData.SupplierContactPerson);
+                    $('#SupplierContact').text(data.poHeadData.SupplierContact);
+                    $('#DeliveryDate').text(formattedDeliveryDate);
+                    $('#CompanyName').text(data.poHeadData.companyname);
+                    $('#companyfooter').text(data.poHeadData.companyname);                    
+                    $('#CompanyNameHeader').text(data.poHeadData.companyname);
+                    $('#CompanyAddress').text(data.poHeadData.comadd1 - data.poHeadData.CompanyAddress2);
+                    $('#paymentterms').text(data.poHeadData.paymentterms);
+                    $('#remarks').text(data.poHeadData.remarks);
+                    $('#deliverymode').text(data.poHeadData.deliverymode);
+                    $('#FrieghtCharge').text(parseFloat(data.poHeadData.FrieghtCharge).toFixed(2));
+                    $('#InsuranceCharge').text(parseFloat(data.poHeadData.InsuranceCharge).toFixed(2));
+                    $('#PFCharge').text(parseFloat(data.poHeadData.PFCharge).toFixed(2));
+                    $('#OtherCharge').text(parseFloat(data.poHeadData.OtherCharge).toFixed(2));
+                    $('#TaxableAmount').text(parseFloat(data.poHeadData.TaxableAmount).toFixed(2));
+                    $('#IGSTAmount').text(parseFloat(data.poHeadData.IGSTAmount).toFixed(2));
+                    $('#SGSTAmount').text(parseFloat(data.poHeadData.SGSTAmount).toFixed(2));
+                    $('#CGSTAmount').text(parseFloat(data.poHeadData.CGSTAmount).toFixed(2));
+                    $('#TotalAmount').text(parseFloat(data.poHeadData.TotalAmount).toFixed(2));
+                    $('#FrieghtType').text(data.poHeadData.FrieghtType === '-Select-' ? '' : data.poHeadData.FrieghtType);
+                    $('#InsuranceType').text(data.poHeadData.InsuranceType === '-Select-' ? '' : data.poHeadData.InsuranceType);
+                    $('#PFType').text(data.poHeadData.PFType === '-Select-' ? '' : data.poHeadData.PFType);
+                    $('#OtherType').text(data.poHeadData.OtherType === '-Select-' ? '' : data.poHeadData.OtherType);
+                    $('#Frieghtamt').text(data.poHeadData.Frieghtamt);
+                    $('#Insuranceamt').text(data.poHeadData.Insuranceamt);
+                    $('#PFChargeamt').text(data.poHeadData.PFChargeamt);
+                    $('#OtherChargeamt').text(data.poHeadData.OtherChargeamt);
+                    $('#FrieghtTax').text(data.poHeadData.FrieghtTax);
+                    $('#InsuranceTax').text(data.poHeadData.InsuranceTax);
+                    $('#PFChargeTax').text(data.poHeadData.PFChargeTax);
+                    $('#OtherChargeTax').text(data.poHeadData.OtherChargeTax);
+                    $('#SignatoryName').text(data.poHeadData.SignatoryName);
+                    $('#Signatory').text(data.poHeadData.Signatory);
+                    $('#SignatoryEmail').text(data.poHeadData.SignatoryEmail);
+                    var imageUrl = '@Url.Content("~/")' + data.poHeadData.Image.substring(2);
+                    $('#signatureImage').attr('src', imageUrl);
+                    var logo = '@Url.Content("~/")' + data.poHeadData.Clogo.substring(2);
+                    $('#companyLogoImage').attr('src', logo);
+
+                    const itemsTbody = document.getElementById('items');
+                    let totalQuantity = 0;
+                    data.POItemDetail.forEach(item => {
+
+                        const rowHTML = `
+                            <tr>
+                        <td>${item.ItemCode}</td>
+                        <td>${item.ItemName}</td>
+                        <td>${item.Make}</td>
+                        <td>${parseFloat(item.Quantity).toFixed(3)}</td>
+                        <td>${item.UOM}</td>
+                        <td>${parseFloat(item.ListPrice).toFixed(2)}</td>
+                        <td>${item.Discount}%</td>
+                        <td>${parseFloat(item.NetBasic).toFixed(2)}</td>
+                        <td>${parseFloat(item.TaxableAmount).toFixed(2)}</td>
+                        <td>${item.TaxType}%</td>
+                        <td>${parseFloat(item.TaxAmount).toFixed(2)}</td>
+                        <td>${parseFloat(item.GrossAmount).toFixed(2)}</td>
+                            </tr>
+                        `;
+                        itemsTbody.innerHTML += rowHTML;
+                    });
+                    debugger;
+                    //$('#Print').click();
+
+
+                }
+
+            });
+        })
+
+
+</script>
+
+

@@ -1,0 +1,438 @@
+﻿@{
+    ViewBag.Title = "BOMPlanning";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if the current context is inside a Bootstrap modal
+            const isInModal = !!(document.querySelector('.modal.show'));
+
+            if (isInModal) {
+                // If inside a modal, wait for a short delay
+                setTimeout(() => {
+                    handleInvalidUser();
+                }, 500); // Adjust the delay as needed
+            } else {
+                // If not in a modal, proceed immediately
+                handleInvalidUser();
+            }
+
+            function handleInvalidUser() {
+                toastr.error("Invalid User");
+
+                setTimeout(function () {
+                    window.location.href = "@Url.Action("Index", "Login")";
+                }, 2000); // Redirect after 2 seconds
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+
+<div class="container">
+    <h3 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">Production Planning (IEPL)</h3>
+
+    <div id="bom-input-container">
+        <div class="bom-input-group">
+            <div class="row">
+                <div class="form-group col-md-4">
+                    <label for="finalItem" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Master Item:</label>
+                    <select id="finalItem" class="form-control form-control-sm">
+                    </select>
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="BaseFrame" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Base Frame:</label>
+                    <select id="baseframe" class="form-control form-control-sm">
+                    </select>
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="dgtype" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">DG Type:</label>
+                    <select id="dgtype" class="form-control form-control-sm">
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group col-md-4">
+                    <label for="panel" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Panel:</label>
+                    <select id="panel" class="form-control form-control-sm">
+                    </select>
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="alternator" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Alternator:</label>
+                    <select id="alternator" class="form-control form-control-sm">
+                    </select>
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="fueltank" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Fuel Tank:</label>
+                    <select id="fueltank" class="form-control form-control-sm">
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group col-md-4">
+                    <label for="canopy" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Canopy:</label>
+                    <select id="canopy" class="form-control form-control-sm">
+                    </select>
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="exhaust" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Exhaust:</label>
+                    <select id="exhaust" class="form-control form-control-sm">
+                    </select>
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="acoustic" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Acoustic Treatment:</label>
+                    <select id="acoustic" class="form-control form-control-sm">
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group col-md-4">
+                    <label for="packing" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Final Packing:</label>
+                    <select id="packing" class="form-control form-control-sm">
+                    </select>
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="assembly" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Assembly:</label>
+                    <select id="assembly" class="form-control form-control-sm">
+                    </select>
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="electrical" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Electrical:</label>
+                    <select id="electrical" class="form-control form-control-sm">
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group col-md-4">
+                    <label for="totalQuantity" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Quantity:</label>
+                    <input type="number" id="totalQuantity" class="form-control form-control-sm" value="1">
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-danger remove-item-button" style="display: none;">Remove</button>
+        </div>
+    </div>
+
+    <button type="button" id="add-item-button" class="btn btn-primary">Add Item</button>
+    <button type="button" id="generate-report-button" class="btn btn-success">Generate Report</button>
+    <button id="export-to-excel-button" style="display: none;">Export to Excel</button>
+    <button id="generate-indent-button" class="btn btn-primary" disabled>Generate Indent</button>
+
+    <table class="table table-sm table-bordered" id="selection-table">
+        <thead>
+            <tr>
+                <th>Master Item</th>
+                <th>Base Frame</th>
+                <th>DG Type</th>
+                <th>Panel</th>
+                <th>Alternator</th>
+                <th>Quantity</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <div id="report-container" style="display: none;">
+        <h3>Planning Report</h3>
+        <table class="table table-sm table-bordered" id="report-table">
+            <thead>
+                <tr>
+                    <th>Item Code</th>
+                    <th>Raw Material</th>
+                    <th>UOM</th>
+                    <th>Min STK Level</th>
+                    <th>MOQ</th>
+                    <th>Total Quantity Required</th>
+                    <th>Available Stock</th>
+                    <th>Shortage/Excess</th>
+                    <th>Actual Requirment</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script src="//cdn.rawgit.com/rainabba/jquery-table2excel/1.1.0/dist/jquery.table2excel.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.16.2/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.2.1/exceljs.min.js"></script>
+<script src="https://unpkg.com/table2excel@1.0.4/dist/jquery.table2excel.min.js"></script>
+
+
+
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            var bomInputs = [];
+
+            $.ajax({
+                type: "GET",
+                url: "/BOM/GetMasterItems",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    $.each(data.masterItems, function (index, item) {
+                        $("#finalItem").append("<option value='" + item.Value + "'>" + item.Text + "</option>");
+                    });
+                    $.each(data.Baseframe, function (index, item) {
+                        //$("#baseframe").empty();
+                        $("#baseframe").append("<option value='" + item.value + "'>" + item.text + "</option>");
+                    });
+                    $.each(data.DG, function (index, item) {
+                        //$("#baseframe").empty();
+                        $("#dgtype").append("<option value='" + item.value + "'>" + item.text + "</option>");
+                    });
+                    $.each(data.Panel, function (index, item) {
+                        //$("#baseframe").empty();
+                        $("#panel").append("<option value='" + item.value + "'>" + item.text + "</option>");
+                    });
+                    $.each(data.Alternator, function (index, item) {
+                        //$("#baseframe").empty();
+                        $("#alternator").append("<option value='" + item.value + "'>" + item.text + "</option>");
+                    });
+                    $.each(data.canopy, function (index, item) {
+                        //  $("#alternator").empty();
+                        $("#canopy").append("<option value='" + item.value + "'>" + item.text + "</option>");
+                    });
+                    $.each(data.fueltank, function (index, item) {
+                        //  $("#alternator").empty();
+                        $("#fueltank").append("<option value='" + item.value + "'>" + item.text + "</option>");
+                    });
+                    $.each(data.exhaust, function (index, item) {
+                        //  $("#alternator").empty();
+                        $("#exhaust").append("<option value='" + item.value + "'>" + item.text + "</option>");
+                    });
+                    $.each(data.acoustic, function (index, item) {
+                        //  $("#alternator").empty();
+                        $("#acoustic").append("<option value='" + item.value + "'>" + item.text + "</option>");
+                    });
+                    $.each(data.assembly, function (index, item) {
+                        //  $("#alternator").empty();
+                        $("#assembly").append("<option value='" + item.value + "'>" + item.text + "</option>");
+                    });
+                    $.each(data.final, function (index, item) {
+                        //  $("#alternator").empty();
+                        $("#packing").append("<option value='" + item.value + "'>" + item.text + "</option>");
+                    });
+                    $.each(data.electrical, function (index, item) {
+                        //  $("#alternator").empty();
+                        $("#electrical").append("<option value='" + item.value + "'>" + item.text + "</option>");
+                    });
+                }
+            });
+            $("#add-item-button").click(function () {
+                var finalItem = $("#finalItem option:selected").text();
+
+                var totalQuantity = $("#totalQuantity").val();
+                var baseframe = {
+                    text: $("#baseframe option:selected").text(),
+                    //text: $("#totalQuantity").val(), // assuming this is a text input, not a select
+                    value: $("#baseframe").val()
+                };
+                var dgtype = {
+                    text: $("#dgtype option:selected").text(),
+                    value: $("#dgtype").val()
+                };
+                var panel = {
+                    text: $("#panel option:selected").text(),
+                    value: $("#panel").val()
+                };
+                var alternator = {
+                    text: $("#alternator option:selected").text(),
+                    value: $("#alternator").val()
+                };
+                var canopy = {
+                    text: $("#canopy option:selected").text(),
+                    value: $("#canopy").val()
+                };
+                var fueltank = {
+                    text: $("#fueltank option:selected").text(),
+                    value: $("#fueltank").val()
+                };
+                var exhaust = {
+                    text: $("#exhaust option:selected").text(),
+                    value: $("#exhaust").val()
+                };
+                var acoustic = {
+                    text: $("#acoustic option:selected").text(),
+                    value: $("#acoustic").val()
+                };
+                var assembly = {
+                    text: $("#assembly option:selected").text(),
+                    value: $("#assembly").val()
+                };
+                var packing = {
+                    text: $("#packing option:selected").text(),
+                    value: $("#packing").val()
+                };
+                var electrical = {
+                    text: $("#electrical option:selected").text(),
+                    value: $("#electrical").val()
+                };
+
+                bomInputs.push({
+                    FinalItem: finalItem,
+                    TotalQuantity: totalQuantity,
+                    BaseFrame: baseframe.value,
+                    DGType: dgtype.value,
+                    Panel: panel.value,
+                    Alternator: alternator.value,
+                    Canopy: canopy.value,
+                    FuelTank: fueltank.value,
+                    Exhaust: exhaust.value,
+                    Acoustic: acoustic.value,
+                    Packing: packing.value,
+                    Assembly: assembly.value,
+                    Electrical: electrical.value
+                });
+
+                var newRow = "<tr><td>" + finalItem + "</td><td>" + baseframe.text + "</td><td>" + dgtype.text + "</td><td>" + panel.text + "</td><td>" + alternator.text + "</td><td>" + totalQuantity + "</td><td><button type='button' class='btn btn-danger remove-item-button'>Remove</button></td></tr > ";
+                $("#selection-table tbody").append(newRow);
+
+                $("#finalItem").val("");
+                $("#totalQuantity").val("1");
+            });
+
+            $("#generate-report-button").click(function () {
+                $.ajax({
+                    type: "POST",
+                    url: "/BOM/GenerateReport1",
+                    data: JSON.stringify(bomInputs),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (data) {
+                        $("#generate-indent-button").prop("disabled", false);
+                        var reportHtml = "";
+                        var indentData = []; // array to store data for indent voucher
+                        var actualdata = [];
+                        $.each(data, function (index, item) {
+                            var rowClass = "";
+                            var actualRequirement = 0;
+
+                            if (item.ShortageExcess < 0) {
+                                rowClass = "shortage-excess-negative";
+                                actualRequirement = item.MinimumStockLevel - item.ShortageExcess;  // Negative shortage
+                                debugger;
+                                indentData.push({
+                                    ...item,
+                                    ActualRequirement: actualRequirement
+                                });
+                               // indentData.push(item);
+                               // actualdata.push(actualRequirement);
+                            } else if (item.ShortageExcess === 0) {
+                                rowClass = "shortage-excess-zero";
+                                actualRequirement = item.MinimumStockLevel;
+                                indentData.push({
+                                    ...item,
+                                    ActualRequirement: actualRequirement
+                                });
+                                //indentData.push(item);
+                                //actualdata.push(actualRequirement);
+                            } else {
+                                // ShortageExcess is positive
+                                actualRequirement = 0; // No actual requirement when there's excess
+                            }
+
+                            // Update Report with New Column
+                            reportHtml += `
+                <tr class="${rowClass}">
+                    <td>${item.ItemCode}</td>
+                    <td>${item.RawMaterial}</td>
+                    <td>${item.UOM}</td>
+                    <td>${item.MinimumStockLevel}</td>
+                    <td>${item.MOQ}</td>
+                    <td>${item.TotalQuantityRequired}</td>
+                    <td>${item.AvailableStock}</td>
+                    <td>${item.ShortageExcess}</td>
+                    <td>${actualRequirement}</td>   </tr>
+                `;
+                           
+                        });
+                        
+                        $("#report-table tbody").html(reportHtml);
+                        $("#report-container").show();
+
+                        // Add a button to export to Excel
+                        $("#export-to-excel-button").click(function () {
+                            $("#report-table").table2excel({
+                                filename: "Report",
+                                name: "Report",
+                                fileext: ".xls",
+                                exclude_img: true,
+                                exclude_links: true,
+                                exclude_inputs: true
+                            });
+                        });
+
+                        // Add a button to generate indent voucher
+                        $("#generate-indent-button").click(function () {
+                            console.log('indentData:', indentData);
+                            console.log('Actual:', actualdata);
+                            debugger;
+                            $.ajax({
+                                type: "POST",
+                                url: "/BOM/BOMIndentVoucher",
+                                data: JSON.stringify({
+                                    IndentData: indentData
+                                   
+                                }),
+                                contentType: "application/json; charset=utf-8",
+                                dataType: "json",
+                                success: function (data) {
+                                    toastr.success(data.message);
+                                    toastr.info('Total Items Added is :' + data.totalitems);
+                                    toastr.info(data.voucherNumber);
+
+
+                                    $("#generate-indent-button").prop("disabled", true);
+                                    $("#generate-report-button").prop("disabled", true);
+                                    $("#add-item-button").prop("disabled", true);
+
+                                    var audio = new Audio('/Sound/Save.mp3');
+                                    audio.play();
+                                    // handle success response from controller
+                                    //console.log("Indent voucher generated successfully!");
+                                },
+                                error: function (xhr, status, error) {
+                                    // handle error response from controller
+                                    //console.log("Error generating indent voucher: " + error);
+                                    toastr.error(data.message);
+                                }
+                            });
+                        });
+                    }
+                });
+            });
+
+            $(document).on("click", ".remove-item-button", function () {
+                var row = $(this).closest("tr");
+                row.remove();
+                var index = bomInputs.findIndex(function (item) {
+                    return item.FinalItem === row.find("td:first").text();
+                });
+                bomInputs.splice(index, 1);
+            });
+        });
+    </script>
+}
+<style>
+    .shortage-excess-negative {
+        background-color: #FFC080; /* or any other shade of red */
+    }
+
+    .shortage-excess-zero {
+        background-color: #FFFF00; /* or any other shade of yellow */
+    }
+</style>

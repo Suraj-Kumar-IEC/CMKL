@@ -1,0 +1,311 @@
+﻿@{
+    ViewBag.Title = "Lot & MRN Management";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+    .lot-update-container {
+        font-family: 'Inter', sans-serif;
+        background-color: #f1f5f9;
+        min-height: 85vh;
+        color: #334155;
+    }
+
+    .glass-card {
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #0f172a;
+        border-left: 4px solid #00698f;
+        padding-left: 12px;
+        margin-bottom: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Table Styling */
+    .lot-table-wrapper {
+        max-height: 450px;
+        overflow-y: auto;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+    }
+
+    #lotListTable {
+        font-size: 0.85rem;
+        margin-bottom: 0;
+    }
+
+        #lotListTable thead th {
+            background-color: #f8fafc;
+            color: #00698f;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+    .row-selected {
+        background-color: #f0f9ff !important;
+        border-left: 4px solid #00698f;
+    }
+
+    /* Form Styling */
+    .form-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #64748b;
+        margin-bottom: 5px;
+    }
+
+    .form-control-custom {
+        border-radius: 6px;
+        border: 1px solid #cbd5e1;
+        padding: 8px 12px;
+        font-size: 0.9rem;
+    }
+
+        .form-control-custom:focus {
+            border-color: #00698f;
+            box-shadow: 0 0 0 3px rgba(0, 105, 143, 0.1);
+            outline: none;
+        }
+
+    .sync-panel {
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 15px;
+    }
+
+    .btn-save {
+        background-color: #00698f;
+        color: white;
+        border: none;
+        padding: 10px 25px;
+        border-radius: 6px;
+        font-weight: 700;
+        transition: 0.2s;
+    }
+
+        .btn-save:hover {
+            background-color: #004e6b;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 105, 143, 0.2);
+        }
+
+    .sticky-panel {
+        position: sticky;
+        top: 20px;
+    }
+
+    /* Search Bar */
+    .search-box {
+        position: relative;
+    }
+
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+
+        .search-box input {
+            padding-left: 35px;
+        }
+</style>
+
+<div class="lot-update-container container-fluid py-4">
+    <div class="row">
+        <div class="col-lg-5">
+            <div class="glass-card">
+                <h5 class="section-title">Stock Lot Explorer</h5>
+
+                <div class="search-box mb-3">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="lotFilter" class="form-control form-control-custom" placeholder="Quick filter by Serial or ID...">
+                </div>
+
+                <div class="lot-table-wrapper">
+                    <table class="table table-hover" id="lotListTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Serial Number</th>
+                                <th class="text-end">Qty</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="lotListBody">
+                            <tr>
+                                <td colspan="4" class="text-center py-4">
+                                    <div class="spinner-border spinner-border-sm text-primary"></div>
+                                    <span class="ms-2">Loading Lots...</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="glass-card sticky-panel">
+                <h5 class="section-title">Update Console</h5>
+
+                <div id="selectionPlaceholder" class="text-center py-5">
+                    <div class="mb-3">
+                        <i class="fas fa-layer-group fa-4x text-light"></i>
+                    </div>
+                    <h6 class="text-muted">No Lot Selected</h6>
+                    <p class="small text-muted">Please click a lot from the list to modify its details.</p>
+                </div>
+
+                <div id="updateForm" class="d-none animate__animated animate__fadeIn">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Lot ID</label>
+                            <input type="text" id="txtLotID" class="form-control form-control-custom bg-light" readonly>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Item Code</label>
+                            <input type="text" id="txtItemID" class="form-control form-control-custom bg-light" readonly>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">MRN Ref</label>
+                            <input type="text" id="txtMRNRef" class="form-control form-control-custom bg-light" readonly>
+                        </div>
+
+                        <div class="col-12 mt-4">
+                            <label class="form-label text-primary">Modify Serial Number</label>
+                            <input type="text" id="txtNewSerial" class="form-control form-control-custom form-control-lg fw-bold" style="font-size: 1.2rem;">
+                        </div>
+
+                        <div class="col-12 mt-3">
+                            <div class="sync-panel">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="chkSyncMRN" checked>
+                                    <label class="form-check-label fw-bold text-dark" for="chkSyncMRN">
+                                        Sync change with MRN Remarks (IEPLStockIssueDetail)
+                                    </label>
+                                </div>
+                                <p class="small text-muted mb-0 mt-2">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Enabling this will update the remarks in the source MRN Line for full traceability.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="col-12 text-end mt-4">
+                            <button class="btn btn-link text-decoration-none text-muted me-3" onclick="resetForm()">Cancel</button>
+                            <button class="btn-save" onclick="updateLotDetails()">
+                                <i class="fas fa-save me-2"></i> Update Records
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+@section scripts {
+    <script>
+        $(document).ready(function() {
+            loadLotList();
+
+            // Client-side filter
+            $("#lotFilter").on("keyup", function() {
+                var value = $(this).val().toLowerCase();
+                $("#lotListBody tr").filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+
+        function loadLotList() {
+            $.get('@Url.Action("GetAllLots", "Inventory")', function(res) {
+                let tbody = $('#lotListBody').empty();
+                if(res.length > 0) {
+                    res.forEach(item => {
+                        tbody.append(`
+                            <tr id="row-${item.id}" onclick="selectLot(${item.id})">
+                                <td><span class="fw-bold text-primary">#${item.id}</span></td>
+                                <td>${item.Lot_SerialNumber || '<span class="text-muted italic">No Serial</span>'}</td>
+                                <td class="text-end fw-bold">${item.CurrentQuantity}</td>
+                                <td class="text-end"><i class="fas fa-chevron-right text-light"></i></td>
+                            </tr>
+                        `);
+                    });
+                } else {
+                    tbody.append('<tr><td colspan="4" class="text-center text-muted">No lots found.</td></tr>');
+                }
+            });
+        }
+
+        function selectLot(id) {
+            // UI Highlight
+            $("#lotListBody tr").removeClass("row-selected");
+            $(`#row-${id}`).addClass("row-selected");
+
+            $.get('@Url.Action("GetLotInfo", "Inventory")', { id: id }, function(res) {
+                if (res.success) {
+                    $('#selectionPlaceholder').addClass('d-none');
+                    $('#updateForm').removeClass('d-none');
+
+                    $('#txtLotID').val(res.data.LotID);
+                    $('#txtItemID').val(res.data.ItemCode);
+                    $('#txtMRNRef').val(res.data.ReceivingLineID);
+                    $('#txtNewSerial').val(res.data.Lot_SerialNumber).focus();
+                }
+            });
+        }
+
+        function resetForm() {
+            $('#updateForm').addClass('d-none');
+            $('#selectionPlaceholder').removeClass('d-none');
+            $("#lotListBody tr").removeClass("row-selected");
+        }
+
+        function updateLotDetails() {
+            let lotId = $('#txtLotID').val();
+            let newSerial = $('#txtNewSerial').val();
+            let sync = $('#chkSyncMRN').is(':checked');
+
+            $.ajax({
+                url: '@Url.Action("UpdateLotSerial", "Inventory")',
+                type: 'POST',
+                data: { id: lotId, serial: newSerial, shouldSync: sync },
+                success: function(res) {
+                    if (res.success) {
+                        toastr.success("Records updated successfully");
+                        loadLotList();
+                        resetForm();
+                    } else {
+                        toastr.error(res.message);
+                    }
+                }
+            });
+        }
+    </script>
+}

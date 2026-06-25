@@ -1,0 +1,292 @@
+﻿@{
+    ViewBag.Title = "Quality Rejection Intelligence";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const isInModal = !!(document.querySelector('.modal.show'));
+            if (isInModal) {
+                setTimeout(() => { handleInvalidUser(); }, 500);
+            } else {
+                handleInvalidUser();
+            }
+            function handleInvalidUser() {
+                toastr.error("Invalid User Session");
+                setTimeout(function () { window.location.href = "@Url.Action("Index", "Login")"; }, 2000);
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<style>
+    /* Scoped Container to prevent style leakage to layout menu */
+    .rejection-report-container {
+        background-color: #f8fafc;
+        font-family: 'Inter', sans-serif;
+        color: #334155;
+        font-size: 0.8rem;
+    }
+
+    .report-header {
+        background: white; padding: 15px 30px; border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); margin-bottom: 20px;
+        display: flex; justify-content: space-between; align-items: center;
+        border: 1px solid #e2e8f0;
+    }
+
+    /* KPI Stat Cards */
+    .stat-card {
+        background: white; border-radius: 12px; padding: 15px 20px;
+        border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        display: flex; flex-direction: column; height: 100%;
+        transition: transform 0.2s;
+    }
+    .stat-card:hover { transform: translateY(-3px); }
+    .stat-label { font-size: 0.62rem; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; margin-bottom: 4px;}
+    .stat-value { font-size: 1.15rem; font-weight: 800; color: #00698f; line-height: 1.2; }
+    .stat-value.danger { color: #dc3545; }
+
+    /* Table Styling */
+    .table-card {
+        background: white; border-radius: 12px; border: 1px solid #e2e8f0;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); overflow: hidden;
+    }
+
+    .table-responsive-custom {
+        max-height: calc(100vh - 350px);
+        overflow-y: auto;
+    }
+
+    .table-custom thead th {
+        position: sticky; top: 0; background: #f1f5f9; z-index: 10;
+        font-size: 0.65rem; font-weight: 800; text-transform: uppercase;
+        color: #00698f; border-bottom: 2px solid #e2e8f0; padding: 12px 10px;
+    }
+
+    .table-custom tbody td {
+        padding: 10px; font-size: 0.75rem; vertical-align: middle; border-bottom: 1px solid #f1f5f9;
+    }
+
+    .type-badge {
+        padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 0.6rem; text-transform: uppercase;
+        background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;
+    }
+
+    .item-pill {
+        font-weight: 700; font-size: 0.65rem; color: #ffffff;
+        background-color: #00698f; padding: 2px 8px; border-radius: 4px; display: inline-block;
+    }
+
+    /* Search Input styling */
+    .search-input {
+        border-radius: 20px; border: 1.5px solid #e2e8f0; padding: 6px 15px;
+        font-size: 0.8rem; width: 250px; outline: none; transition: 0.3s;
+    }
+    .search-input:focus { border-color: #00698f; box-shadow: 0 0 0 3px rgba(0, 105, 143, 0.1); }
+
+    /* Animations */
+    .animate-up { animation: fadeInUpRej 0.5s ease forwards; opacity: 0; }
+    @@keyframes fadeInUpRej { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<div class="rejection-report-container container-fluid py-4 px-lg-5">
+
+    <!-- 1. Page Header -->
+    <div class="report-header animate-up">
+        <div>
+            <h4 class="fw-bold m-0 text-dark">Quality Rejection Analytics</h4>
+            <p class="text-muted small m-0">Consolidated intelligence on material returns and supplier quality compliance.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <input type="text" id="txtSearch" class="search-input shadow-sm" placeholder="Quick Search (Supplier/Item)..." />
+            <button class="btn btn-sm btn-success fw-bold px-4 rounded-pill shadow-sm" onclick="exportToExcel()">
+                <i class="fas fa-file-excel me-2"></i> Export Excel
+            </button>
+            <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 shadow-sm" onclick="LoadReport()">
+                <i class="fas fa-sync-alt me-1"></i> Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- 2. Analytical KPI Tiles -->
+    <div class="row g-4 mb-4 animate-up" style="animation-delay: 0.1s;">
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #00698f;">
+                <span class="stat-label">Total Rejected Qty</span>
+                <span class="stat-value" id="kpi-total-qty">0.00</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #fd7e14;">
+                <span class="stat-label">Top Rejection Item (By Frequency)</span>
+                <span class="stat-value text-warning" id="kpi-top-item" style="font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">---</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #dc3545;">
+                <span class="stat-label">Top Rejection Supplier</span>
+                <span class="stat-value danger" id="kpi-top-supplier" style="font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">---</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left: 5px solid #10b981;">
+                <span class="stat-label">Unique Rejection Slips</span>
+                <span class="stat-value text-success" id="kpi-voucher-count">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Report Grid -->
+    <div class="table-card animate-up shadow-lg" style="animation-delay: 0.2s;">
+        <div class="table-responsive-custom">
+            <table id="report-table" class="table table-hover table-custom mb-0">
+                <thead>
+                    <tr>
+                        <th class="text-center">Voucher #</th>
+                        <th class="text-center">Voucher Date</th>
+                        <th class="text-center">Supplier Bill</th>
+                        <th>Item Code</th>
+                        <th>Item Description</th>
+                        <th>Observations / Remarks</th>
+                        <th class="text-center">Rejected Qty</th>
+                        <th class="text-center">Type</th>
+                        <th>Stock Location</th>
+                        <th>Returned To</th>
+                    </tr>
+                </thead>
+                <tbody id="report-body">
+                    <tr>
+                        <td colspan="10" class="text-center py-5">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                            <div class="mt-2 small fw-bold text-muted uppercase">Synthesizing Quality Data...</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Loader -->
+<img id="wait-sign" src="~/images/wait.gif" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10001; width:80px;" />
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        LoadReport();
+
+        // Live Search logic
+        $("#txtSearch").on("keyup", function () {
+            var value = $(this).val().toLowerCase();
+            $("#report-body tr").filter(function () {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+    });
+
+    function LoadReport() {
+        $('#wait-sign').show();
+        $.ajax({
+            type: "POST",
+            url: "/Reports/GetQualityRejectionData",
+            dataType: "json",
+            success: function (data) {
+                $('#wait-sign').hide();
+                var tbody = $("#report-body");
+                tbody.empty();
+
+                if (!data || data.length === 0) {
+                    tbody.append('<tr><td colspan="10" class="text-center py-5 text-muted italic">No quality rejection records found.</td></tr>');
+                    updateKPIsEmpty();
+                    return;
+                }
+
+                // Counters for KPIs
+                let totalQty = 0;
+                let vouchers = new Set();
+                let itemFrequencyMap = {};
+                let supplierMap = {};
+
+                $.each(data, function (index, item) {
+                    // Logic Calculations
+                    var qty = parseFloat(item.RejectionQuantity || 0);
+                    totalQty += qty;
+                    vouchers.add(item.VoucherNo);
+
+                    // Group by Item (Frequency based - number of lines)
+                    if (item.ItemName) {
+                        itemFrequencyMap[item.ItemName] = (itemFrequencyMap[item.ItemName] || 0) + 1;
+                    }
+                    // Group by Supplier (Volume based)
+                    if (item.RejectionTo) {
+                        supplierMap[item.RejectionTo] = (supplierMap[item.RejectionTo] || 0) + qty;
+                    }
+
+                    // Build Row
+                    var row = `<tr>
+                        <td class="text-center fw-bold text-dark">${item.VoucherNo}</td>
+                        <td class="text-center"><span class="badge bg-light text-muted border">${moment(item.VoucherDate).format("DD/MM/YYYY")}</span></td>
+                        <td class="text-center small">${item.SBillNo || '---'}</td>
+                        <td><span class="item-pill">${item.ItemCode}</span></td>
+                        <td class="fw-bold text-dark text-truncate" style="max-width: 200px;" title="${item.ItemName}">${item.ItemName}</td>
+                        <td class="small text-muted italic">${item.Remarks || '---'}</td>
+                        <td class="text-center fw-bold text-danger">${qty.toFixed(2)}</td>
+                        <td class="text-center"><span class="type-badge">${item.RejectionType || 'Standard'}</span></td>
+                        <td class="small text-muted">${item.RejectionLocation || '---'}</td>
+                        <td class="fw-bold" style="color: #00698f;">${item.RejectionTo || '---'}</td>
+                    </tr>`;
+                    tbody.append(row);
+                });
+
+                // Calculate Top Item Key (Frequency)
+                let topItemKey = Object.keys(itemFrequencyMap).reduce((a, b) => itemFrequencyMap[a] > itemFrequencyMap[b] ? a : b, null);
+                let topSupplier = Object.keys(supplierMap).reduce((a, b) => supplierMap[a] > supplierMap[b] ? a : b, "N/A");
+
+                // Apply logic: Show "No Frequent Item" if no repeated item found
+                let topItemDisplay = "N/A";
+                if (topItemKey) {
+                    if (itemFrequencyMap[topItemKey] > 1) {
+                        topItemDisplay = topItemKey + " (" + itemFrequencyMap[topItemKey] + " times)";
+                    } else {
+                        topItemDisplay = "No Frequent Item";
+                    }
+                }
+
+                // Update KPIs
+                $('#kpi-total-qty').text(totalQty.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+                $('#kpi-top-item').text(topItemDisplay).attr('title', topItemKey || "N/A");
+                $('#kpi-top-supplier').text(topSupplier).attr('title', topSupplier);
+                $('#kpi-voucher-count').text(vouchers.size);
+
+                toastr.success('Quality logs successfully loaded.');
+                new Audio('/Sound/Save.mp3').play().catch(e => { });
+            },
+            error: function () {
+                $('#wait-sign').hide();
+                toastr.error("Failed to connect to the database.");
+            }
+        });
+    }
+
+    function updateKPIsEmpty() {
+        $('#kpi-total-qty').text("0.00");
+        $('#kpi-top-item').text("---");
+        $('#kpi-top-supplier').text("---");
+        $('#kpi-voucher-count').text("0");
+    }
+
+    function exportToExcel() {
+        var table = document.getElementById("report-table");
+        var wb = XLSX.utils.table_to_book(table, { raw: true });
+        XLSX.writeFile(wb, 'Quality_Rejection_Report_' + moment().format('DDMMYYYY') + '.xlsx');
+    }
+</script>

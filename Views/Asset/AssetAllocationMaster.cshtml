@@ -1,0 +1,561 @@
+﻿@{
+    ViewBag.Title = "Asset Allocation Master";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const isInModal = !!(document.querySelector('.modal.show'));
+            const handleInvalidUser = () => {
+                toastr.error("Session Expired. Please Login.");
+                setTimeout(() => { window.location.href = "@Url.Action("Index", "Login")"; }, 2000);
+            };
+            setTimeout(handleInvalidUser, isInModal ? 500 : 0);
+        });
+    </script>
+    <div class="vh-100 vw-100 bg-white"></div>
+}
+
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+
+<style>
+    :root {
+        --primary-blue: #00698f;
+        --secondary-blue: #005677;
+        --light-bg: #f8f9fa;
+        --card-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+
+    body {
+        background-color: var(--light-bg);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .stat-card {
+        border: none;
+        border-radius: 10px;
+        transition: transform 0.2s;
+        box-shadow: var(--card-shadow);
+        background: white;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+    .icon-box {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-blue) 0%, #004d69 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .custom-card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 1.5rem;
+        background: #fff;
+    }
+
+    .card-title-line {
+        font-weight: 700;
+        color: var(--primary-blue);
+        border-bottom: 2px solid var(--primary-blue);
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+        display: inline-block;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+    }
+
+    .form-label-pill {
+        font-weight: 700;
+        font-size: 0.65rem;
+        color: #ffffff;
+        text-transform: uppercase;
+        background-color: var(--primary-blue);
+        padding: 2px 10px;
+        border-radius: 4px;
+        display: inline-block;
+        margin-bottom: 5px;
+    }
+
+    .btn-brand {
+        background-color: var(--primary-blue);
+        color: white;
+        border: none;
+        padding: 10px 25px;
+        border-radius: 5px;
+        font-weight: 600;
+    }
+
+        .btn-brand:hover {
+            background-color: var(--secondary-blue);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+    .search-container {
+        position: relative;
+    }
+
+        .search-container i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #adb5bd;
+        }
+
+    .search-input {
+        padding-left: 40px;
+        border-radius: 20px;
+        border: 1px solid #dee2e6;
+    }
+
+    .table thead th {
+        background-color: #f1f4f6;
+        color: #495057;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        border-top: none;
+    }
+
+    .dot-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background-color: var(--primary-blue);
+        animation: bounce 1.4s infinite ease-in-out both;
+    }
+
+    @@keyframes bounce {
+        0%, 80%, 100% {
+            transform: scale(0);
+        }
+
+        40% {
+            transform: scale(1.0);
+        }
+    }
+</style>
+
+<div class="container-fluid px-4 py-4">
+    <div class="page-header d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="mb-0"><i class="fas fa-network-wired mr-2"></i> Asset Allocation Master</h2>
+            <small class="text-white-50">Map machines to tasks, frequencies, and required materials</small>
+        </div>
+        <div>
+            <span class="badge badge-light p-2">Live Authorization Mode</span>
+        </div>
+    </div>
+
+    <!-- Dashboard Tiles -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card p-3">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box bg-primary text-white"><i class="fas fa-link"></i></div>
+                    <div class="ml-3">
+                        <h6 class="mb-0 text-muted">Allocated Tasks</h6>
+                        <h4 class="mb-0 font-weight-bold" id="tileAllocCount">0</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card p-3">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box bg-success text-white"><i class="fas fa-tools"></i></div>
+                    <div class="ml-3">
+                        <h6 class="mb-0 text-muted">Items In Pool</h6>
+                        <h4 class="mb-0 font-weight-bold" id="tileItemPool">0</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card p-3">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box bg-info text-white"><i class="fas fa-clock"></i></div>
+                    <div class="ml-3">
+                        <h6 class="mb-0 text-muted">Standard Frequency</h6>
+                        <h4 class="mb-0 font-weight-bold">Daily/Monthly</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card p-3">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box bg-warning text-white"><i class="fas fa-clipboard-check"></i></div>
+                    <div class="ml-3">
+                        <h6 class="mb-0 text-muted">System Health</h6>
+                        <h4 class="mb-0 font-weight-bold text-success">Optimized</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Form Section -->
+        <div class="col-lg-5">
+            <div class="card custom-card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title-line">1. Technical Mapping</h5>
+                    <form id="assetAllocationForm">
+                        <div class="row g-2">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label-pill">Machine Asset <span class="text-danger">*</span></label>
+                                <select id="MachineId" class="form-control form-control-sm" required></select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label-pill">Target SubUnit</label>
+                                <select id="SubunitId" class="form-control form-control-sm"></select>
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label-pill">Allocated Task <span class="text-danger">*</span></label>
+                                <select id="TaskId" class="form-control form-control-sm" required></select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label-pill">Cycle Frequency <span class="text-danger">*</span></label>
+                                <select id="FrequencyId" class="form-control form-control-sm" required></select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label-pill">Task Classification <span class="text-danger">*</span></label>
+                                <select id="TaskTypeId" class="form-control form-control-sm" required></select>
+                            </div>
+                        </div>
+
+                        <h5 class="card-title-line mt-4">2. Material Scanning</h5>
+                        <div class="bg-light p-3 rounded-lg border mb-3">
+                            <div class="row g-2">
+                                <div class="col-md-5">
+                                    <label class="small font-weight-bold text-muted uppercase">Part Code</label>
+                                    <input type="text" class="form-control form-control-sm" id="itemCodeInput" placeholder="Scan Item..." />
+                                    <input type="hidden" id="itemIDInput">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="small font-weight-bold text-muted uppercase">Quantity</label>
+                                    <input type="number" class="form-control form-control-sm" id="itemQuantityInput" value="1" min="1" />
+                                </div>
+                                <div class="col-md-3 d-flex align-items-end">
+                                    <button type="button" id="addItemToTableBtn" class="btn btn-primary btn-sm w-100 shadow-sm" style="background-color: var(--primary-blue)">
+                                        <i class="fas fa-plus"></i> Add
+                                    </button>
+                                </div>
+                                <div class="col-12">
+                                    <input type="text" class="form-control form-control-sm bg-white border-0 small mt-1" id="itemNameInput" readonly placeholder="Item Name will appear here...">
+                                    <input type="hidden" id="itemUOMSelect">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive" style="max-height: 200px;">
+                            <table id="tempItemsTable" class="table table-sm border">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Item Name</th>
+                                        <th class="text-center">Qty</th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+
+                        <hr />
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="resetForm()">Clear All</button>
+                            <button type="submit" id="saveAllocation" class="btn btn-brand">
+                                <i class="fas fa-save mr-1"></i> Save Allocation
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table Section -->
+        <div class="col-lg-7">
+            <div class="card custom-card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="card-title-line mb-0">Existing Allocations</h5>
+                        <div class="search-container w-50">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="quickSearch" class="form-control search-input" placeholder="Search allocated tasks...">
+                        </div>
+                    </div>
+                    <div class="table-responsive" style="max-height: 600px;">
+                        <table class="table table-hover" id="allocatedtaskstbl">
+                            <thead>
+                                <tr>
+                                    <th>SubUnit</th>
+                                    <th>Task Identity</th>
+                                    <th class="text-center">Frequency</th>
+                                    <th class="text-center">Type</th>
+                                    <th class="text-center">Audit</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allocatedbody">
+                                <tr><td colspan="5" class="text-center py-5 text-muted italic">Select a machine to view data</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="itemDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:15px;">
+            <div class="modal-header border-bottom-0 bg-light">
+                <h5 class="modal-title fw-bold text-primary"><i class="fas fa-list-ul mr-2"></i>Allocation Material List</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="table-responsive">
+                    <table id="modalItemsTable" class="table table-sm table-hover">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Item Code</th>
+                                <th>Item Name</th>
+                                <th class="text-center">Qty</th>
+                                <th>UOM</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+
+<script>
+    // --- GLOBAL SCOPE VARIABLES ---
+    // These must be outside or shared so both Ready and Helper functions see them
+    var allocatedItemsData = [];
+    var rowCounter = 0;
+
+    $(document).ready(function () {
+        // Initialization
+        GetMasterDropdowns();
+
+        // LIVE SEARCH
+        $("#quickSearch").on("keyup", function() {
+            var value = $(this).val().toLowerCase();
+            $("#allocatedbody tr").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+
+        // MACHINE DROPDOWN
+        function GetMasterDropdowns() {
+            $.ajax({
+                url: '/Asset/GetmachineData',
+                type: 'GET',
+                success: function (data) {
+                    $('#MachineId').empty().append('<option value="">-- Select Machine --</option>');
+                    $.each(data.machine, (i, it) => $('#MachineId').append(new Option(it.text, it.value)));
+                    $('#FrequencyId').empty().append('<option value="">-- Select Frequency --</option>');
+                    $.each(data.Frequency, (i, it) => $('#FrequencyId').append(new Option(it.text, it.value)));
+                    $('#TaskTypeId').empty().append('<option value="">-- Select Task Type --</option>');
+                    $.each(data.TaskType, (i, it) => $('#TaskTypeId').append(new Option(it.text, it.value)));
+                }
+            });
+        }
+
+        // CASCADING DROPDOWNS
+        $('#MachineId').change(function () {
+            let mid = $(this).val();
+            if (!mid) return;
+            RefreshAllocationTable(mid);
+            var $sub = $('#SubunitId').empty().append('<option value="">-- Loading --</option>');
+            $.getJSON('/Asset/GetSubUnit', { MachineID: mid }, function(res) {
+                $sub.empty().append('<option value="">-- Entire Machine --</option>');
+                if(res.success) { $.each(res.subunit, (i, it) => $sub.append(new Option(it.text, it.value))); }
+            });
+        });
+
+        $('#SubunitId').change(function () {
+            let mid = $('#MachineId').val();
+            let sid = $(this).val();
+            var $task = $('#TaskId').empty().append('<option value="">-- Loading --</option>');
+            $.getJSON('/Asset/GetTaskBYID', { MachineID: mid, SubunitId: sid }, function(res) {
+                $task.empty().append('<option value="">-- Select Task --</option>');
+                if(res.data) { $.each(res.data, (i, it) => $task.append(new Option(it.text, it.value))); }
+            });
+        });
+
+        // ITEM LOOKUP
+        $('#itemCodeInput').on('change', function () {
+            var code = $(this).val();
+            if(!code) return;
+            $.getJSON("/Inventory/GetIssueItemDetails", { itemCode: code }, function(data) {
+                if (data != null) {
+                    $('#itemNameInput').val(data.itemname);
+                    $('#itemUOMSelect').val(data.uomText);
+                    $('#itemIDInput').val(data.id);
+                } else { toastr.error("Part code not found."); }
+            });
+        });
+
+        // ADD ITEM TO TEMP LIST
+        $('#addItemToTableBtn').click(function () {
+            var code = $('#itemCodeInput').val().trim();
+            var name = $('#itemNameInput').val().trim();
+            var qty = parseFloat($('#itemQuantityInput').val());
+            var itemId = $('#itemIDInput').val();
+
+            if(!code || !itemId || qty <= 0) { toastr.warning("Select valid item/qty."); return; }
+
+            rowCounter++;
+            var rid = 'tr-' + rowCounter;
+            // Pushing to the GLOBAL array
+            allocatedItemsData.push({ rowId: rid, ItemCode: code, ItemId: itemId, ItemName: name, Quantity: qty });
+
+            $('#tempItemsTable tbody').append(`
+                <tr id="${rid}">
+                    <td>${code}</td>
+                    <td>${name}</td>
+                    <td class="text-center">${qty}</td>
+                    <td class="text-center"><button type="button" class="btn btn-sm text-danger" onclick="removeLocalItem('${rid}')"><i class="fas fa-trash"></i></button></td>
+                </tr>
+            `);
+
+            $('#itemCodeInput, #itemNameInput, #itemIDInput').val('');
+            $('#itemQuantityInput').val(1);
+            $('#tileItemPool').text(allocatedItemsData.length);
+        });
+
+        // SAVE ALLOCATION
+        $('#assetAllocationForm').submit(function (e) {
+            e.preventDefault();
+
+            var payload = {
+                MachineId: parseInt($('#MachineId').val()),
+                SubunitId: $('#SubunitId').val() ? parseInt($('#SubunitId').val()) : null,
+                TaskId: parseInt($('#TaskId').val()),
+                FrequencyId: parseInt($('#FrequencyId').val()),
+                TaskTypeId: parseInt($('#TaskTypeId').val()),
+                AllocatedItems: allocatedItemsData.map(x => ({ ItemId: x.ItemId, Quantity: x.Quantity }))
+            };
+
+            $('#saveAllocation').prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Saving...');
+
+            $.ajax({
+                url: '@Url.Action("SaveAllocation", "Asset")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(payload),
+                success: function (res) {
+                    if (res.success) {
+                        toastr.success(res.message);
+                        RefreshAllocationTable($('#MachineId').val());
+                        ClearEntrySection(); // <--- THIS NOW WORKS PROPERLY
+                    } else { toastr.error(res.message); }
+                },
+                complete: function() { $('#saveAllocation').prop('disabled', false).html('<i class="fas fa-save mr-1"></i> Save Allocation'); }
+            });
+        });
+    });
+
+    // --- HELPER FUNCTIONS (OUTSIDE READY) ---
+
+    function removeLocalItem(rid) {
+        // Correctly updates the global array
+        allocatedItemsData = allocatedItemsData.filter(x => x.rowId !== rid);
+        $('#' + rid).remove();
+        $('#tileItemPool').text(allocatedItemsData.length);
+    }
+
+    function ClearEntrySection() {
+        // 1. Clear UI Fields
+        $('#SubunitId, #TaskId, #FrequencyId, #TaskTypeId').val('');
+        $('#tempItemsTable tbody').empty();
+
+        // 2. CRITICAL FIX: Empty the global array so the next save is clean
+        allocatedItemsData = [];
+        rowCounter = 0;
+
+        // 3. Update Tiles
+        $('#tileItemPool').text(0);
+    }
+
+    function resetForm() {
+        $('#assetAllocationForm')[0].reset();
+        $('#allocatedbody').html('<tr><td colspan="5" class="text-center text-muted">Select a machine to view data</td></tr>');
+        ClearEntrySection();
+        $('#tileAllocCount').text(0);
+    }
+
+    function RefreshAllocationTable(mid) {
+        $('#allocatedbody').html('<tr><td colspan="5" class="text-center py-4"><div class="dot-spinner"></div> Synchronizing...</td></tr>');
+        $.getJSON('/Asset/GetAllocatedTasks', { MachineID: mid }, function(res) {
+            var body = $('#allocatedbody').empty();
+            if(res.success && res.data.length > 0) {
+                $.each(res.data, function(i, it) {
+                    body.append(`
+                        <tr>
+                            <td class="small fw-bold text-muted">${it.SubUnitName || 'General Machine'}</td>
+                            <td class="fw-bold text-primary">${it.TaskName}</td>
+                            <td class="text-center"><span class="badge bg-light border text-dark">${it.Frequency}</span></td>
+                            <td class="text-center small">${it.TaskType}</td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-info rounded-pill px-3" onclick="viewItems(${it.Id})">
+                                    <i class="fas fa-eye me-1"></i> Items
+                                </button>
+                            </td>
+                        </tr>
+                    `);
+                });
+                $('#tileAllocCount').text(res.data.length);
+            } else {
+                body.append('<tr><td colspan="5" class="text-center py-4 text-muted">No mappings found.</td></tr>');
+                $('#tileAllocCount').text(0);
+            }
+        });
+    }
+
+    function viewItems(id) {
+        var $tbody = $('#modalItemsTable tbody').empty().append('<tr><td colspan="4" class="text-center"><div class="dot-spinner"></div></td></tr>');
+        $.getJSON('@Url.Action("GetAllocatedItemsByAllocationId", "Asset")', { allocationId: id }, function(res) {
+            $tbody.empty();
+            if(res.success && res.data.length > 0) {
+                $.each(res.data, function(i, it) {
+                    $tbody.append(`<tr><td>${it.ItemCode}</td><td>${it.ItemName}</td><td class="text-center fw-bold">${it.Quantity}</td><td>${it.UOMText}</td></tr>`);
+                });
+            } else { $tbody.append('<tr><td colspan="4" class="text-center">No materials required.</td></tr>'); }
+            $('#itemDetailsModal').modal('show');
+        });
+    }
+</script>

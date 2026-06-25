@@ -1,0 +1,282 @@
+﻿@{
+    ViewBag.Title = "Purchase Order Console";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    /* Matches your 2nd Screenshot Theme */
+    :root {
+        --teal-header: #00698f;
+        --accent-blue: #0ea5e9;
+        --accent-green: #22c55e;
+        --accent-red: #ef4444;
+    }
+
+    body {
+        background-color: #f1f5f9;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* Top KPI Cards from Screen 2 */
+    .kpi-card {
+        background: white;
+        border-radius: 8px;
+        padding: 15px;
+        border-top: 4px solid #ddd;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        transition: 0.3s;
+    }
+
+        .kpi-card.blue {
+            border-top-color: var(--accent-blue);
+        }
+
+        .kpi-card.green {
+            border-top-color: var(--accent-green);
+        }
+
+        .kpi-card.red {
+            border-top-color: var(--accent-red);
+        }
+
+    .kpi-label {
+        font-size: 0.65rem;
+        font-weight: 800;
+        color: #64748b;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+    }
+
+    .kpi-value {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1e293b;
+    }
+
+    /* Header Styling */
+    .console-header {
+        background: var(--teal-header);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 10px 10px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* Filter Bar Styling */
+    .filter-bar {
+        background: #fff;
+        padding: 15px;
+        border-radius: 0 0 10px 10px;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 20px;
+    }
+
+    .filter-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #00698f;
+        margin-bottom: 5px;
+    }
+
+    /* Table Styling to match Screen 2 */
+    .table-container {
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+
+    .po-table thead th {
+        background: #f8fafc;
+        color: #00698f;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        border-bottom: 2px solid #e2e8f0;
+        padding: 12px;
+    }
+
+    .po-table tbody td {
+        font-size: 0.8rem;
+        padding: 10px 12px;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .status-pill {
+        font-size: 0.65rem;
+        padding: 3px 10px;
+        border-radius: 4px;
+        font-weight: 600;
+        border: 1px solid transparent;
+        display: inline-block;
+    }
+
+    .status-full {
+        background: #dcfce7;
+        color: #166534;
+        border-color: #bbf7d0;
+    }
+
+    .status-partial {
+        background: #fef9c3;
+        color: #854d0e;
+        border-color: #fef08a;
+    }
+
+    .status-pending {
+        background: #f1f5f9;
+        color: #475569;
+        border-color: #e2e8f0;
+    }
+
+    .btn-sync {
+        background: #00698f;
+        color: white;
+        border: none;
+        padding: 8px 25px;
+        border-radius: 6px;
+        font-weight: 600;
+    }
+
+        .btn-sync:hover {
+            background: #005a7a;
+            color: white;
+        }
+
+    /* Animation */
+    .row-anim {
+        animation: fadeInRight 0.4s ease forwards;
+        opacity: 0;
+    }
+
+    @@keyframes fadeInRight {
+        from {
+            opacity: 0;
+            transform: translateX(15px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+</style>
+
+<div class="container-fluid py-3">
+    <div class="row g-3 mb-3">
+        <div class="col-md-3">
+            <div class="kpi-card blue"><div class="kpi-label">Total Orders</div><div class="kpi-value" id="kpi-total">0</div></div>
+        </div>
+        <div class="col-md-3">
+            <div class="kpi-card green"><div class="kpi-label">Fully Approved</div><div class="kpi-value" id="kpi-approved">0</div></div>
+        </div>
+        <div class="col-md-3">
+            <div class="kpi-card" style="border-top-color: #f59e0b;"><div class="kpi-label">Partially Approved</div><div class="kpi-value" id="kpi-partial">0</div></div>
+        </div>
+        <div class="col-md-3">
+            <div class="kpi-card red"><div class="kpi-label">Pending Revision</div><div class="kpi-value" id="kpi-pending">0</div></div>
+        </div>
+    </div>
+
+    <div class="console-header">
+        <h5 class="m-0 fw-bold"><i class="fas fa-file-invoice-dollar me-2"></i> Purchase Order Console Intelligence</h5>
+        <button class="btn btn-sm btn-light fw-bold rounded-pill px-3">Export Data</button>
+    </div>
+
+    <div class="filter-bar shadow-sm">
+        <div class="row align-items-end">
+            <div class="col-md-3">
+                <div class="filter-label">Status Filter</div>
+                <select class="form-select form-select-sm" id="statusFilter" onchange="filterTable()">
+                    <option value="">All Orders</option>
+                    <option value="Fully Approved">Fully Approved</option>
+                    <option value="Partially Approved">Partially Approved</option>
+                    <option value="Pending">Pending</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <div class="filter-label">Instant Quick Search</div>
+                <input type="text" id="poSearch" class="form-control form-control-sm" placeholder="Quick find PO, Supplier name..." onkeyup="filterTable()">
+            </div>
+            <div class="col-md-3 text-end">
+                <button class="btn-sync shadow-sm" onclick="loadPOs()"><i class="fas fa-sync-alt me-2"></i>Sync Report</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="table table-hover po-table mb-0">
+            <thead>
+                <tr>
+                    <th width="150">PO Number</th>
+                    <th width="120">PO Date</th>
+                    <th>Supplier Name</th>
+                    <th class="text-end" width="150">Gross Amount</th>
+                    <th class="text-center" width="180">Status</th>
+                    <th class="text-center" width="100">Action</th>
+                </tr>
+            </thead>
+            <tbody id="po-list-body">
+            </tbody>
+        </table>
+    </div>
+</div>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script>
+    $(document).ready(function () { loadPOs(); });
+
+    function loadPOs() {
+        $('#po-list-body').html('<tr><td colspan="6" class="text-center py-5">Syncing with server...</td></tr>');
+        $.get('/Purchase/GetAllPurchaseOrders', function (res) {
+            if (res.success) {
+                let rows = "";
+                let counts = { total: res.data.length, app: 0, part: 0, pend: 0 };
+
+                $.each(res.data, function (i, v) {
+                    let statusCls = v.StatusText == "Fully Approved" ? "status-full" : (v.StatusText == "Partially Approved" ? "status-partial" : "status-pending");
+
+                    if (v.StatusText == "Fully Approved") counts.app++;
+                    else if (v.StatusText == "Partially Approved") counts.part++;
+                    else counts.pend++;
+
+                    let actionBtn = v.IsReversible ?
+                        `<button class="btn btn-xs btn-outline-danger py-0 px-2" style="font-size:10px;" onclick="reversePO(${v.id}, '${v.PONumber}')"><i class="fas fa-undo"></i> Reverse</button>` :
+                        `<span class="text-muted" style="font-size:10px;">Locked</span>`;
+
+                    rows += `<tr class="row-anim" style="animation-delay:${i * 0.03}s">
+                        <td class="fw-bold text-primary">${v.PONumber}</td>
+                        <td class="text-muted">${v.Date}</td>
+                        <td class="fw-bold text-uppercase">${v.Supplier}</td>
+                        <td class="text-end fw-bold">₹${v.Amount}</td>
+                        <td class="text-center"><span class="status-pill ${statusCls}">${v.StatusText}</span></td>
+                        <td class="text-center">${actionBtn}</td>
+                    </tr>`;
+                });
+                $('#po-list-body').html(rows);
+                $('#kpi-total').text(counts.total); $('#kpi-approved').text(counts.app);
+                $('#kpi-partial').text(counts.part); $('#kpi-pending').text(counts.pend);
+            }
+        });
+    }
+
+    function filterTable() {
+        let search = $('#poSearch').val().toLowerCase();
+        let status = $('#statusFilter').val().toLowerCase();
+        $("#po-list-body tr").filter(function () {
+            $(this).toggle($(this).text().toLowerCase().indexOf(search) > -1 && $(this).text().toLowerCase().indexOf(status) > -1);
+        });
+    }
+
+    function reversePO(id, poNo) {
+        if (confirm("Reverse approvals for " + poNo + "? This will allow revision.")) {
+            $.post('/Purchase/ExecuteReversePO', { id: id }, function (res) {
+                if (res.success) { toastr.success(res.message); loadPOs(); }
+                else toastr.error(res.message);
+            });
+        }
+    }
+</script>

@@ -1,0 +1,100 @@
+﻿@model CMKL.Models.CMKL_Email
+@*@{
+        //string URole = "";
+        if (Session["U_Role"] == null)
+        {
+            Response.Redirect("~/Login/Index");
+            ViewBag.logout = "User Logged Out, Please Login Again";
+            // URole = Session["U_Role"].ToString();
+        }
+        else
+        {
+        }
+
+    }*@
+<div class="container">
+    <div class="row">
+        <br />
+        
+        <div class="col-sm-9">
+
+        </div>
+        <form id="myForm">
+            <div class="col-sm-4">
+
+
+                <p>@Html.DropDownList("typeEmail", (IEnumerable<SelectListItem>)ViewBag.EmailType, "-Auto Mail For-", new { @class = "form-control" })</p>
+
+            </div>
+            <div class="col-sm-4">
+
+
+                <p>@Html.TextBoxFor(x => x.Email, new { placeholder = "Enter Email Address", @class = "form-control" })</p>
+
+            </div>
+            <div class="col-sm-4">
+
+
+
+            </div>
+            <div class="col-sm-4">
+
+                <p><button type="button" id="add" class="btn btn-primary">Add Email</button></p>
+            </div>
+
+        </form>
+    </div>
+
+</div>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+
+<script>
+
+    $(document).ready(function () {
+
+        // $("#search").click(function () {
+        // $("#loaderDiv").show();
+        $("#add").click(function () {
+            var data = $("#myForm").serialize();
+            // var tran = new Array();
+
+            // console.log("dadada", data);
+            $.ajax({
+
+                type: "POST",
+                url: "/EmailManage/AddEmail",
+                data: data
+                , success: function (response) {
+                    if (response.success == true) {
+                        toastr.success(response.message);
+
+                    }
+                    else {
+                        toastr.error(response.message);
+                    }
+                    $('#typeEmail').val("");
+                    $('#Email').val("");
+
+                    // $("#loaderDiv").hide();
+                    //  $("#myModal").modal("hide");
+
+                },
+                error: function () {
+                    toastr.error('Record not Found / There is Somthing Wrong');
+
+                    // toastr.error('there is some problem with the input', 'Error alert', new { timeout: 300 });
+
+                }
+
+
+            });
+        });
+    })
+
+
+
+
+</script>

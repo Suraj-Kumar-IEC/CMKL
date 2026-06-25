@@ -1,0 +1,115 @@
+﻿
+@{
+    ViewBag.Title = "ApprovalPlantAccounts";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+
+<h3 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">MRN Approval (Accounts)</h3>
+<div class="container">
+    <table id="MRN" class="table table-sm table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>PO Number</th>
+                <th>Bill Number</th>
+                <th>Bill Date</th>
+                <th>Gate Entry</th>
+                <th>G-Entry Dte</th>
+                <th>MRN Number</th>
+                <th>MRN Date</th>
+                <th>View</th>
+                <th>Action</th>
+            </tr>
+
+        </thead>
+        <tbody id="MRNDetail">
+        </tbody>
+    </table>
+</div>
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script>
+    $(document).ready(function () {
+        $.ajax({
+            url: '/Purchase/PendingMRNAccounts',
+            type: 'get',
+            success: function (data) {
+                var tablebody = $('#MRNDetail');
+                tablebody.empty();
+                $.each(data.selectrows, function (index, item) {
+                    const FormattedBillDate = moment(item.billdate).format('DD/MM/YYYY');
+                    const FormattedMRNDate = moment(item.mrndate).format('DD/MM/YYYY');
+                    const FormattedGateDate = moment(item.gentrydate).format('DD/MM/YYYY');
+                    var row = '<tr>' +
+                        '<td>' + item.id + '</td>' +
+                        '<td>' + item.ponumber + '</td>' +
+                        '<td>' + item.billnumber + '</td>' +
+                        '<td>' + FormattedBillDate + '</td>' +
+                        '<td>' + item.gateentry + '</td>' +
+                        '<td>' + FormattedGateDate + '</td>' +
+                        '<td>' + item.mrnnumber + '</td>' +
+                        '<td>' + FormattedMRNDate + '</td>' +   
+                        '<td><a href="/Purchase/MRNPrintout?headid=' + item.id + '" class="btn btn-primary btn-sm">View</a></td>' +
+                        '<td><a href="#" onclick="approveOrder(' + item.id + ')" class="btn btn-success btn-sm">Approve MRN</a></td>' +
+                        '<tr>';
+                    tablebody.append(row);
+                });
+            }
+        });
+    })
+
+    function Loaddata() {
+        $.ajax({
+            url: '/Purchase/PendingMRNAccounts',
+            type: 'get',
+            success: function (data) {
+                var tablebody = $('#MRNDetail');
+                tablebody.empty();
+                $.each(data.selectrows, function (index, item) {
+                    const FormattedBillDate = moment(data.selectrows.billdate).format('DD/MM/YYYY');
+                    const FormattedMRNDate = moment(data.selectrows.mrndate).format('DD/MM/YYYY');
+                    const FormattedGateDate = moment(data.selectrows.gentrydate).format('DD/MM/YYYY');
+                    var row = '<tr>' +
+                        '<td>' + item.id + '</td>' +
+                        '<td>' + item.ponumber + '</td>' +
+                        '<td>' + item.billnumber + '</td>' +
+                        '<td>' + FormattedBillDate + '</td>' +
+                        '<td>' + item.gateentry + '</td>' +
+                        '<td>' + FormattedGateDate + '</td>' +
+                        '<td>' + item.mrnnumber + '</td>' +
+                        '<td>' + FormattedMRNDate + '</td>' +
+                        '<td><a href="/Purchase/MRNPrintout?headid=' + item.id + '" class="btn btn-primary btn-sm">View</a></td>' +
+                        '<td><a href="#" onclick="approveOrder(' + item.id + ')" class="btn btn-success btn-sm">Approve MRN</a></td>' +
+                        '<tr>';
+                    tablebody.append(row);
+                });
+            }
+        });
+    }
+    function approveOrder(itemId) {
+        if (confirm("Are you sure you want to approve this MRN?")) {
+            $.ajax({
+                url: '@Url.Action("ApprovePlantAccountsMRN", "Purchase")',
+                type: 'POST',
+                data: { id: itemId },
+                success: function(result) {
+                    toastr.success("MRN approved successfully!");
+                    Loaddata();
+                },
+                error: function(xhr, status, error) {
+                    toastr.error("An error occurred while approving the MRN.");
+                    console.error(error);
+                }
+            });
+        }
+    }
+
+</script>
+
+
+

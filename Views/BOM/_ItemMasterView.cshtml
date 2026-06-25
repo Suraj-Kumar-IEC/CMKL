@@ -1,0 +1,24 @@
+﻿@model IEnumerable<CMKL.Models.BOMItem>
+
+@if (Model is not null)
+{
+    <table id="itemmaster" class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Item Code</th>
+                <th>Item Name</th>
+                
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>                    
+                    <td>@item.ItemCode</td>
+                    <td>@item.RawItemName</td>
+                    
+                </tr>
+            }
+        </tbody>
+    </table>
+}

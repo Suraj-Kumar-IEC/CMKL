@@ -1,0 +1,120 @@
+﻿@model List<CMKL.Models.Vendor>
+
+@{
+    ViewBag.Title = "Create";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Views/Vendors/Create.cshtml -->
+<h2>Vendor Contact Details</h2>
+
+<div class="form-horizontal">
+    
+    <hr />
+    <div class="form-group">
+        <label class="control-label col-md-2">Vendor Name</label>
+        <div class="col-md-10">
+            <input type="text" id="VendorName" class="form-control" />
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label col-md-2">Contact Name</label>
+        <div class="col-md-10">
+            <input type="text" id="ContactName" class="form-control" />
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label col-md-2">Contact Number</label>
+        <div class="col-md-10">
+            <input type="text" id="ContactNumber" class="form-control" />
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label col-md-2">Profile</label>
+        <div class="col-md-10">
+            <input type="text" id="Profile" class="form-control" />
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <input type="button" value="Create" class="btn btn-default" id="btnCreate" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="Vendor-list" class="centerLogin">
+                @Html.Partial("_VendorList")
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.16.2/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('#btnCreate').on('click', function (e) {
+            e.preventDefault();
+            var vendorName = $('#VendorName').val();
+            var contactName = $('#ContactName').val();
+            var contactNumber = $('#ContactNumber').val();
+            var profile = $('#Profile').val();
+
+            if (vendorName == '' || contactName == '' || contactNumber == '' || profile == '') {
+                toastr.info('Please fill in all fields');
+                return;
+            }
+
+            // Proceed with AJAX call to create vendor
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("Create", "Vendors")',
+                data: JSON.stringify({
+                    VendorName: vendorName,
+                    ContactName: contactName,
+                    ContactNumber: contactNumber,
+                    Profile: profile
+                }),
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                success: function (data) {
+                    if (data.Success) {
+                        $("#Vendor-list").html(data.Html);
+                        toastr.success('Vendor created successfully!');
+                        $('#VendorName').val('');
+                        $('#ContactName').val('');
+                        $('#ContactNumber').val('');
+                        $('#Profile').val('');
+                    } else {
+                        toastr.error('Error creating vendor: ' + data.ErrorMessage);
+                    }
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    alert('Error: ' + xhr.statusText);
+                }
+            });
+        });
+    });
+</script>
+<script>
+    $(document).ready(function () {
+        setInterval(function () {
+            $.ajax({
+                type: 'GET',
+                url: '@Url.Action("RefreshVendorList", "Vendors")',
+                success: function (data) {
+                    $("#Vendor-list").html(data.Html);
+                }
+            });
+        }, 10000); // 10 seconds
+    });
+</script>

@@ -1,0 +1,436 @@
+﻿@{
+    ViewBag.Title = "Completed PDI Intelligence";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            toastr.error("Session Expired. Please Login.");
+            setTimeout(() => { window.location.href = "@Url.Action("Index", "Login")"; }, 2000);
+        });
+    </script>
+    <div class="vh-100 vw-100 bg-white"></div>
+}
+
+<style>
+    :root {
+        --brand-blue: #00698f;
+        --brand-dark: #004d69;
+        --light-bg: #f8fafc;
+        --border-color: #e2e8f0;
+    }
+
+    body {
+        background-color: var(--light-bg);
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* Header & KPIs */
+    .report-header {
+        background: linear-gradient(135deg, var(--brand-blue) 0%, var(--brand-dark) 100%);
+        color: white;
+        padding: 1.5rem 2rem;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0,105,143,0.2);
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.2rem;
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+        height: 100%;
+        border-left: 4px solid var(--brand-blue);
+    }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+
+    .stat-label {
+        font-size: 0.7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #64748b;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--brand-blue);
+        display: block;
+    }
+
+    /* Search & Table */
+    .search-wrapper {
+        position: relative;
+        width: 100%;
+        max-width: 400px;
+    }
+
+        .search-wrapper i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+
+    .search-input {
+        border-radius: 25px !important;
+        padding-left: 40px !important;
+        border: 1.5px solid var(--border-color) !important;
+        height: 45px !important;
+    }
+
+    .table-container {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        border: 1px solid var(--border-color);
+    }
+
+    .table thead th {
+        background: #f1f5f9;
+        color: var(--brand-blue);
+        font-weight: 700;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        padding: 15px;
+        border: none;
+    }
+
+    .table tbody td {
+        vertical-align: middle;
+        padding: 12px 15px;
+        font-size: 0.85rem;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    /* Modal Styling */
+    .modal-header {
+        background: var(--brand-blue);
+        color: white;
+    }
+
+    .btn-close {
+        filter: brightness(0) invert(1);
+    }
+
+    .section-title {
+        background: #f1f5f9;
+        color: var(--brand-blue);
+        font-weight: 800;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        padding: 8px 15px;
+        border-radius: 6px;
+        margin: 1.5rem 0 1rem 0;
+        border-left: 4px solid var(--brand-blue);
+    }
+
+    .form-label {
+        font-weight: 700;
+        font-size: 0.75rem;
+        color: #475569;
+        margin-bottom: 4px;
+    }
+
+    .form-control:disabled, .form-select:disabled {
+        background-color: #f8fafc;
+        border-color: #e2e8f0;
+        color: #1e293b;
+        font-weight: 600;
+    }
+
+    .animate-up {
+        animation: fadeInUp 0.5s ease forwards;
+        opacity: 0;
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="container-fluid px-4 py-4 animate-up">
+    <div class="report-header d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="mb-0 fw-bold"><i class="fas fa-check-double me-3"></i>PDI Quality Audit</h2>
+            <p class="text-white-50 m-0 small">Final Inspection Registry for Completed Production Units</p>
+        </div>
+        <div class="search-wrapper">
+            <i class="fas fa-search"></i>
+            <input type="text" id="quickSearch" class="form-control search-input shadow-sm" placeholder="Search by Voucher, Engine, Alternator...">
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <span class="stat-label">Total Units Inspected</span>
+                <span class="stat-value" id="kpi-total">0</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #10b981;">
+                <span class="stat-label">Today's Completions</span>
+                <span class="stat-value text-success" id="kpi-today">0</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-left-color: #f59e0b;">
+                <span class="stat-label">Critical Status</span>
+                <span class="stat-value text-warning">Verified</span>
+            </div>
+        </div>
+        <div class="col-md-3 text-end d-flex align-items-center justify-content-end">
+            <button class="btn btn-outline-primary fw-bold rounded-pill px-4 bg-white shadow-sm" onclick="exportToExcel()">
+                <i class="fas fa-file-excel me-2"></i>Export Report
+            </button>
+        </div>
+    </div>
+
+    <div class="table-container shadow-sm">
+        <table class="table table-hover mb-0" id="PendingPDITable">
+            <thead>
+                <tr>
+                    <th>Voucher Info</th>
+                    <th>Audit Date</th>
+                    <th>Auditor</th>
+                    <th>Product Identity</th>
+                    <th>Engine Number</th>
+                    <th>Alternator Info</th>
+                    <th class="text-center">Action</th>
+                </tr>
+            </thead>
+            <tbody id="PendingRows">
+                <tr><td colspan="7" class="text-center py-5 text-muted">Synchronizing quality records...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="pdiModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content border-0">
+            <div class="modal-header border-0 py-3">
+                <h5 class="modal-title fw-bold"><i class="fas fa-info-circle me-2"></i>PDI Comprehensive Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 bg-white">
+                <form id="pdiForm">
+                    <input type="hidden" id="headid" name="itemId">
+
+                    <div class="section-title mt-0">1. Engine Specifications</div>
+                    <div class="row g-3">
+                        <div class="col-md-3"><label class="form-label">Make</label><input type="text" id="emake" class="form-control" disabled /></div>
+                        <div class="col-md-3"><label class="form-label">Model</label><select id="emodel" class="form-select" disabled></select></div>
+                        <div class="col-md-3"><label class="form-label">Serial Number</label><input type="text" id="engineSerialNo" class="form-control" disabled /></div>
+                        <div class="col-md-3"><label class="form-label">Test Certificate</label><select id="etestcert" class="form-select" disabled><option>Yes</option><option>No</option></select></div>
+                        <div class="col-md-12"><label class="form-label">Engine Remarks</label><input type="text" id="eremarks" class="form-control" disabled /></div>
+                    </div>
+
+                    <div class="section-title">2. Alternator Characteristics</div>
+                    <div class="row g-3">
+                        <div class="col-md-3"><label class="form-label">Make</label><input type="text" id="amake" class="form-control" disabled /></div>
+                        <div class="col-md-3"><label class="form-label">Frame</label><input type="text" id="aframe" class="form-control" disabled /></div>
+                        <div class="col-md-3"><label class="form-label">Machine (MC) No.</label><input type="text" id="alternatorSerialNo" class="form-control" disabled /></div>
+                        <div class="col-md-3"><label class="form-label">Rating</label><select id="arating" class="form-select" disabled></select></div>
+                        <div class="col-md-3"><label class="form-label">Phase</label><select id="aphase" class="form-select" disabled></select></div>
+                        <div class="col-md-3"><label class="form-label">Test Cert.</label><select id="atestcert" class="form-select" disabled><option>Yes</option><option>No</option></select></div>
+                        <div class="col-md-3"><label class="form-label">Warranty Card</label><select id="awarranty" class="form-select" disabled><option>Yes</option><option>No</option></select></div>
+                        <div class="col-md-3"><label class="form-label">Alternator Remarks</label><input type="text" id="aremarks" class="form-control" disabled /></div>
+                    </div>
+
+                    <div class="section-title">3. Ancillary & External Details</div>
+                    <div class="row g-3">
+                        <div class="col-md-2"><label class="form-label">Exhaust Pipe</label><input type="number" id="exhaust" class="form-control" disabled /></div>
+                        <div class="col-md-2"><label class="form-label">KG Sticker</label><input type="text" id="kgsticker" class="form-control" disabled /></div>
+                        <div class="col-md-2"><label class="form-label">AVM Pads</label><input type="text" id="AVM" class="form-control" disabled /></div>
+                        <div class="col-md-3"><label class="form-label">Fuel Spout</label><input type="number" id="fuelspout" class="form-control" disabled /></div>
+                        <div class="col-md-3"><label class="form-label">Flexible Bellow</label><input type="number" id="flexbel" class="form-control" disabled /></div>
+                    </div>
+
+                    <div class="section-title">4. Control Panel & Battery</div>
+                    <div class="row g-3">
+                        <div class="col-md-3"><label class="form-label">Panel Type</label><select id="cptype" class="form-select" disabled></select></div>
+                        <div class="col-md-3"><label class="form-label">Panel Rating</label><select id="cprating" class="form-select" disabled></select></div>
+                        <div class="col-md-3"><label class="form-label">Panel Serial No.</label><input type="text" id="PanelSerialNo" class="form-control" disabled></div>
+                        <div class="col-md-3"><label class="form-label">Battery Make</label><input type="text" id="bmake" class="form-control" disabled></div>
+                        <div class="col-md-3"><label class="form-label">Battery Rating</label><select id="BatteryRating" class="form-select" disabled></select></div>
+                        <div class="col-md-3"><label class="form-label">Battery Serial No.</label><input type="text" id="BatterySerialNo" class="form-control" disabled></div>
+                        <div class="col-md-6"><label class="form-label">CP Other Detail</label><input type="text" id="cpotherdetail" class="form-control" disabled /></div>
+                    </div>
+
+                    <div class="section-title">5. Final Testing Parameters</div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-3"><label class="form-label">Date of Testing</label><input type="date" id="dateOfTesting" class="form-control" disabled></div>
+                        <div class="col-md-3"><label class="form-label">Genset Rating</label><select id="ratingOfGenset" class="form-select" disabled></select></div>
+                        <div class="col-md-2"><label class="form-label">Canopy Qty</label><input type="number" id="canopy" class="form-control" disabled></div>
+                        <div class="col-md-2"><label class="form-label">KRM No.</label><input type="text" id="KRMNo" class="form-control" disabled></div>
+                        <div class="col-md-2"><label class="form-label">AD Blue</label><input type="text" id="adblue" class="form-control" disabled></div>
+                        <div class="col-md-12"><label class="form-label">Testing Remarks</label><input type="text" id="specialRemarks" class="form-control" disabled></div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Dismiss View</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // Dropdown Loaders (Kept same logic, added formatting)
+        loadDropdowns();
+        loadPendingRecords();
+
+        // Quick Search Feature
+        $("#quickSearch").on("keyup", function () {
+            var value = $(this).val().toLowerCase();
+            $("#PendingRows tr").filter(function () {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+
+        function loadDropdowns() {
+            $.get('/Production/GetEngineModel', function (data) {
+                $('#emodel').append(new Option("Select Model", ""));
+                $.each(data, function (i, item) { $('#emodel').append(new Option(item.text, item.value)); });
+            });
+            $.get('/Production/GetCPType', function (data) {
+                $('#cptype').append(new Option("Select CP", ""));
+                $.each(data.type, function (i, item) { $('#cptype').append(new Option(item.text, item.value)); });
+            });
+            $.get('/Production/GetRatings', function (data) {
+                const rts = ['#ratingOfGenset', '#cprating', '#arating'];
+                rts.forEach(id => {
+                    $(id).append(new Option("Select Rating", ""));
+                    $.each(data.rating, function (i, item) { $(id).append(new Option(item.text, item.value)); });
+                });
+            });
+            $.get('/Production/GetAlternatorPhase', function (data) {
+                $('#aphase').append(new Option("Select Phase", ""));
+                $.each(data.phase, function (i, item) { $('#aphase').append(new Option(item.text, item.value)); });
+            });
+            $.get('/Production/GetBatteriesModel', function (data) {
+                $('#BatteryRating').append(new Option("Select Battery", ""));
+                $.each(data, function (i, item) { $('#BatteryRating').append(new Option(item.text, item.value)); });
+            });
+        }
+
+        function loadPendingRecords() {
+            $.ajax({
+                type: 'GET',
+                url: '/Production/CompletedPDIRecords',
+                success: function (data) {
+                    $('#PendingRows').empty();
+                    if (data && data.get && data.get.length > 0) {
+                        let todayCount = 0;
+                        const today = moment().format('DD-MM-YYYY');
+
+                        $.each(data.get, function (index, item) {
+                            let formattedDate = item.VoucherDate ? moment(parseInt(item.VoucherDate.replace(/[^0-9]/g, ''))).format('DD-MMM-YYYY') : 'NA';
+                            if (moment(parseInt(item.VoucherDate.replace(/[^0-9]/g, ''))).format('DD-MM-YYYY') === today) todayCount++;
+
+                            var row = `<tr>
+                                <td><span class="fw-bold text-dark">${item.VoucherNumber}</span></td>
+                                <td class="text-muted"><i class="far fa-calendar-check me-1"></i> ${formattedDate}</td>
+                                <td><span class="badge bg-light text-dark border">${item.CreatedBy}</span></td>
+                                <td><div class="fw-bold">${item.FGProductName}</div><small class="text-muted">${item.FGProductCode}</small></td>
+                                <td class="font-monospace fw-bold text-primary">${item.EngineNumber}</td>
+                                <td><div class="small fw-bold">${item.AlternatorNumber}</div></td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-primary rounded-pill px-3 view-btn" data-id="${item.id}">
+                                        <i class="fas fa-eye me-1"></i> View Details
+                                    </button>
+                                </td>
+                            </tr>`;
+                            $('#PendingRows').append(row);
+                        });
+
+                        $('#kpi-total').text(data.get.length);
+                        $('#kpi-today').text(todayCount);
+
+                        $('.view-btn').click(function () { populateModal($(this).data('id')); });
+                    } else {
+                        $('#PendingRows').append('<tr><td colspan="7" class="text-center py-5">No completed quality audits found.</td></tr>');
+                    }
+                }
+            });
+        }
+
+        function populateModal(Headid) {
+            $.get('/Production/GetPDIFormData/', { Headid: Headid }, function (data) {
+                if (data.success) {
+                    var TestingDate = moment(data.TestingData.dateOfTesting).format("YYYY-MM-DD");
+                    $('#headid').val(Headid);
+                    // Bulk mapping
+                    $('#emake').val(data.ProductionData.emake);
+                    $('#emodel').val(data.ProductionData.emodel);
+                    $('#engineSerialNo').val(data.ProductionData.engineSerialNo);
+                    $('#etestcert').val(data.ProductionData.etestcert);
+                    $('#eremarks').val(data.ProductionData.eremarks);
+                    $('#amake').val(data.ProductionData.amake);
+                    $('#aframe').val(data.ProductionData.aframe);
+                    $('#aphase').val(data.ProductionData.aphase);
+                    $('#arating').val(data.ProductionData.arating);
+                    $('#alternatorSerialNo').val(data.ProductionData.alternatorSerialNo);
+                    $('#atestcert').val(data.ProductionData.atestcert);
+                    $('#awarranty').val(data.ProductionData.awarranty);
+                    $('#aremarks').val(data.ProductionData.aremarks);
+                    $('#exhaust').val(data.ProductionData.exhaust);
+                    $('#kgsticker').val(data.ProductionData.kgsticker);
+                    $('#AVM').val(data.ProductionData.AVM);
+                    $('#fuelspout').val(data.ProductionData.fuelspout);
+                    $('#flexbel').val(data.ProductionData.flexbel);
+                    $('#cptype').val(data.TestingData.CPtype);
+                    $('#cprating').val(data.TestingData.cprating);
+                    $('#PanelSerialNo').val(data.TestingData.PanelSerialNo);
+                    $('#cpotherdetail').val(data.TestingData.cpotherdetail);
+                    $('#bmake').val(data.TestingData.bmake);
+                    $('#BatteryRating').val(data.TestingData.BatteryRating);
+                    $('#Batteryqty').val(data.TestingData.Batteryqty);
+                    $('#BatterySerialNo').val(data.TestingData.BatterySerialNo);
+                    $('#dateOfTesting').val(TestingDate);
+                    $('#ratingOfGenset').val(data.TestingData.ratingOfGenset);
+                    $('#canopy').val(data.TestingData.canopy);
+                    $('#lube').val(data.TestingData.lube);
+                    $('#kcool').val(data.TestingData.kcool);
+                    $('#KRMNo').val(data.TestingData.KRMNo);
+                    $('#adblue').val(data.TestingData.adblue);
+                    $('#specialRemarks').val(data.TestingData.specialRemarks);
+
+                    $('#pdiModal').modal('show');
+                } else {
+                    toastr.error(data.Message || 'Failed to retrieve PDI details.');
+                }
+            });
+        }
+    });
+
+    function exportToExcel() {
+        // Basic export logic could go here using XLSX
+        toastr.info("Generating Excel Audit Trail...");
+    }
+</script>

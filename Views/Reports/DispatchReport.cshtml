@@ -1,0 +1,438 @@
+﻿@{
+    ViewBag.Title = "Executive Dispatch Analytics";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const isInModal = !!(document.querySelector('.modal.show'));
+            if (isInModal) {
+                setTimeout(() => { handleInvalidUser(); }, 500);
+            } else {
+                handleInvalidUser();
+            }
+            function handleInvalidUser() {
+                toastr.error("Invalid User Session");
+                setTimeout(function () { window.location.href = "@Url.Action("Index", "Login")"; }, 2000);
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<style>
+    /* SCOPED CSS: Targeting only the report container to prevent layout menu shrinking */
+    .dispatch-report-container {
+        font-family: 'Inter', sans-serif;
+        color: #334155;
+        font-size: 0.8rem; /* Applied only to this container */
+        background-color: #f8fafc;
+        padding-bottom: 20px;
+    }
+
+        .dispatch-report-container :root {
+            --brand-blue: #00698f;
+            --border-color: #e2e8f0;
+            --bg-light: #f8fafc;
+            --success-green: #10b981;
+        }
+
+        /* Scoped Header Styling */
+        .dispatch-report-container .report-header {
+            background: white;
+            padding: 12px 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* KPI Stat Cards */
+        .dispatch-report-container .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s;
+        }
+
+            .dispatch-report-container .stat-card:hover {
+                transform: translateY(-3px);
+            }
+
+        .dispatch-report-container .stat-label {
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #64748b;
+            letter-spacing: 0.5px;
+        }
+
+        .dispatch-report-container .stat-value {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #00698f;
+            line-height: 1.2;
+        }
+
+        /* Table Styling */
+        .dispatch-report-container .table-card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .dispatch-report-container .table-responsive {
+            height: calc(100vh - 280px);
+            overflow-y: auto;
+        }
+
+        .dispatch-report-container .table thead th {
+            position: sticky;
+            top: 0;
+            background: #f1f5f9;
+            z-index: 10;
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #00698f;
+            border-bottom: 2px solid #e2e8f0;
+            padding: 12px 10px;
+        }
+
+        .dispatch-report-container .table tbody td {
+            padding: 8px 10px;
+            font-size: 0.75rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        /* Quick Search Input Styling */
+        .dispatch-report-container .search-input {
+            border-radius: 20px;
+            border: 1.5px solid #e2e8f0;
+            padding: 6px 15px;
+            font-size: 0.8rem;
+            width: 280px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+            .dispatch-report-container .search-input:focus {
+                border-color: #00698f;
+                box-shadow: 0 0 0 3px rgba(0, 105, 143, 0.1);
+            }
+
+        /* Custom Pill Labels */
+        .dispatch-report-container .data-pill {
+            font-weight: 700;
+            font-size: 0.65rem;
+            color: #ffffff;
+            text-transform: uppercase;
+            background-color: #00698f;
+            padding: 1px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .dispatch-report-container .btn-print {
+            background-color: #00698f;
+            color: white;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            transition: 0.3s;
+        }
+
+            .dispatch-report-container .btn-print:hover {
+                background-color: #005676;
+                transform: translateY(-1px);
+            }
+
+        .dispatch-report-container .currency-val {
+            font-weight: 700;
+            color: #10b981;
+        }
+        .dispatch-report-container .btn-cert {
+            background-color: #6366f1; /* Indigo color */
+            color: #fff;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            transition: 0.3s;
+        }
+
+            .dispatch-report-container .btn-cert:hover {
+                background-color: #4f46e5;
+                transform: translateY(-1px);
+                color: white;
+            }
+
+    @@media (max-width: 768px) {
+        .dispatch-report-container .report-header {
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+        }
+
+        .dispatch-report-container .search-input {
+            width: 100%;
+        }
+    }
+
+    /* Animations */
+    .dispatch-report-container .animate-up {
+        animation: fadeInUpReport 0.5s ease forwards;
+        opacity: 0;
+    }
+
+    .dispatch-report-container .btn-bilty {
+        background-color: #f59e0b; /* Amber/Orange color */
+        color: #fff;
+        border: none;
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        transition: 0.3s;
+        margin-left: 5px;
+    }
+
+        .dispatch-report-container .btn-bilty:hover {
+            background-color: #d97706;
+            transform: translateY(-1px);
+            color: white;
+        }
+
+    .action-flex {
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+    }
+
+    @@keyframes fadeInUpReport {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="dispatch-report-container container-fluid py-4 px-lg-5">
+    <!-- Header -->
+    <div class="report-header animate-up">
+        <div>
+            <h4 class="fw-bold m-0 text-dark">Item Dispatch Analytics</h4>
+            <p class="text-muted small m-0">Consolidated outbound logistics and billing history.</p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap justify-content-center">
+            <!-- QUICK SEARCH INPUT -->
+            <input type="text" id="txtSearch" class="search-input shadow-sm" placeholder="Quick Search (Customer, BOM, Slip)..." />
+
+            <button class="btn btn-sm btn-success fw-bold px-4 rounded-pill shadow-sm" onclick="exportToExcel()">
+                <i class="fas fa-file-excel me-2"></i> Export Report
+            </button>
+            <span class="badge bg-light text-primary border px-3 py-2 rounded-pill fw-bold">
+                <i class="fas fa-calendar-alt me-1"></i> FY: @Session["Fin_Year"]
+            </span>
+        </div>
+    </div>
+
+    <!-- Insight Dashboard Boxes -->
+    <div class="row g-4 mb-4 animate-up" style="animation-delay: 0.1s;">
+        <div class="col-md-4">
+            <div class="stat-card" style="border-left: 5px solid #00698f;">
+                <span class="stat-label">Total Outbound Volume</span>
+                <span class="stat-value" id="lblTotalCount">0 Units</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card" style="border-left: 5px solid #10b981;">
+                <span class="stat-label">Dispatch Value Summary (Basic)</span>
+                <span class="stat-value" id="lblTotalValue">₹ 0.00</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card" style="border-left: 5px solid #6366f1;">
+                <span class="stat-label">Active Customer Reach</span>
+                <span class="stat-value" id="lblCustomerCount">0 Entities</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Table Card -->
+    <div class="table-card animate-up" style="animation-delay: 0.2s;">
+        <div class="table-responsive">
+            <table id="dispatchTable" class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>BOM Ref</th>
+                        <th>Item Description</th>
+                        <th>Packing Slip</th>
+                        <th>Order Detail</th>
+                        <th>Bill / Invoice</th>
+                        <th>FG Details</th>
+                        <th class="text-end">Basic Amount</th>
+                        <th class="text-end">GST</th>
+                        <th>Customer Entity</th>
+                        <th class="text-center">Logistics Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="dispatchBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Global Wait Sign -->
+<img id="wait-sign" src="~/images/wait.gif" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10001; width:80px;" />
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            loadDispatchData();
+
+            $("#txtSearch").on("keyup", function () {
+                var value = $(this).val().toLowerCase();
+                $("#dispatchBody tr").filter(function () {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+
+        function loadDispatchData() {
+            $('#wait-sign').show();
+            $.ajax({
+                url: '@Url.Action("GetDispatchData", "Reports")',
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    $('#wait-sign').hide();
+                    var tbody = $('#dispatchBody');
+                    tbody.empty();
+
+                    let totalValue = 0;
+                    let customers = new Set();
+
+                    if (data && data.length > 0) {
+                        $.each(data, function (index, item) {
+                            var orderDt = item.OrderDate ? moment(parseInt(item.OrderDate.substr(6))).format('DD/MM/YYYY') : '---';
+                            var billDt = item.BillDate ? moment(parseInt(item.BillDate.substr(6))).format('DD/MM/YYYY') : '---';
+
+                            totalValue += parseFloat(item.basicprice || 0);
+                            if(item.CustomerName) customers.add(item.CustomerName);
+
+                            // LOGIC: Show Bilty only if Transporter is IEPL
+                            // Change 'Transporter' to the exact key name in your JSON object
+                            var biltyHtml = '';
+                            if (item.Transporter === "IEPL") {
+                                // We build the window.open call directly inside the onclick
+                                biltyHtml = `
+                                <button class="btn-bilty shadow-sm" 
+                                        onclick="window.open('/Production/Loadbilty?id=${item.BOMID}&type=Sale', '_blank')">
+                                    <i class="fas fa-truck me-1"></i> BILTY
+                                </button>`;
+                            }
+                            var certHtml = `
+                            <button class="btn-cert shadow-sm" title="Print Test Certificate" onclick="printTestCertificate(${item.BOMID})">
+                                <i class="fas fa-certificate"></i> CERT
+                            </button>`;
+                            var row = `
+                                <tr>
+                                    <td><span class="data-pill">${item.BOMNumber || '---'}</span></td>
+                                    <td class="fw-bold text-dark">${item.ItemName || '---'}</td>
+                                    <td><div class="small fw-bold text-primary">${item.VoucherNumber || '---'}</div></td>
+                                    <td>
+                                        <div class="small fw-bold">${item.OrderNumber || '---'}</div>
+                                        <div class="text-muted" style="font-size:0.65rem;">Date: ${orderDt}</div>
+                                    </td>
+                                    <td>
+                                        <div class="small fw-bold">${item.BillNumber || '---'}</div>
+                                        <div class="text-muted" style="font-size:0.65rem;">Date: ${billDt}</div>
+                                    </td>
+                                    <td>
+                                        <div class="small"><span class="text-muted">Code:</span> ${item.ItemCode || '---'}</div>
+                                        <div class="small"><span class="text-muted">Eng:</span> ${item.ESerialNumber || 'N/A'}</div>
+                                    </td>
+                                    <td class="text-end currency-val">₹${parseFloat(item.basicprice || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                                    <td class="text-end text-muted small">₹${parseFloat(item.gst || 0).toFixed(2)}</td>
+                                    <td class="text-truncate" style="max-width: 150px;" title="${item.CustomerName}">${item.CustomerName || '---'}</td>
+                                    <td class="text-center">
+                                        <div class="action-flex">
+                                            <button class="btn-print shadow-sm" onclick="printPackingSlip(${item.BOMID})">
+                                                <i class="fas fa-print me-1"></i> SLIP
+                                            </button>
+                                            ${biltyHtml}
+                                            ${certHtml}
+                                        </div>
+                                    </td>
+                                </tr>`;
+                            tbody.append(row);
+                        });
+
+                        $('#lblTotalCount').text(data.length + " Units");
+                        $('#lblTotalValue').text("₹ " + totalValue.toLocaleString('en-IN', {maximumFractionDigits: 0}));
+                        $('#lblCustomerCount').text(customers.size + " Entities");
+
+                        toastr.success('Dispatch records synchronized.');
+                    } else {
+                        tbody.append('<tr><td colspan="10" class="text-center py-5 text-muted italic">No dispatch records found.</td></tr>');
+                    }
+                },
+                error: function () {
+                    $('#wait-sign').hide();
+                    toastr.error('Failed to connect to the logistics server.');
+                }
+            });
+        }
+
+        function printPackingSlip(bomId) {
+            var url = '/Inventory/PackingSlipPrint?BOMID=' + bomId;
+            window.open(url, '_blank');
+        }
+
+        // New function for Bilty
+        function printBilty(id) {
+        // This opens the action in a new tab
+        var url = '@Url.Action("Loadbilty", "Production")?id=' + id;
+        var printWindow = window.open(url, '_blank', 'width=900,height=600');
+        }
+        function printTestCertificate(id) {
+            // This opens the Test Certificate action in a new full-page tab
+            var url = '@Url.Action("PrintTestCertificate", "Production")?id=' + id;
+            window.open(url, '_blank');
+        }
+
+        function exportToExcel() {
+            var table = document.getElementById("dispatchTable");
+            var wb = XLSX.utils.table_to_book(table, { raw: true });
+            XLSX.writeFile(wb, 'Dispatch_Master_Report_' + moment().format('DDMMYYYY') + '.xlsx');
+        }
+    </script>
+}

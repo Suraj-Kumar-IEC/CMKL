@@ -1,0 +1,218 @@
+﻿
+@{
+    ViewBag.Title = "OpeningStock";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if the current context is inside a Bootstrap modal
+            const isInModal = !!(document.querySelector('.modal.show'));
+
+            if (isInModal) {
+                // If inside a modal, wait for a short delay
+                setTimeout(() => {
+                    handleInvalidUser();
+                }, 500); // Adjust the delay as needed
+            } else {
+                // If not in a modal, proceed immediately
+                handleInvalidUser();
+            }
+
+            function handleInvalidUser() {
+                toastr.error("Invalid User");
+
+                setTimeout(function () {
+                    window.location.href = "@Url.Action("Index", "Login")";
+                }, 2000); // Redirect after 2 seconds
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<div class="container">
+    <h3 style="background-color: #00698f; color: #ffffff; padding: 5px 10px; border-radius: 5px; text-align: center;">Opening Stock Upload (IEPL)</h3>
+    <form id="voucher-form">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="itemCode" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Item Code:</label>
+                    <input type="text" id="item-code" name="itemCode" class="form-control form-control-sm" />
+                </div>
+                <div class="form-group">
+                    <label for="itemName" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Item Name:</label>
+                    <input type="text" id="itemName" name="itemName" class="form-control form-control-sm" readonly />
+                    <input type="text" id="itemid" name="itemid" class="form-control" readonly style="display: none;" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="desc" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Desc:</label>
+                    <input type="text" id="desc" name="desc" class="form-control form-control-sm" readonly />
+                </div>
+                <div class="form-group">
+                    <label for="uom" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">UOM:</label>
+                    <input type="text" id="uom" name="uom" class="form-control form-control-sm" readonly />
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="currentStock" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Current Stock:</label>
+                    <input type="number" id="currentStock" name="currentStock" class="form-control form-control-sm" readonly />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="openingStock" style="background-color: #00698f; padding: 4px 8px; color: #ffffff; border-radius: 4px;">Opening Stock:</label>
+                    <input type="number" id="openingStock" name="openingStock" class="form-control form-control-sm" value="0" />
+                </div>
+            </div>
+        </div>
+        <button type="button" id="add-item-btn" class="btn btn-primary">Add Item</button>
+    </form>
+    <div class="col-md-12">
+        <h3>Added Items:</h3>
+        <table id="added-items-table" class="table table-sm table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>Item Code</th>
+                    <th>Item Name</th>
+                    <th>Current Stock</th>
+                    <th>Opening Stock</th>
+                </tr>
+            </thead>
+            <tbody id="added-items-tbody">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script>
+    $(document).ready(function () {
+        GetOpeningStocks();
+    });
+
+    function GetOpeningStocks() {
+        $.ajax({
+            type: 'GET',
+            url: '/Inventory/GetOpeningStocks',
+            success: function (data) {
+                $('#added-items-tbody').empty();
+                $.each(data, function (index, value) {
+                    var row = '<tr>' +
+                        '<td>' + value.ItemCode + '</td>' +
+                        '<td>' + value.ItemName + '</td>' +
+                        '<td>' + value.CurrentStock + '</td>' +
+                        '<td>' + value.OpeningStock + '</td>' +
+                        '</tr>';
+                    $('#added-items-tbody').append(row);
+                });
+            }
+        });
+    }
+
+
+    $(document).ready(function () {
+        $('#add-item-btn').click(function () {
+            debugger;
+            //var itemCode = $('#itemCode').val();
+            var itemName = $('#itemName').val();
+            var currentStock = $('#currentStock').val();
+            var openingStock = $('#openingStock').val();
+            var itemId = $('#itemid').val();
+
+            if (itemName && currentStock && openingStock) {
+                // Save to database
+                $.ajax({
+                    type: 'POST',
+                    url: '/Inventory/Addopeningstock',
+                    data: {
+                        id: itemId,
+                        currentStock: currentStock,
+                        openingStock: openingStock
+                    },
+                    success: function (data) {
+                        if (data.success) {
+                            toastr.success(data.message);
+                            // Retrieve saved values and display in table
+                            $.ajax({
+                                type: 'GET',
+                                url: '/Inventory/GetOpeningStocks',
+                                success: function (data) {
+                                    $('#added-items-tbody').empty();
+                                    $.each(data, function (index, value) {
+                                        var row = '<tr>' +
+                                            '<td>' + value.ItemCode + '</td>' +
+                                            '<td>' + value.ItemName + '</td>' +
+                                            '<td>' + value.CurrentStock + '</td>' +
+                                            '<td>' + value.OpeningStock + '</td>' +
+                                            '</tr>';
+                                        $('#added-items-tbody').append(row);
+                                    });
+                                }
+                            });
+                        } else {
+
+                            toastr.error(data.message);
+                        }
+                    }
+                });
+            }
+        });
+    });
+
+    $(document).ready(function () {
+        $('#item-code').on('keyup', function (e) {
+            if (e.which === 13 || e.which === 9) { // enter or tab key
+                getItemDetails();
+            }
+        });
+
+        $('#item-code').on('blur', function () {
+            getItemDetails();
+        });
+
+        function getItemDetails() {
+            var itemCode = $('#item-code').val();
+            debugger;
+            $.ajax({
+                type: 'GET',
+                url: '/Inventory/GetIssueItemDetails',
+                data: { itemCode: itemCode },
+                success: function (data) {
+                    if (data.success) {
+
+                        debugger;
+                        $('#itemName').val(data.itemname);
+                        $('#desc').val(data.Desc);
+                        $('#itemid').val(data.id);
+                        $('#uom').val(data.uomText);
+                        $('#currentStock').val(data.stock);
+
+
+                        $('#openingStock').focus();
+                        toastr.success('Details Reterived');
+                        var audio = new Audio('/Sound/Save.mp3');
+                        audio.play();
+                    } else {
+                        toastr.error('Item not found / ' + data.error);
+                        var audio = new Audio('/Sound/Error.mp3');
+                        audio.play();
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.log(error);
+                }
+            });
+        }
+    });
+</script>
+

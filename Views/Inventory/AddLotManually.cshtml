@@ -1,0 +1,252 @@
+﻿@{
+    ViewBag.Title = "Manual Stock Entry";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+<style>
+    body {
+        background-color: #f0f2f5;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .creation-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        max-width: 800px;
+        margin: 30px auto;
+        background: #fff;
+    }
+
+    .creation-header {
+        background: #00698f;
+        color: white;
+        padding: 1.5rem;
+        border-radius: 12px 12px 0 0;
+    }
+
+    .step-badge {
+        background: #008080;
+        color: white;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 3px 12px;
+        border-radius: 50px;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+        display: inline-block;
+    }
+
+    .input-custom {
+        border-radius: 8px;
+        height: 48px;
+        border: 1px solid #dce1e7;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    .info-box {
+        background: #f8fbfe;
+        border: 1px solid #e2e8f0;
+        padding: 15px;
+        border-radius: 8px;
+        display: none;
+        margin-top: 15px;
+    }
+
+    .btn-search {
+        background: #2d3748;
+        color: white;
+        font-weight: 700;
+    }
+
+    #resItemName {
+        color: #00698f;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+</style>
+
+<div class="container animate__animated animate__fadeIn">
+    <div class="card creation-card">
+        <div class="creation-header">
+            <h4 class="mb-0"><i class="fas fa-calendar-plus me-2"></i> Manual Stock Entry</h4>
+        </div>
+
+        <div class="card-body p-4 p-md-5">
+            <form id="formManualLot">
+                @* Hidden field to store the ItemID found by the lookup *@
+                <input type="hidden" name="ItemID" id="hiddenItemId" />
+
+                <div class="row g-4">
+                    <div class="col-md-12">
+                        <span class="step-badge">1. Item Search</span>
+                        <div class="input-group">
+                            <input type="text" id="txtManualCode" class="form-control input-custom" placeholder="Type Item Code (e.g. FBT-0001)..." autofocus />
+                            <button class="btn btn-search px-4" type="button" id="btnLookup">
+                                <i class="fas fa-search me-1"></i> Check
+                            </button>
+                        </div>
+
+                        <div id="itemResultBox" class="info-box animate__animated animate__fadeIn">
+                            <div class="row align-items-center">
+                                <div class="col-md-7">
+                                    <small class="text-muted text-uppercase fw-bold" style="font-size:10px;">Validated Item Name</small>
+                                    <div id="resItemName" class="fw-bold h5 mb-0"></div>
+                                </div>
+                                <div class="col-md-3 border-start">
+                                    <small class="text-muted text-uppercase fw-bold" style="font-size:10px;">Current Stock</small>
+                                    <div class="h5 mb-0 fw-bold"><span id="resStock">0</span> <span id="resUOM" class="small text-muted"></span></div>
+                                </div>
+                                <div class="col-md-2 text-center" id="resLotBadge"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <span class="step-badge" style="background:#4a5568;">2. Receipt Date</span>
+                        <input type="date" name="RecieptDateTime" id="txtDate" class="form-control input-custom" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <span class="step-badge" style="background:#4a5568;">3. Serial / Lot No</span>
+                        <input type="text" name="Lot_SerialNumber" id="txtSerial" class="form-control input-custom" placeholder="Lot No..." />
+                    </div>
+
+                    <div class="col-md-6">
+                        <span class="step-badge" style="background:#4a5568;">4. Original Quantity</span>
+                        <input type="number" step="0.01" name="OriginalQuantity" id="txtQty" class="form-control input-custom" placeholder="0.00" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <span class="step-badge" style="background:#4a5568;">5. Remarks</span>
+                        <input type="text" name="ReservedTo" class="form-control input-custom" placeholder="Supplier / Batch Info..." />
+                    </div>
+
+                    <div class="col-md-12 mt-4">
+                        <button type="button" id="btnSave" class="btn btn-lg btn-primary w-100 fw-bold shadow-sm" style="background:#00698f; border:none; height: 55px;" disabled>
+                            <i class="fas fa-save me-2"></i> Confirm & Save Stock
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            toastr.options = { "positionClass": "toast-top-right", "timeOut": "2000", "progressBar": true };
+
+            // Handle Enter Key for Item Search
+            $('#txtManualCode').keypress(function (e) {
+                if (e.which == 13) { $('#btnLookup').click(); return false; }
+            });
+
+            // Lookup Item Details
+            $('#btnLookup').click(function () {
+                var code = $('#txtManualCode').val().trim();
+                if (!code) {
+                    toastr.warning("Please enter an item code");
+                    return;
+                }
+
+                var $btn = $(this);
+                $btn.html('<i class="fas fa-spinner fa-spin"></i>').prop('disabled', true);
+
+                $.ajax({
+                    url: '@Url.Action("GetItemDetails", "Purchase")',
+                    type: 'GET',
+                    data: { itemCode: code },
+                    success: function (res) {
+                        if (res.success) {
+                            // Map hidden and display fields
+                            $('#hiddenItemId').val(res.itemid);
+                            $('#resItemName').text(res.itemname); // Showing Item Name here
+                            $('#resStock').text(res.stock);
+                            $('#resUOM').text(res.uomText);
+
+                            // Badge logic
+                            var badgeHtml = res.enablelot
+                                ? '<span class="badge bg-success"><i class="fas fa-check-circle"></i> Lot Enabled</span>'
+                                : '<span class="badge bg-warning text-dark"><i class="fas fa-exclamation-triangle"></i> No Lot</span>';
+                            $('#resLotBadge').html(badgeHtml);
+
+                            $('#itemResultBox').fadeIn();
+                            $('#btnSave').prop('disabled', false);
+                            $('#txtSerial').focus();
+                            toastr.success("Item Validated: " + res.itemname);
+                        } else {
+                            toastr.error(res.error || "Item code not found");
+                            $('#itemResultBox').hide();
+                            $('#btnSave').prop('disabled', true);
+                            $('#hiddenItemId').val('');
+                        }
+                    },
+                    error: function() {
+                        toastr.error("Server connection error");
+                    },
+                    complete: function() {
+                        $btn.html('<i class="fas fa-search me-1"></i> Check').prop('disabled', false);
+                    }
+                });
+            });
+
+            // Save via AJAX
+            $('#btnSave').click(function () {
+                var btn = $(this);
+
+                // Form Validation
+                if (!$('#hiddenItemId').val()) {
+                    toastr.error("Please validate an item code first");
+                    return;
+                }
+                if (!$('#txtQty').val() || parseFloat($('#txtQty').val()) <= 0) {
+                    toastr.warning("Please enter a valid quantity");
+                    return;
+                }
+                if (!$('#txtSerial').val()) {
+                    toastr.warning("Serial / Lot Number is required");
+                    return;
+                }
+
+                btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+
+                $.ajax({
+                    url: '@Url.Action("SaveManualLot", "Inventory")',
+                    type: 'POST',
+                    data: $('#formManualLot').serialize(),
+                    success: function (res) {
+                        if (res.success) {
+                            toastr.success(res.message || "Stock lot saved successfully");
+
+                            // Reset Form
+                            $('#formManualLot')[0].reset();
+                            $('#itemResultBox').hide();
+                            $('#btnSave').prop('disabled', true);
+
+                            // Set date back to today
+                            document.getElementById('txtDate').valueAsDate = new Date();
+
+                            $('#txtManualCode').focus();
+                        } else {
+                            toastr.error(res.message || "Error saving stock");
+                            btn.prop('disabled', false).html('<i class="fas fa-save me-2"></i> Confirm & Save Stock');
+                        }
+                    },
+                    error: function() {
+                        toastr.error("Failed to save. Check server logs.");
+                        btn.prop('disabled', false).html('<i class="fas fa-save me-2"></i> Confirm & Save Stock');
+                    }
+                });
+            });
+        });
+    </script>
+}

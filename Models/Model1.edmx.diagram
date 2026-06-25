@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="7e0d5ee7faeb42b69d8151ba8d186847" Name="Diagram1" ZoomLevel="64">
+        <EntityTypeShape EntityType="IECModel.CMKL_Enquiry" Width="1.5" PointX="0.5" PointY="0.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="IECModel.CMKL_Stage" Width="1.5" PointX="4.875" PointY="0.625" />
+        <EntityTypeShape EntityType="IECModel.CMKL_Email" Width="1.5" PointX="4.75" PointY="2.625" />
+        <EntityTypeShape EntityType="IECModel.Tender" Width="1.5" PointX="4.75" PointY="6.75" />
+        <EntityTypeShape EntityType="IECModel.tbl_User_Master" Width="1.5" PointX="2.625" PointY="5.625" />
+        <EntityTypeShape EntityType="IECModel.TA_TypeMaster" Width="1.5" PointX="4.75" PointY="4.75" />
+        <EntityTypeShape EntityType="IECModel.TA_Transport" Width="1.5" PointX="2.625" PointY="11.625" />
+        <EntityTypeShape EntityType="IECModel.TA_Master" Width="1.5" PointX="4.75" PointY="11.25" />
+        <EntityTypeShape EntityType="IECModel.CMKL_Enquiry_Item" Width="1.5" PointX="2.625" PointY="0.5" />
+        <EntityTypeShape EntityType="IECModel.Company" Width="1.5" PointX="0.75" PointY="17.25" />
+        <AssociationConnector Association="IECModel.FK_tbl_User_Master" />
+        <EntityTypeShape EntityType="IECModel.PurchaseGFE" Width="1.5" PointX="7.375" PointY="5.75" />
+        <EntityTypeShape EntityType="IECModel.TA_head" Width="1.5" PointX="9.375" PointY="0.75" />
+        <EntityTypeShape EntityType="IECModel.TA_items" Width="1.5" PointX="9.375" PointY="4.125" />
+        <EntityTypeShape EntityType="IECModel.Purchasestage" Width="1.5" PointX="9.375" PointY="6.625" />
+        <EntityTypeShape EntityType="IECModel.ItemMasterGFE" Width="1.5" PointX="7.125" PointY="1" />
+        <EntityTypeShape EntityType="IECModel.PurchaseQualityRejectionreason" Width="1.5" PointX="9.375" PointY="10.375" />
+        <EntityTypeShape EntityType="IECModel.PurchaseStatusQuality" Width="1.5" PointX="9.375" PointY="8.5" />
+        <EntityTypeShape EntityType="IECModel.PurchaseitemGFE" Width="1.5" PointX="7.375" PointY="9" />
+        <EntityTypeShape EntityType="IECModel.EmpCompany" Width="1.5" PointX="11.375" PointY="0.75" />
+        <EntityTypeShape EntityType="IECModel.EngineModel" Width="1.5" PointX="13.375" PointY="0.75" />
+        <EntityTypeShape EntityType="IECModel.EngineRating" Width="1.5" PointX="13.375" PointY="3.75" />
+        <EntityTypeShape EntityType="IECModel.Rating" Width="1.5" PointX="13.375" PointY="6.75" />
+        <EntityTypeShape EntityType="IECModel.CMKL_FinYear" Width="1.5" PointX="11.625" PointY="7.625" />
+        <EntityTypeShape EntityType="IECModel.OrderDetail" Width="1.5" PointX="9.375" PointY="12.75" />
+        <EntityTypeShape EntityType="IECModel.Authorizeddealerview" Width="1.5" PointX="11.375" PointY="12.5" />
+        <EntityTypeShape EntityType="IECModel.PaymentsDealer" Width="1.5" PointX="13.125" PointY="9.375" />
+        <EntityTypeShape EntityType="IECModel.PaymentCompany" Width="1.5" PointX="15.375" PointY="0.75" />
+        <EntityTypeShape EntityType="IECModel.PaymentViewCompany" Width="1.5" PointX="11.375" PointY="9.75" />
+        <EntityTypeShape EntityType="IECModel.BOM" Width="1.5" PointX="13.375" PointY="12.75" />
+        <EntityTypeShape EntityType="IECModel.BOMCategory" Width="1.5" PointX="15.375" PointY="8.5" />
+        <EntityTypeShape EntityType="IECModel.Vendor" Width="1.5" PointX="15.375" PointY="10.75" />
+        <EntityTypeShape EntityType="IECModel.BOM_UOM" Width="1.5" PointX="15.375" PointY="13.75" />
+        <EntityTypeShape EntityType="IECModel.BOMSubcategory" Width="1.5" PointX="3.375" PointY="16.75" />
+        <EntityTypeShape EntityType="IECModel.BOMVPartwiseApprove" Width="1.5" PointX="17.375" PointY="13.75" />
+        <EntityTypeShape EntityType="IECModel.DepartmentMaster" Width="1.5" PointX="5.375" PointY="16.75" />
+        <EntityTypeShape EntityType="IECModel.SupplierMaster" Width="1.5" PointX="17.375" PointY="0.75" />
+        <EntityTypeShape EntityType="IECModel.TaxMaster" Width="1.5" PointX="19.375" PointY="4.75" />
+        <EntityTypeShape EntityType="IECModel.IEPLStockInQualityTransaction" Width="1.5" PointX="19.5" PointY="14.375" />
+        <EntityTypeShape EntityType="IECModel.IEPLStockIN_Detail" Width="1.5" PointX="16.625" PointY="17.125" />
+        <EntityTypeShape EntityType="IECModel.BOMItemMasterLog" Width="1.5" PointX="19.375" PointY="10" />
+        <EntityTypeShape EntityType="IECModel.RejectionArea" Width="1.5" PointX="19.375" PointY="7.75" />
+        <EntityTypeShape EntityType="IECModel.RejectionType" Width="1.5" PointX="11.375" PointY="19.75" />
+        <EntityTypeShape EntityType="IECModel.IEPLQualityRejectionDetail" Width="1.5" PointX="13.75" PointY="19.75" />
+        <EntityTypeShape EntityType="IECModel.IEPLQualityRejectionHead" Width="1.5" PointX="0.75" PointY="20.75" />
+        <EntityTypeShape EntityType="IECModel.OpeningStock" Width="1.5" PointX="20.375" PointY="17.75" />
+        <EntityTypeShape EntityType="IECModel.MRNDetail" Width="1.5" PointX="21.375" PointY="0.75" />
+        <EntityTypeShape EntityType="IECModel.Make_Master" Width="1.5" PointX="21.375" PointY="3.75" />
+        <EntityTypeShape EntityType="IECModel.PurchaseOrderHead" Width="1.5" PointX="20.375" PointY="21.75" />
+        <EntityTypeShape EntityType="IECModel.PurchaseOrderUpdationlog" Width="1.5" PointX="22.375" PointY="11.75" />
+        <EntityTypeShape EntityType="IECModel.CMKL_Email_Setting" Width="1.5" PointX="22.375" PointY="14.75" />
+        <EntityTypeShape EntityType="IECModel.Bill_Series" Width="1.5" PointX="22.375" PointY="17.75" />
+        <EntityTypeShape EntityType="IECModel.StockTable" Width="1.5" PointX="22.375" PointY="20.75" />
+        <EntityTypeShape EntityType="IECModel.CompanyActiveForStock" Width="1.5" PointX="23.375" PointY="0.75" />
+        <EntityTypeShape EntityType="IECModel.FinYear" Width="1.5" PointX="0.75" PointY="23.75" />
+        <EntityTypeShape EntityType="IECModel.CMKL_QRLogin" Width="1.5" PointX="23.375" PointY="3.75" />
+        <EntityTypeShape EntityType="IECModel.MRNDetailLog" Width="1.5" PointX="3.375" PointY="23.75" />
+        <EntityTypeShape EntityType="IECModel.BOM_NegativeStock" Width="1.5" PointX="6.5" PointY="25.875" />
+        <EntityTypeShape EntityType="IECModel.BOMFinalProductCombination" Width="1.5" PointX="24.375" PointY="15.75" />
+        <EntityTypeShape EntityType="IECModel.BOMRequisitionHead" Width="1.5" PointX="24.375" PointY="21.75" />
+        <EntityTypeShape EntityType="IECModel.BOMVoucherline" Width="1.5" PointX="24.375" PointY="10.75" />
+        <EntityTypeShape EntityType="IECModel.PurchaseOrderItem" Width="1.5" PointX="21.375" PointY="6.75" />
+        <EntityTypeShape EntityType="IECModel.BatteryMaster" Width="1.5" PointX="13.375" PointY="16.75" />
+        <EntityTypeShape EntityType="IECModel.BOMRequisitionLine" Width="1.5" PointX="25.375" PointY="0.75" />
+        <EntityTypeShape EntityType="IECModel.ConnectionData" Width="1.5" PointX="15.375" PointY="4.75" />
+        <EntityTypeShape EntityType="IECModel.ItemMasterClass" Width="1.5" PointX="22.375" PointY="26.75" />
+        <EntityTypeShape EntityType="IECModel.BOMItemMaster" Width="1.5" PointX="3.375" PointY="27.75" />
+        <EntityTypeShape EntityType="IECModel.PurchaseType" Width="1.5" PointX="26.375" PointY="10.75" />
+        <EntityTypeShape EntityType="IECModel.IEPLStockIN_Head" Width="1.5" PointX="16.375" PointY="22.75" />
+        <EntityTypeShape EntityType="IECModel.BomIndentLine" Width="1.5" PointX="26.375" PointY="13.75" />
+        <EntityTypeShape EntityType="IECModel.BOMVoucher" Width="1.5" PointX="5.625" PointY="19.75" />
+        <EntityTypeShape EntityType="IECModel.BOMEwapDetail" Width="1.5" PointX="25.75" PointY="4.75" />
+        <EntityTypeShape EntityType="IECModel.DispatchReturn" Width="1.5" PointX="27.75" PointY="0.75" />
+        <EntityTypeShape EntityType="IECModel.AutoReminderEmail" Width="1.5" PointX="5.375" PointY="28.25" />
+        <EntityTypeShape EntityType="IECModel.DispatchReturnBOMLine" Width="1.5" PointX="28.875" PointY="20.25" />
+        <EntityTypeShape EntityType="IECModel.DispatchReturnBOMHead" Width="1.5" PointX="28.625" PointY="23.625" />
+        <EntityTypeShape EntityType="IECModel.ItemGroup" Width="1.5" PointX="28.375" PointY="6.75" />
+        <EntityTypeShape EntityType="IECModel.LineRejectionHead" Width="1.5" PointX="28.375" PointY="9.75" />
+        <EntityTypeShape EntityType="IECModel.LineRejectionDetail" Width="1.5" PointX="28.375" PointY="13.75" />
+        <EntityTypeShape EntityType="IECModel.Bom_ProductionUpdate" Width="1.5" PointX="13.5" PointY="31.25" />
+        <EntityTypeShape EntityType="IECModel.ControlPanelType" Width="1.5" PointX="28.375" PointY="28.75" />
+        <EntityTypeShape EntityType="IECModel.Ratings_Production" Width="1.5" PointX="30.375" PointY="0.75" />
+        <EntityTypeShape EntityType="IECModel.BOM_TestingUpdate" Width="1.5" PointX="30.375" PointY="3.75" />
+        <EntityTypeShape EntityType="IECModel.Phase" Width="1.5" PointX="30.375" PointY="9.75" />
+        <EntityTypeShape EntityType="IECModel.StoreLocationMaster" Width="1.5" PointX="30.375" PointY="12.75" />
+        <EntityTypeShape EntityType="IECModel.BOMIndentHead" Width="1.5" PointX="30.375" PointY="28.75" />
+        <EntityTypeShape EntityType="IECModel.Asset_MachineMaster" Width="1.5" PointX="37.5" PointY="10.125" />
+        <EntityTypeShape EntityType="IECModel.Asset_SubunitMaster" Width="1.5" PointX="5.375" PointY="31.75" />
+        <EntityTypeShape EntityType="IECModel.Asset_FrequencyMaster" Width="1.5" PointX="39.5" PointY="4.625" />
+        <EntityTypeShape EntityType="IECModel.Asset_TastMaster" Width="1.5" PointX="41.125" PointY="7.25" />
+        <EntityTypeShape EntityType="IECModel.Asset_TaskItems" Width="1.5" PointX="44.875" PointY="7.375" />
+        <EntityTypeShape EntityType="IECModel.Asset_MaintenanceLogbookItems" Width="1.5" PointX="37.5" PointY="2.625" />
+        <EntityTypeShape EntityType="IECModel.Asset_MaintenanceLogbook" Width="1.5" PointX="37.5" PointY="5.625" />
+        <EntityTypeShape EntityType="IECModel.Asset_AllocationMaster" Width="1.5" PointX="43.125" PointY="7.25" />
+        <EntityTypeShape EntityType="IECModel.TaxType" Width="1.5" PointX="32.375" PointY="13.75" />
+        <EntityTypeShape EntityType="IECModel.CMKL_Feedback" Width="1.5" PointX="21.375" PointY="32.75" />
+        <EntityTypeShape EntityType="IECModel.Asset_UserTaskAllocation" Width="1.5" PointX="41.25" PointY="10.25" />
+        <EntityTypeShape EntityType="IECModel.Asset_TaskType" Width="1.5" PointX="39.5" PointY="2.625" />
+        <EntityTypeShape EntityType="IECModel.EnableLotDetail" Width="1.5" PointX="32.375" PointY="28.75" />
+        <EntityTypeShape EntityType="IECModel.Stock_lotDetail" Width="1.5" PointX="32.375" PointY="31.75" />
+        <EntityTypeShape EntityType="IECModel.Asset_BreakdownLog" Width="1.5" PointX="39.25" PointY="7.25" />
+        <EntityTypeShape EntityType="IECModel.DispatchDetail" Width="1.5" PointX="0.75" PointY="26.75" />
+        <EntityTypeShape EntityType="IECModel.IEPLStockIssueDetail" Width="1.5" PointX="11.375" PointY="24.75" />
+        <EntityTypeShape EntityType="IECModel.IEPLStockIssueHead" Width="1.5" PointX="13.375" PointY="24.75" />
+        <EntityTypeShape EntityType="IECModel.IEPLStockReturnDetail" Width="1.5" PointX="11.25" PointY="28.5" />
+        <EntityTypeShape EntityType="IECModel.IEPLStockReturnHead" Width="1.5" PointX="31.375" PointY="16.75" />
+        <EntityTypeShape EntityType="IECModel.User_Access" Width="1.5" PointX="24.375" PointY="26.75" />
+        <EntityTypeShape EntityType="IECModel.User_Menu" Width="1.5" PointX="22.375" PointY="29.75" />
+        <EntityTypeShape EntityType="IECModel.IEPL_MiscSale_Detail" Width="1.5" PointX="33.625" PointY="21.25" />
+        <EntityTypeShape EntityType="IECModel.IEPL_MiscSale_Head" Width="1.5" PointX="31.375" PointY="21" />
+        <AssociationConnector Association="IECModel.FK__IEPL_Misc__HeadI__5014FA46" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

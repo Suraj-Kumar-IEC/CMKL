@@ -1,0 +1,359 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>IEPL Menu</title>
+
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    @* <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="~/Styles.css"> <!-- Link to the stylesheet in the root folder -->*@
+    @*<style>
+            body {
+                font-family: 'Salesforce Sans', Arial, sans-serif;
+                font-weight: 500; /* or 700, 800, etc. */
+                font-size: 14px;
+            }
+        </style>
+    *@
+    <style>
+        .creative-header {
+            font-family: 'Dancing Script', cursive; /* Creative font with fallback */
+        }
+
+        .creative-text {
+            font-family: 'Lobster', cursive; /* Another creative font with fallback */
+        }
+    </style>
+    <style>
+        label { /* Include standalone labels */
+            background-color: #00698f;
+            padding: 4px 8px;
+            color: #ffffff;
+            border-radius: 4px;
+            font-size: 14px; /* Adjust font size as needed */
+            margin-bottom: 5px; /* Add some spacing below the label */
+            display: inline-block; /* Prevent label from taking full width */
+        }
+
+        .table-sm td, .table-sm th {
+            font-size: 0.7rem; /* Adjust the value as needed */
+        }
+    </style>
+</head>
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    @*<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js"></script>*@
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="modal fade" id="securityErrorModal" tabindex="-1" role="dialog" aria-labelledby="errorModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title" id="errorModalLabel">
+                            <i class="fa fa-exclamation-triangle me-2"></i> Security Warning
+                        </h5>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body text-center py-4">
+                        <div class="mb-3">
+                            <i class="fa fa-shield-alt text-danger" style="font-size: 50px;"></i>
+                        </div>
+                        <h4 class="text-dark">Access Denied</h4>
+                        <p class="text-secondary">@TempData["ErrorMessage"]</p>
+                    </div>
+                    <div class="modal-footer border-0 justify-content-center">
+                        <button type="button" class="btn btn-secondary px-4" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            @if (Session["U_Role"] != null)
+            {
+                <a class="navbar-brand" href="@Url.Action("Dashboard", "Dashboard")">
+                    <img src="~/images/IEC.jpg" alt="IEPL Logo" width="60" height="30">
+                </a>
+            }
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    @if (Session["EndCustomer"] != null && Session["EndCustomer"].ToString() != null)//== "ADMIN")
+                    {
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Master
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>@Html.ActionLink("Item Master", "itemmaster", "BOM", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Item Master FG", "ItemmasterFG", "Inventory", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Supplier Master", "SupplierMaster", "Master", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Department Master", "DepartmentMaster", "Master", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Make Master", "MakeMaster", "Purchase", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Update Item Detail", "UpdateItem", "Inventory", null, new { @class = "dropdown-item" })</li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Inventory
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>@Html.ActionLink("Purchase Order", "PurchaseOrder", "Purchase", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Purchase Orders (Pending)", "PONotApproved", "Purchase", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Purchase Orders (Approved)", "ApprovedPurchaseOrders", "Purchase", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Gate Reciept", "GoodsReciept", "Inventory", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Material Reciept Voucher", "PurchaseVoucher", "Purchase", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Print MRN", "MRNReprint", "Purchase", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Indent Voucher Manual", "Indent", "Purchase", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Print Indent", "IndentApprovalPrint", "Purchase", null, new { @class = "dropdown-item" })</li>                                
+                                <li>@Html.ActionLink("Update Indent Recieving", "UpdateReceipt", "Purchase", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Stock | Challan Issue", "Stockissue", "Inventory", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Stock | Challan Return", "StockReturn", "Inventory", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Opening Stock Upload", "OpeningStock", "Inventory", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Production Planning", "BOMPlanning", "BOM", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Store Approvals (BOM)", "ManagementApproval", "BOM", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Dispatch FG Item", "Dispatch", "Production", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Dispatched FG Return", "DispatchReturn", "Production", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Sale Bill Misc", "MiscBilling", "Inventory", null, new { @class = "dropdown-item" })</li>
+
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Quality
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>@Html.ActionLink("Pending Quality Bills", "GetHeads", "Inventory", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Quality Return Voucher", "QualityRejectionReturn", "Inventory", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Line Rejection", "LineRejection", "Inventory", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Update Testing Detail", "PendingEwap", "Production", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Pending PDI Cases", "PendingPDI", "Production", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Dispatch Return QC", "FGReturnQualityAction", "Production", null, new { @class = "dropdown-item" })</li>
+                            </ul>
+                        </li>
+
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                BOM
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>@Html.ActionLink("BOM Item Linking", "BOMItemLink", "BOM", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Create BOM", "BOM", "BOM", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Return BOM Creation", "FGReturnBOMCreation", "Production", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Cancel BOM", "BOMCancellation", "BOM", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("BOM Change Requisition", "BOMChangeRequisition", "BOM", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Update Production Status", "PendingProductionView", "Production", null, new { @class = "dropdown-item" })</li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Approvals
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>@Html.ActionLink("BOM Reqisition Approval", "BOMRequisitionApproval", "BOM", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Sale Return BOM Approval", "ReturnBomApproval", "Production", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Indent Approval", "BOMIndentApproval", "BOM", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Indent Approval S-Admin", "SAdminBOMIndentApproval", "BOM", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("PO Admin Approval", "PurchaseOrderHODApproval", "Purchase", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("PO Senior Admin Approval", "PurchaseOrderSAdminApproval", "Purchase", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("MRN Approval Admin", "ApprovalPlantHead", "Purchase", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("MRN Approval Accounts", "ApprovalPlantAccounts", "Purchase", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Line Rejection Approval", "PendingLineRejectionApproval", "Inventory", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Pending Asset Approval - Admin", "PendingApproval", "Asset", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Pending Asset Approval - SAdmin", "PendingSAdminApproval", "Asset", null, new { @class = "dropdown-item" })</li>
+
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Asset
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>@Html.ActionLink("Machine Master", "MachineMaster", "Asset", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("SubUnit Master", "SubUnitMaster", "Asset", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Task Master", "TaskMaster", "Asset", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Asset Allocation Master", "AssetAllocationMaster", "Asset", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Pending Maintanance Log Book", "PendingMaintananceLogBook", "Asset", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Machine Breakdown Management", "BreakdownManagement", "Asset", null, new { @class = "dropdown-item" })</li>
+
+
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Reports
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>@Html.ActionLink("Stock Report", "Index", "StockReport", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Stock Report WIP", "Stockinprocess", "StockReport", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Stock Ready to Dispatch", "ReadytoDispatch", "StockReport", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Stock Movement Report", "StockMovementReport", "StockReport", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Stock Movement Report Detailed", "StockMovementReportold", "StockReport", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("FG Stock Movement Report", "FGStockMovement", "Inventory", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Purchase Order - Approved Itemwise Report", "PurchaseOrderItemsReport", "Reports", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Purchase Order - Not Yet Approved", "PendingPurchaseOrderReport", "Reports", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Material Receipt Registry", "MaterialRecieptReport", "Reports", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Material Reciept Item Wise", "PurchaseDetailReport", "Purchase", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Material Reciept", "PurcahseReportBill", "Reports", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Material Reciept Progress- Pending", "MRNStatus", "Purchase", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Quality Pending Report", "PendingQualityReport", "StockReport", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Stock Issue Report", "PendingStockIssueReport", "StockReport", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Stock Return Report", "StockReturnReport", "StockReport", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Challan Lifecycle Report", "ChallanIssueReportView", "Inventory", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Quality Rejection Return Report", "QualityRejectionReturnReport", "Reports", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Line Rejection Report", "LRReport", "Reports", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Indent Lifecycle Traceability", "IndentReportItemwise", "Reports", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Indent Status Report", "IndentStatusReport", "Purchase", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Item Consumption - 3 Month Analysis", "ItemConsumptionReport", "Reports", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Approved BOM (Stores)", "ApprovedBOMReportStores", "Reports", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Item Dispatch Report", "DispatchReport", "Reports", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Item Wise BOM Issue Report", "BOMItemIssueDetail", "StockReport", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("BOM Wise Item Issue Report", "BOMItemList", "Reports", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Cancelled Bom", "CancelledBOMReport", "Reports", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Completed PDI", "CompletedPDI", "Production", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Sale Report", "SaleReport", "Reports", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Sale Return Report", "DispatchReturnReport", "Reports", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Sale Report Stores", "SaleReportStores", "Reports", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Misc Sale Report", "MiscSaleReport", "Reports", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Maintenance Schedule Report", "MaintenanceScheduleReport", "Asset", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Item Master Report", "ItemMasterReport", "Reports", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("FIFO Traceability Report", "LotStockReport", "Reports", null, new { @class = "dropdown-item" })</li>
+
+                            </ul>
+                        </li>
+
+
+                        if (Session["U_Role"] != null && Session["U_Role"].ToString() == "SUPERADMIN" || Session["U_Role"].ToString() == "USERSUPER")
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Admin
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li>@Html.ActionLink("User Access", "UserAccessView", "UserAccess", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Vendor Contacts", "Create", "Vendors", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Item Check in BOM", "BOMlinkandItemDetail", "BOM", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Admin Application Backup Screen", "SQLbackup", "Master", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Master BOM Alteration", "EditBOMLink", "BOM", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Approved BOM Alteration", "BOMAlteration", "BOM", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Reverse Ewap Case (BOM)", "ReverseEwap", "Production", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("BOM - Item Qty Reduction Utility", "UpdateBOMQtyPercentage", "BOM", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Cancel Packing Slip", "CancelPackingSlip", "Production", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Swap Allocated Serial Numbers - BOM", "ManualSerialSwap", "BOM", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Lot/MRN Serial No Alteration", "LotMRNUpdate", "Inventory", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Reverse PO", "ReversePO", "Purchase", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Add Lot Manually", "AddLotManually", "Inventory", null, new { @class = "dropdown-item" })</li>
+
+
+
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Other
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li>@Html.ActionLink("CPCBII Permission", "CPCBPermission", "OE", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Enquiry Revision", "ReverseEnquiry", "EnquiryStatus", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Split Enquiry", "SplitEnquirySearch", "EnquiryStatus", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Update Customer Detail", "CustomerDetail", "EnquiryStatus", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Email", "EmailView", "EmailManage", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Travelling Allowance", "TAView", "TA", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Branch Payment Update", "Authoriseddealerview", "OE", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Dealer Payment Update", "DealerView", "OE", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Logistic Payment View", "LogisticApproval", "OE", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Bill Series Wise Count", "Index", "Reports", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Item Master", "ItemMaster", "Inventory", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("BPR Voucher", "Purchase", "Inventory", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Logistic Stock In (Bill Wise)", "BPRPendingCases", "Inventory", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Logistic Stock In (Item Wise)", "Logisticin", "Inventory", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Plant Stock In (Item Wise)", "Plantin", "Inventory", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Quality In (Ready For Allocation)", "Qualityin", "Inventory", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Stock Report", "StockRPT", "Inventory", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Generate MRN", "MRNPrint", "Purchase", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Store Approval (BOM)", "StoreApproval", "BOM", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("BOM Issue Detail Itemwise", "BOMItemIssueDetail", "StockReport", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Upload CMKL Documents", "CMKLDocumentUpload", "CMKLProduct", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("Create CMKL QR Login", "CreateQRLogin", "CMKLProduct", null, new { @class = "dropdown-item" })</li>
+                                </ul>
+                            </li>
+
+                        }
+
+                    }
+                </ul>
+              
+                @using System.Web.SessionState
+
+                @{
+                    // Declare and initialize the variables directly here
+                    // These variables will then be accessible throughout the rest of the Razor view
+                    string companyName = Session["CShortName"] as string ?? "Company Name N/A";
+                    string finYear = Session["Fin_Year"] as string ?? "Fin Year N/A";
+                    string UserName = Session["U_Name"] as string ?? "User Name N/A";
+                }
+
+                @if (Session["EndCustomer"] != null)
+
+                {
+
+                    <ul class="navbar-nav position-absolute" style="right: 0;">
+                        <li class="nav-item">
+                            <span class="nav-link" style="
+                            background-color: #00698f; /* A darker blue background */
+                            padding: 8px 15px;
+                            border-radius: 20px;
+                            margin-right: 10px;
+                            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                            display: inline-block;
+                            font-weight: normal; /* Changed to normal as per your request */
+                            color: white; /* Changed to lowercase 'white' and ensured it's here */
+                        ">Hello - @UserName - @companyName (@finYear)</span>
+                    </li>
+                    <li class="nav-item">@Html.ActionLink("Change Password", "ChangePassword", "Login", null, new { @class = "nav-link" })</li>
+                    <li class="nav-item">@Html.ActionLink("Logout", "logout", "Login", null, new { @class = "nav-link" })</li>
+                </ul>
+            }
+            </div>
+        </div>
+
+    </nav>
+
+    <div class="container-fluid">
+        @RenderBody()
+        @RenderSection("Scripts", required: false)
+    </div>
+
+
+</body>
+</html>
+<script type="text/javascript">
+    $(document).ready(function () {
+        console.log("Checking for security modal..."); // Debugging line
+        if ($('#securityErrorModal').length > 0) {
+            console.log("Modal found! Launching...");
+            $('#securityErrorModal').modal('show');
+        }
+    });
+    $(document).on('click', '[data-dismiss="modal"], [data-bs-dismiss="modal"]', function () {
+        $('#securityErrorModal').modal('hide'); // For Bootstrap 4
+
+        // For Bootstrap 5, if the above fails:
+        var modalEntity = document.getElementById('securityErrorModal');
+        var modalInstance = bootstrap.Modal.getInstance(modalEntity);
+        if (modalInstance) {
+            modalInstance.hide();
+        }
+    });
+</script>
+
+

@@ -1,0 +1,179 @@
+﻿
+@{
+    ViewBag.Title = "Bill Series Wise Billing";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if the current context is inside a Bootstrap modal
+            const isInModal = !!(document.querySelector('.modal.show'));
+
+            if (isInModal) {
+                // If inside a modal, wait for a short delay
+                setTimeout(() => {
+                    handleInvalidUser();
+                }, 500); // Adjust the delay as needed
+            } else {
+                // If not in a modal, proceed immediately
+                handleInvalidUser();
+            }
+
+            function handleInvalidUser() {
+                toastr.error("Invalid User");
+
+                setTimeout(function () {
+                    window.location.href = "@Url.Action("Index", "Login")";
+                }, 2000); // Redirect after 2 seconds
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+
+<div class="container" align="center">
+    <h2>Series Wise Count</h2>
+
+    <div class="col-sm-3" align="center">
+        <select class="form-control" id="Year" name="Year">
+            <option value="">Select Fin Year</option>
+            @foreach (var city in ViewBag.finyear)
+            {
+                <option value="@city.Text">@city.Text</option>
+                //<option value="@city">@city</option>
+            }
+        </select>
+    </div>
+
+    <div class="col-sm-4" align="center">
+        <p><button type="button" id="add" class="btn btn-primary">Show Data</button></p>
+    </div>
+    <div class="col-sm-4" align="center">
+        <p><button type="button" id="line" class="btn btn-primary">Line Chart of Sale Per Month</button></p>
+    </div>
+
+    <div class="container" align="center">
+        <canvas id="mychart" style="max-width:800px;max-height:500px;"></canvas>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <div>
+        <script type="text/javascript">
+            $(function () {
+
+                $("#add").click(function () {
+                    var selectedYear = $("#Year").val();
+                    // Check if mychart instance exists
+                    if (window.mychart instanceof Chart) {
+                        window.mychart.destroy();
+                    }
+
+
+                    $.ajax({
+                        type: "POST",
+                        url: "/Reports/Reports",
+                        data: { year: selectedYear },
+                        // data: "",
+                        contextType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: OnSuccess,
+                        error: OnError,
+
+                    });
+                    debugger;
+                    function OnSuccess(data) {
+                        var _data = data;
+                        var _chartlabels = _data[0];
+                        var _chartdata = _data[1];
+                        var barcolor = ["Black", "White", "Red", "Green", "Blue", "Gray", "Yellow", "Purple", "Orange", "Pink", "Brown", "Teal", "Lime", "Navy"];
+
+
+                        // Create a new Chart.js chart
+                        new Chart("mychart",
+                            {
+                                type: "bar",
+                                data: {
+                                    labels: _chartlabels,
+                                    datasets: [{
+                                        backgroundColor: barcolor,
+                                        data: _chartdata,
+                                        borderWidth: 1,
+                                    }]
+                                }
+
+                            });
+
+                    }
+                    function OnError(err) {
+                        alert("No Data");
+                    }
+                });
+            });
+        </script>
+    </div>
+    <div>
+        <canvas id="mychart" style="max-width:800px;max-height:500px;"></canvas>
+
+        <script>
+            $(function () {
+                $("#line").click(function () {
+                    $.ajax({
+                        type: "POST",
+                        url: "/Reports/LineChart", // Replace with your actual endpoint
+                        dataType: "json",
+                        success: function (data) {
+                            renderLineChart(data);
+                        },
+                        error: function (error) {
+                            console.error('Error fetching data:', error);
+                        }
+                    });
+                });
+
+                function renderLineChart(data) {
+                    var ctx = document.getElementById('mychart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.map(item => item.Month),
+                            datasets: [{
+                                label: 'Total Sales',
+                                data: data.map(item => item.TotalSales),
+                                borderColor: 'blue',
+                                fill: false
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                x: {
+                                    display: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Month'
+                                    }
+                                },
+                                y: {
+                                    display: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Sales Amount'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+        </script>
+
+
+    </div>
+</div>

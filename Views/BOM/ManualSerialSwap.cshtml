@@ -1,0 +1,305 @@
+﻿@{
+    ViewBag.Title = "Manual Serial Assignment Control";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            toastr.error("Invalid User Session");
+            setTimeout(function () { window.location.href = "@Url.Action("Index", "Login")"; }, 2000);
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<style>
+    .swap-container {
+        background-color: #f1f5f9;
+        font-family: 'Inter', sans-serif;
+        color: #334155;
+    }
+
+    .report-header {
+        background: white;
+        padding: 15px 30px;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid #e2e8f0;
+    }
+
+    .table-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    .table thead th {
+        background: #f8fafc;
+        color: #00698f;
+        font-weight: 800;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border: none;
+        padding: 15px;
+    }
+
+    .table tbody td {
+        vertical-align: middle;
+        padding: 12px 15px;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.85rem;
+    }
+
+    .btn-action {
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        padding: 8px 15px;
+        transition: 0.2s;
+        border: none;
+    }
+
+    .btn-swap {
+        background: #0ea5e9;
+        color: white;
+    }
+
+        .btn-swap:hover {
+            background: #0284c7;
+            transform: translateY(-1px);
+        }
+
+    .search-input {
+        border-radius: 20px;
+        border: 1.5px solid #e2e8f0;
+        padding: 8px 20px;
+        outline: none;
+        width: 320px;
+    }
+
+        .search-input:focus {
+            border-color: #00698f;
+            box-shadow: 0 0 0 4px rgba(0, 105, 143, 0.1);
+        }
+
+    .modal-content-custom {
+        border-radius: 20px;
+        border: none;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+    }
+
+    .modal-header-custom {
+        background: #f8fafc;
+        border-bottom: 1px solid #eef2f6;
+        border-radius: 20px 20px 0 0;
+    }
+
+    .invoice-badge {
+        font-size: 0.65rem;
+        background: #f0f9ff;
+        color: #0369a1;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-weight: 700;
+        border: 1px solid #bae6fd;
+    }
+
+    .animate-up {
+        animation: fadeInUpSwap 0.5s ease forwards;
+        opacity: 0;
+    }
+
+    @@keyframes fadeInUpSwap {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="swap-container container-fluid py-4 px-lg-5">
+    <!-- Header -->
+    <div class="report-header animate-up shadow-sm">
+        <div>
+            <h4 class="fw-bold m-0 text-dark"><i class="fas fa-exchange-alt me-2 text-primary"></i>Manual Serial Swap Console</h4>
+            <p class="text-muted small m-0">Override allotments by selecting available units from the FIFO pool.</p>
+        </div>
+        <div class="d-flex gap-3 align-items-center">
+            <input type="text" id="txtSearch" class="search-input shadow-sm" placeholder="Search BOM, Item or Serial..." />
+            <button class="btn btn-sm btn-outline-secondary rounded-pill px-4 shadow-sm" onclick="loadRecords()">
+                <i class="fas fa-sync-alt"></i> Sync
+            </button>
+        </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="table-card shadow-lg animate-up">
+        <div class="table-responsive" style="max-height: 70vh;">
+            <table class="table table-hover mb-0" id="swapTable">
+                <thead>
+                    <tr>
+                        <th>BOM Number</th>
+                        <th>Component Identity</th>
+                        <th>Currently Allotted</th>
+                        <th class="text-center">Receipt Date</th>
+                        <th class="text-center">Manual Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="swapBody">
+                    <tr><td colspan="5" class="text-center py-5 text-muted">Retrieving serialized inventory queue...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Select New Serial -->
+<div class="modal fade" id="swapModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header modal-header-custom py-3 px-4">
+                <h5 class="modal-title fw-bold text-primary"><i class="fas fa-list-ol me-2"></i>Select Replacement Serial</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <input type="hidden" id="targetLineId" />
+
+                <div class="card p-3 mb-3 border-0 shadow-sm bg-white">
+                    <small class="text-muted fw-bold uppercase" style="font-size:0.6rem">Releasing Current:</small>
+                    <p class="m-0 fw-bold text-danger font-monospace" id="lblCurrentSerial">---</p>
+                </div>
+
+                <div class="mb-4">
+                    <label class="fw-bold small text-muted uppercase mb-2">Available in Pool (Oldest First)</label>
+                    <select id="ddlNewSerial" class="form-select shadow-sm border-primary">
+                        <option value="">-- Loading FIFO Pool --</option>
+                    </select>
+                    <small class="text-muted mt-2 d-block" style="font-size:0.7rem">
+                        * Only available lots with quantity > 0 are shown.
+                    </small>
+                </div>
+
+                <div class="alert alert-info border-0 shadow-sm small py-2 mb-0">
+                    <i class="fas fa-info-circle me-1"></i> Stock ledger will be adjusted automatically for both units.
+                </div>
+            </div>
+            <div class="modal-footer border-0 p-3 bg-white justify-content-center">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary rounded-pill px-5 shadow fw-bold" onclick="executeManualSwap()">
+                    Confirm & Update Allotment
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<img id="wait-sign" src="~/images/wait.gif" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999; width: 80px;" />
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+@section scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            loadRecords();
+
+            $("#txtSearch").on("keyup", function() {
+                var value = $(this).val().toLowerCase();
+                $("#swapBody tr").filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+
+        function loadRecords() {
+            $('#wait-sign').show();
+            $.getJSON('@Url.Action("GetSerializedBOMRecords", "BOM")', function(res) {
+                $('#wait-sign').hide();
+                let tbody = $('#swapBody').empty();
+                if(!res.data || res.data.length === 0) {
+                    tbody.append('<tr><td colspan="5" class="text-center py-5">No records found.</td></tr>');
+                    return;
+                }
+
+                $.each(res.data, function(i, item) {
+                    let invDate = item.InvoiceDate ? moment(parseInt(item.InvoiceDate.substr(6))).format('DD/MM/YYYY') : '---';
+
+                    tbody.append(`
+                        <tr>
+                            <td class="fw-bold text-dark">${item.VoucherNumber}</td>
+                            <td>
+                                <div class="fw-bold text-primary small">${item.ItemName}</div>
+                            </td>
+                            <td class="fw-bold font-monospace text-primary">
+                                ${item.SerialNumber || '<span class="text-muted italic small">Pending</span>'}
+                            </td>
+                            <td class="text-center"><span class="invoice-badge">Inv: ${invDate}</span></td>
+                            <td class="text-center">
+                                <button class="btn-action btn-swap shadow-sm" onclick="openSwapModal(${item.id}, ${item.Itemid}, '${item.SerialNumber}')">
+                                    <i class="fas fa-sync-alt me-1"></i> Swap Serial
+                                </button>
+                            </td>
+                        </tr>
+                    `);
+                });
+            });
+        }
+
+        function openSwapModal(lineId, itemId, currentSerial) {
+            $('#targetLineId').val(lineId);
+            $('#lblCurrentSerial').text(currentSerial || "None Assigned");
+
+            // Fetch FIFO Dropdown
+            $.getJSON('@Url.Action("GetAvailableLotsForItem", "BOM")', { itemId: itemId }, function(res) {
+                let ddl = $('#ddlNewSerial').empty();
+                if(!res.data || res.data.length === 0) {
+                    ddl.append('<option value="">No other units available</option>');
+                } else {
+                    ddl.append('<option value="">-- Choose From FIFO Pool --</option>');
+                    $.each(res.data, (i, it) => ddl.append(new Option(it.Text, it.Value)));
+                }
+                // Ensure backdrop cleanup logic before opening
+                $('.modal-backdrop').remove();
+                $('#swapModal').modal('show');
+            });
+        }
+
+        function executeManualSwap() {
+            let lineId = $('#targetLineId').val();
+            let newLotId = $('#ddlNewSerial').val();
+
+            if(!newLotId) { toastr.warning("Please select a new serial number."); return; }
+
+            $('#wait-sign').show();
+            $.post('@Url.Action("ProcessManualSwap", "BOM")', { lineId: lineId, newLotId: newLotId }, function(res) {
+                $('#wait-sign').hide();
+                if(res.success) {
+                    toastr.success(res.message);
+                    $('#swapModal').modal('hide');
+                    // Safeguard: Manually clear backdrop if modal hide fails cleanup
+                    $('body').removeClass('modal-open');
+                    $('.modal-backdrop').remove();
+                    loadRecords();
+                } else {
+                    toastr.error(res.message);
+                }
+            });
+        }
+    </script>
+}

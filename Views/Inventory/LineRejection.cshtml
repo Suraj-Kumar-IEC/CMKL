@@ -1,0 +1,204 @@
+﻿
+@{
+    ViewBag.Title = "LineRejection";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if the current context is inside a Bootstrap modal
+            const isInModal = !!(document.querySelector('.modal.show'));
+
+            if (isInModal) {
+                // If inside a modal, wait for a short delay
+                setTimeout(() => {
+                    handleInvalidUser();
+                }, 500); // Adjust the delay as needed
+            } else {
+                // If not in a modal, proceed immediately
+                handleInvalidUser();
+            }
+
+            function handleInvalidUser() {
+                toastr.error("Invalid User");
+
+                setTimeout(function () {
+                    window.location.href = "@Url.Action("Index", "Login")";
+                }, 2000); // Redirect after 2 seconds
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<h3 style="background-color: #00698f; color: #ffffff; padding: 5px 10px; border-radius: 5px; text-align: center;">Line Rejection Voucher</h3>
+
+<div class="row">
+    <div class="col-md-2">
+        <label>Line Rejection Number</label>
+        <input type="text" id="vno" class="form-control form-control-sm" disabled />
+    </div>
+    <div class="col-md-2">
+        <label>Select Supplier</label>
+        <select id="supplier" class="form-control form-control-sm"></select>
+    </div>
+    <div class="col-md-2">
+        <label>Select Bill</label>
+        <select id="billno" class="form-control form-control-sm"></select>
+    </div>
+    <div class="col-md-2">
+        <label>Select Item</label>
+        <select id="item" class="form-control form-control-sm"></select>
+    </div>
+    <div class="col-md-2">
+        <label>Rejection Date</label>
+        <input type="date" id="LRdate" class="form-control form-control-sm" />
+    </div>
+    <div class="col-md-2">
+        <label>Rejection Quantity</label>
+        <input type="text" id="Quantity" class="form-control form-control-sm" />
+    </div>
+    <div class="col-md-3">
+        <label>Remarks</label>
+        <textarea class="form-control form-control-sm" id="remarks" name="remarks" rows="2" required></textarea>
+    </div>
+
+    @*Attach Product Photos*@
+    @*Eway and Bill Copy attachment*@
+    @*Approval Required of Plant Head*@
+</div>
+<br />
+<div class="col-md-2">
+    <button type="submit" id="savelr" class="form-control form-control-sm" style="background-color: #00698f; color: #ffffff; padding: 5px 10px; border-radius: 5px; text-align: center; border: none; cursor: pointer;">Save LR</button>
+</div>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<script>
+    $(document).ready(function () {
+        GetVoucherNumber(); // Call the function
+        LoadSupplier();
+        function GetVoucherNumber() {
+            $.ajax({
+                type: 'GET',
+                url: '/Inventory/LRNumber',
+                success: function (data) {
+                    // Do something with the data here!
+                    $('#vno').val(data.number);
+                    console.log("Voucher Number:", data);
+                    // Example:  $("#vno").val(data);  assuming #vno is your input
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error fetching voucher number:", status, error);
+                    // Handle errors appropriately (e.g., display a message to the user)
+                }
+            });
+        }
+        function LoadSupplier() {
+            $.ajax({
+                type: 'GET',
+                url: '/Purchase/GetSupplier',
+                success: function (data) {
+                    $('#supplier').empty(); // clear existing options
+                    $('#supplier').append('<option value="0">Select Supplier</option>');
+                    $.each(data, function (index, item) {
+                        $('#supplier').append('<option value="' + item.value + '">' + item.text + '</option>');
+                    });
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error loading suppliers:", status, error, xhr);
+                    // Optionally display an error message to the user
+                }
+            });
+        }
+        $('#supplier').change(function () {
+            //on Supplier Change Get Bill Numbers
+            var supplierid = $('#supplier option:selected').val();
+            $.ajax({
+                type: 'GET',
+                url: '/Inventory/GetSupplierBills',
+                data: { supplierid: supplierid },
+                success: function (data) {
+                    $('#billno').empty();
+                    $('#billno').append('<option value="0">Select Bill Number</option>');
+                    $('#item').empty();
+                    $('#item').append('<option value="0">Select Item</option>');
+                    $.each(data.bills, function (index, item) {
+                        var dt = new Date(parseInt(item.date.substr(6))); // Extract milliseconds
+                        var formattedDate = moment(dt).format('DD/MM/YYYY');
+                        $('#billno').append('<option value="' + item.value + '" >' + item.text + '-Date-' + formattedDate + '-MRN-' + item.MRN + '</option>');
+                    });
+                }
+            })
+        });
+        $('#billno').change(function () {
+            //Get Bill Items
+            var billid = $('#billno option:selected').val();
+            $.ajax({
+                type: 'GET',
+                url: '/Inventory/GetIncomingItems',
+                data: { billid: billid },
+                success: function (data) {
+                    $('#item').empty();
+                    $('#item').append('<option value="0">Select Item</option>');
+                    $.each(data.items, function (index, item) {
+                        $('#item').append('<option value="' + item.value + '" data-itemid="' + item.itemid + '">' + item.itemname + '-Approved Qty-' + item.quantity + '</option>');
+                    });
+
+                }
+            })
+        })
+        $('#savelr').click(function () {
+            //Save Data
+            var supplierid = $('#supplier option:selected').val();
+            var billid = $('#billno option:selected').val();
+            var Billitemid = $('#item option:selected').val();
+            var ItemId = $('#item option:selected').data('itemid'); // Get itemid from data attribute
+            var quantity = $('#Quantity').val();
+            var Remarks = $('#remarks').val();
+            var LRDate = $('#LRdate').val();
+            // Use .val() for textarea
+
+            var dataToSend = {
+                SupplierId: supplierid,
+                BillId: billid,
+                Billitemid: Billitemid, // Corrected property name to match C#
+                ItemId: ItemId,
+                Quantity: quantity,
+                Remarks: Remarks,
+                LRDate: LRDate
+            };
+
+            $.ajax({
+                type: 'POST',
+                url: '/Inventory/SaveLR',
+                contentType: 'application/json; charset=utf-8', // Important: Send as JSON
+                data: JSON.stringify(dataToSend), // Convert to JSON
+                success: function (data) {
+                    // Handle both success and failure based on the 'success' property
+                    if (data.success) {
+                        toastr.success(data.msg);
+                        GetVoucherNumber();
+                        LoadSupplier();
+                        $('#billno').empty();
+                        $('#item').empty();
+                        $('#LRdate').val('');
+                        $('#remarks').val('');
+                        $('#Quantity').val('0');
+                    } else {
+                        toastr.error(data.msg); // Show error message
+                    }
+                },
+                error: function (xhr, status, error) {
+                    // Handle AJAX errors (e.g., network problems, server errors)
+                    //console.error("Error saving data:", status, error, xhr);
+                    alert("An error occurred while saving. Please try again."); // User-friendly message
+                }
+            });
+        });
+
+    });
+</script>
+

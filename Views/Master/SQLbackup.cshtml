@@ -1,0 +1,113 @@
+﻿@{
+    ViewBag.Title = "Admin Management";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@if (Session["U_Role"] == null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if the current context is inside a Bootstrap modal
+            const isInModal = !!(document.querySelector('.modal.show'));
+
+            if (isInModal) {
+                // If inside a modal, wait for a short delay
+                setTimeout(() => {
+                    handleInvalidUser();
+                }, 500); // Adjust the delay as needed
+            } else {
+                // If not in a modal, proceed immediately
+                handleInvalidUser();
+            }
+
+            function handleInvalidUser() {
+                toastr.error("Invalid User");
+
+                setTimeout(function () {
+                    window.location.href = "@Url.Action("Index", "Login")";
+                }, 2000); // Redirect after 2 seconds
+            }
+        });
+    </script>
+    <div style="height: 100vh; width: 100vw; background-color: #fff;"></div>
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12 text-center">
+            <h3 style="background-color: #00698f; color: #ffffff; padding: 5px 12px; border-radius: 5px; text-align: center;">Admin Managment Panel</h3>
+            <br />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="panel panel-default">
+                <div class="panel-heading text-center">
+                    <h3 class="panel-title">Database Backup</h3>
+                </div>
+                <div class="panel-body text-center">
+                    <i id="backup-button" class="fa fa-database fa-4x" style="cursor: pointer;"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="panel panel-default">
+                <div class="panel-heading text-center">
+                    <h3 class="panel-title">Application Backup</h3>
+                </div>
+                <div class="panel-body text-center">
+                    <i id="app-backup-button" class="fa fa-cloud-download fa-4x" style="cursor: pointer;"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="panel panel-default">
+                <div class="panel-heading text-center">
+                    <h3 class="panel-title">Backup History</h3>
+                </div>
+                <div class="panel-body text-center">
+                    <ul id="backup-history" style="list-style: none; padding: 0;">
+                        <!-- list of previous backups will be displayed here -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<img id="wait-sign" src="~/images/wait.gif" class="wait-sign-image" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);" />
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/toastr/Js/toastr.js"></script>
+<link href="~/toastr/toastr.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script>
+    $(document).ready(function () {
+        $('#backup-button').click(function () {
+            $('#wait-sign').show(); // add animation class when AJAX request is sent
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("CreateBackup", "Master")',
+                success: function (data) {
+                    toastr.success('Database backup created successfully!');
+                    $('#wait-sign').hide();
+                },
+                error: function (xhr, status, error) {
+                    toastr.error('Error creating database backup: ' + error);
+                    $('#wait-sign').hide();
+                }
+            });
+        });
+
+        $('#app-backup-button').click(function () {
+            // TO DO: implement application backup functionality
+            toastr.warning('Application backup functionality not implemented yet!');
+        });
+    });
+</script>
+
+<style>
+    .wait-sign-image {
+        width: 80px;
+        height: 80px;
+    }
+</style>
