@@ -1932,12 +1932,15 @@ namespace CMKL.Controllers
                     }
 
                     // Map Head Data
+                    if (string.IsNullOrWhiteSpace(model.HeadData.BillDate))
+                        return Json(new { success = false, message = "Invoice Date is required." });
+
                     billHead.BillNumber = model.HeadData.BillNumber;
-                    billHead.BillDate = DateTime.Parse(model.HeadData.BillDate);
+                    billHead.BillDate = ParseDate(model.HeadData.BillDate) ?? DateTime.Today;
                     billHead.PoNumber = model.HeadData.pono;
-                    billHead.PoDate = DateTime.Parse(model.HeadData.podate);
+                    billHead.PoDate = ParseDate(model.HeadData.podate);
                     billHead.GRNumber = model.HeadData.GRNumber;
-                    billHead.GRDate = DateTime.Parse(model.HeadData.GRDate);
+                    billHead.GRDate = ParseDate(model.HeadData.GRDate);
                     billHead.Supplierid = model.HeadData.Supplier;
                     billHead.Taxid = model.HeadData.TaxHead;
                     billHead.TaxAmount = decimal.Parse(model.HeadData.Totaltax);
@@ -1949,7 +1952,7 @@ namespace CMKL.Controllers
                     billHead.OtherTaxPercent = model.HeadData.OtherTaxPercent;
                     billHead.OtherTaxAmount = model.HeadData.OtherTaxAmount;
                     billHead.GateEntry = model.HeadData.GateEntry;
-                    billHead.GateEntryDate = DateTime.Parse(model.HeadData.GateEntryDate);
+                    billHead.GateEntryDate = ParseDate(model.HeadData.GateEntryDate);
                     billHead.PurchaseType = model.HeadData.purchasetype;
                     billHead.CompanyID = companyid;
                     billHead.Fin_Year = FinYear;
@@ -2063,12 +2066,15 @@ namespace CMKL.Controllers
                     }
 
                     // Map Head Fields
+                    if (string.IsNullOrWhiteSpace(model.HeadData.BillDate))
+                        return Json(new { success = false, message = "Invoice Date is required." });
+
                     billHead.BillNumber = model.HeadData.BillNumber;
-                    billHead.BillDate = DateTime.Parse(model.HeadData.BillDate);
+                    billHead.BillDate = ParseDate(model.HeadData.BillDate) ?? DateTime.Today;
                     billHead.PoNumber = model.HeadData.pono;
-                    billHead.PoDate = DateTime.Parse(model.HeadData.podate);
+                    billHead.PoDate = ParseDate(model.HeadData.podate);
                     billHead.GRNumber = model.HeadData.GRNumber;
-                    billHead.GRDate = DateTime.Parse(model.HeadData.GRDate);
+                    billHead.GRDate = ParseDate(model.HeadData.GRDate);
                     billHead.Supplierid = model.HeadData.Supplier;
                     billHead.Taxid = model.HeadData.TaxHead;
                     billHead.TaxAmount = decimal.Parse(model.HeadData.Totaltax);
@@ -2080,7 +2086,7 @@ namespace CMKL.Controllers
                     billHead.OtherTaxPercent = model.HeadData.OtherTaxPercent;
                     billHead.OtherTaxAmount = model.HeadData.OtherTaxAmount;
                     billHead.GateEntry = model.HeadData.GateEntry;
-                    billHead.GateEntryDate = DateTime.Parse(model.HeadData.GateEntryDate);
+                    billHead.GateEntryDate = ParseDate(model.HeadData.GateEntryDate);
                     billHead.PurchaseType = model.HeadData.purchasetype;
                     billHead.CompanyID = companyid;
                     billHead.Fin_Year = FinYear;
@@ -2955,6 +2961,25 @@ namespace CMKL.Controllers
             catch (Exception ex) { return Json(new { success = false, message = ex.Message }); }
         }
 
+        /// <summary>
+        /// Safely parses a date string in yyyy-MM-dd or dd-MM-yyyy or dd/MM/yyyy formats.
+        /// Returns null if the string is empty or cannot be parsed.
+        /// </summary>
+        private static DateTime? ParseDate(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return null;
+            string[] formats = { "yyyy-MM-dd", "dd-MM-yyyy", "dd/MM/yyyy", "MM/dd/yyyy" };
+            if (DateTime.TryParseExact(value.Trim(), formats,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.None, out DateTime result))
+                return result;
+            // Fallback to general parse
+            if (DateTime.TryParse(value.Trim(),
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.None, out result))
+                return result;
+            return null;
+        }
 
         public class BillModel
         {
@@ -3005,4 +3030,3 @@ namespace CMKL.Controllers
 
 
 }
-

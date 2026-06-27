@@ -37,9 +37,9 @@ namespace CMKL
             DispatchTemplatePath = System.Web.Hosting.HostingEnvironment.MapPath("~/Views/EmailManage/BOMStorePendingApprovalAutoMailTemplate.cshtml");
             var db = new IECEntities();
             string Connection = db.ConnectionDatas
-                .Where(i => i.id == 1)
-                .Select(i => i.ConnectionString)
-                .SingleOrDefault();
+     .Where(i => i.Active == 1)
+     .Select(i => i.ConnectionString)
+     .SingleOrDefault();
 
             GlobalConfiguration.Configuration
                 .UseSqlServerStorage(Connection);
@@ -1386,8 +1386,9 @@ namespace CMKL
                             toAddressListName = nm.EmailTo;
                             ccAddressListName = nm.EmailCC;
                         }
-                        
-                        if ((pendingApprovals as System.Collections.IList).Count > 0)
+
+                        var pendingList = pendingApprovals as System.Collections.IList;
+                        if (pendingList != null && pendingList.Count > 0)
                         {
                             var emailSettings = db.CMKL_Email_Setting.SingleOrDefault(ab => ab.id == 2);
                             var toAddresses = db.CMKL_Email.Where(bc => bc.DDLName == toAddressListName && bc.Active == 1).ToList();

@@ -1228,6 +1228,7 @@ namespace CMKL.Controllers
                             Status = bb.Isdeleted == 1 ? "Cancelled" : "Active",
                             Lot = lot.Lot_SerialNumber ?? "NA",
                             LotDate = lot.RecieptDateTime,
+                            BasicPrice = item.BasicPrice ?? 0,
                         }).ToList();
             var finalitem = DB.BOMVoucherlines.Where(x => x.BOMVoucherid == bomidnumber).FirstOrDefault();
             var finalitemdesc = DB.BOMItemMasters.Where(y => y.Itemid == finalitem.Finalitemid).Select(y => y.ItemName).SingleOrDefault();

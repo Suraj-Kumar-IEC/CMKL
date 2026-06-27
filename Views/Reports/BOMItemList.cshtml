@@ -270,8 +270,8 @@
         </div>
         <div class="col-md-3">
             <div class="stat-card" style="border-left: 5px solid #f59e0b;">
-                <span class="stat-label">Audit Result</span>
-                <span class="stat-value text-warning">Verified Live</span>
+                <span class="stat-label">Total BOM Value (₹)</span>
+                <span class="stat-value text-warning" id="kpi-value">0.00</span>
             </div>
         </div>
     </div>
@@ -290,13 +290,15 @@
                         <th>Part Identity</th>
                         <th>Category</th>
                         <th class="text-center">Issued Qty</th>
+                        <th class="text-end">Basic Rate (₹)</th>
+                        <th class="text-end">Line Value (₹)</th>
                         <th class="text-center">UOM</th>
                         <th>Authorization Trail</th>
                         <th class="text-center">Lot / Serial Trace</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr><td colspan="6" class="text-center py-5 text-muted">Select a BOM Voucher to begin audit.</td></tr>
+                    <tr><td colspan="8" class="text-center py-5 text-muted">Select a BOM Voucher to begin audit.</td></tr>
                 </tbody>
             </table>
         </div>
@@ -360,7 +362,7 @@
                     $('#fgdesc').val(data.head.fgdesc || 'NA');
                     $('#fgseries').val(data.finalitemdesc || 'NA');
 
-                    let totalQty = 0, lotCount = 0;
+                    let totalQty = 0, lotCount = 0, totalValue = 0;
 
                     if (data.items && data.items.length > 0) {
                         $('#kpi-row').fadeIn();
@@ -379,11 +381,14 @@
                             var lotDate = item.LotDate ?
                                 moment(parseInt(item.LotDate.substr(6))).format('DD/MM/YYYY') : '---';
 
-                            var qty = parseFloat(item.Quantity || 0);
+                            var qty        = parseFloat(item.Quantity   || 0);
+                            var rate       = parseFloat(item.BasicPrice || 0);
+                            var lineValue  = qty * rate;
 
                             // KPI updates only for non-cancelled items
                             if (!isCancelled) {
-                                totalQty += qty;
+                                totalQty   += qty;
+                                totalValue += lineValue;
                                 if (item.Lot && item.Lot !== "NA") lotCount++;
                             }
 
@@ -397,6 +402,8 @@
                                             <div class="small text-muted">${item.SubCategory || 'General'}</div>
                                         </td>
                                         <td class="text-center fw-bold">${qty.toFixed(2)}</td>
+                                        <td class="text-end small">${rate.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                        <td class="text-end fw-bold text-success">${lineValue.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                                         <td class="text-center small font-weight-bold">${item.UOM}</td>
                                         <td>
                                             <div class="small fw-bold">${item.ApprovedBy || '---'}</div>
@@ -415,10 +422,11 @@
                         $('#kpi-count').text(data.items.length);
                         $('#kpi-qty').text(totalQty.toLocaleString(undefined, { minimumFractionDigits: 2 }));
                         $('#kpi-lots').text(lotCount);
+                        $('#kpi-value').text(totalValue.toLocaleString('en-IN', { minimumFractionDigits: 2 }));
 
                         toastr.success('BOM Consumption Data Loaded.');
                     } else {
-                        tbody.append('<tr><td colspan="6" class="text-center py-5 text-muted">No data found.</td></tr>');
+                        tbody.append('<tr><td colspan="8" class="text-center py-5 text-muted">No data found.</td></tr>');
                     }
                 },
                 error: function () { $('#wait-sign').hide(); toastr.error("Sync Error."); }
